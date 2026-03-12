@@ -1,0 +1,213 @@
+// ── Variables ─────────────────────────────────────────────
+$sidebar-bg      : #3c4a6e;
+$sidebar-hover   : rgba(255,255,255,.08);
+$sidebar-active  : rgba(10,179,156,.18);
+$active-color    : #0ab39c;
+$text-muted      : rgba(255,255,255,.55);
+$text-main       : rgba(255,255,255,.85);
+$sidebar-w       : 250px;
+$sidebar-w-hover : 70px;
+$transition      : .25s cubic-bezier(.4,0,.2,1);
+
+// ── Sidebar ───────────────────────────────────────────────
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  width: $sidebar-w-hover;          // collapsed by default (hover mode)
+  background: $sidebar-bg;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width $transition;
+  z-index: 1000;
+  box-shadow: 2px 0 12px rgba(0,0,0,.15);
+
+  &:hover {
+    width: $sidebar-w;
+
+    .logo-full  { opacity: 1; width: auto; }
+    .logo-icon  { opacity: 0; width: 0; }
+    .nav-label  { opacity: 1; width: auto; }
+    .nav-arrow  { opacity: 1; }
+    .nav-tooltip { display: none; }
+    .nav-children.open { max-height: 400px; }
+  }
+}
+
+// ── Logo ──────────────────────────────────────────────────
+.sidebar-logo {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logo-full {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity $transition, width $transition;
+  white-space: nowrap;
+
+  .logo-text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+}
+
+.logo-icon {
+  opacity: 1;
+  transition: opacity $transition;
+  display: flex;
+  align-items: center;
+}
+
+// ── Nav ───────────────────────────────────────────────────
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 0;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 2px; }
+}
+
+.nav-group {
+  position: relative;
+  margin: 2px 8px;
+}
+
+// ── Nav item ──────────────────────────────────────────────
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background $transition, color $transition;
+  position: relative;
+
+  &:hover { background: $sidebar-hover; color: $text-main; }
+
+  &.active, &.group-active {
+    background: $sidebar-active;
+    color: $active-color;
+  }
+
+  &.open { color: $text-main; }
+}
+
+.nav-icon {
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+.nav-label {
+  font-size: .84rem;
+  font-weight: 500;
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity $transition;
+  flex: 1;
+}
+
+.nav-arrow {
+  opacity: 0;
+  transition: opacity $transition, transform $transition;
+  display: flex;
+  align-items: center;
+
+  .nav-item.open & { transform: rotate(90deg); }
+}
+
+// ── Tooltip (mode icône uniquement) ───────────────────────
+.nav-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e2a45;
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 9999;
+
+  &::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #1e2a45;
+  }
+
+  .nav-group:hover & { opacity: 1; }
+  .sidebar:hover & { display: none; }
+}
+
+// ── Sous-menu ─────────────────────────────────────────────
+.nav-children {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height $transition;
+
+  .sidebar:hover &.open { max-height: 400px; }
+}
+
+.nav-child {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 44px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  font-size: .82rem;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: color $transition, background $transition;
+
+  &:hover { color: $text-main; background: $sidebar-hover; }
+  &.active { color: $active-color; }
+}
+
+.child-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .6;
+  flex-shrink: 0;
+}
+
+.child-label { flex: 1; overflow: hidden; }

@@ -1,0 +1,308 @@
+<div class="audit-page">
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <div class="audit-header">
+    <h1>📋 Journal d'Audit</h1>
+    <span class="total-badge">{{ totalElements() }} entrées</span>
+  </div>
+
+  <!-- ══════════════ FILTRES ══════════════ -->
+  <div class="filters-card">
+    <div class="filters-grid">
+
+      <div class="filter-group">
+        <label>Type d'événement</label>
+        <select [(ngModel)]="filters.eventType">
+          <option value="">Tous</option>
+          @for (e of eventTypes; track e) {
+            <option [value]="e">{{ e }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Sévérité</label>
+        <select [(ngModel)]="filters.severity">
+          <option value="">Toutes</option>
+          @for (s of severities; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Utilisateur (ID)</label>
+        <input type="number" [(ngModel)]="filters.userId" placeholder="ex: 42">
+      </div>
+
+      <div class="filter-group">
+        <label>Du</label>
+        <input type="datetime-local" [(ngModel)]="filters.from">
+      </div>
+
+      <div class="filter-group">
+        <label>Au</label>
+        <input type="datetime-local" [(ngModel)]="filters.to">
+      </div>
+
+    </div>
+
+    <div class="filters-actions">
+      <button class="btn-primary" (click)="applyFilters()">🔍 Rechercher</button>
+      <button class="btn-secondary" (click)="resetFilters()">↺ Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TABLEAU ══════════════ -->
+  <div class="table-card">
+
+    @if (loading()) {
+      <div class="loading">
+        <span class="spinner"></span> Chargement...
+      </div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Événement</th>
+            <th>Sévérité</th>
+            <th>Utilisateur</th>
+            <th>Rôle</th>
+            <th>Site</th>
+            <th>Action</th>
+            <th>IP</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (logs().length === 0) {
+            <tr>
+              <td colspan="9" class="empty-state">
+                Aucun log trouvé pour ces critères
+              </td>
+            </tr>
+          } @else {
+            @for (log of logs(); track log.id) {
+              <tr [class]="'row-' + log.severity.toLowerCase()">
+
+                <td class="td-date">
+                  {{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                </td>
+
+                <td>
+                  <span class="event-badge"
+                        [ngClass]="getEventClass(log.eventType)">
+                    {{ getEventIcon(log.eventType) }} {{ log.eventType }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="severity-badge"
+                        [ngClass]="getSeverityClass(log.severity)">
+                    {{ log.severity }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="user-cell">
+                    <span class="user-name">
+                      {{ log.userFullName || log.username || '—' }}
+                    </span>
+                    @if (log.userFullName && log.username) {
+                      <span class="user-sub">&#64;{{ log.username }}</span>
+                    }
+                  </div>
+                </td>
+
+                <td>{{ log.userRole || '—' }}</td>
+                <td>{{ log.userSite || '—' }}</td>
+
+                <td>
+                  @if (log.action) {
+                    <span class="action-tag">{{ log.action }}</span>
+                  } @else if (log.endpoint) {
+                    <span class="endpoint-tag">
+                      {{ log.httpMethod }} {{ log.endpoint }}
+                    </span>
+                  } @else {
+                    <span>—</span>
+                  }
+                </td>
+
+                <td class="td-ip">{{ log.ipAddress || '—' }}</td>
+
+                <td>
+                  <button class="btn-icon"
+                          (click)="openDetail(log)"
+                          title="Voir détails">
+                    👁
+                  </button>
+                </td>
+
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+
+      <!-- ══════════════ PAGINATION ══════════════ -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button [disabled]="filters.page === 0"
+                  (click)="onPageChange(filters.page! - 1)">
+            ‹
+          </button>
+
+          @for (p of pages(); track p) {
+            <button [class.active]="p === filters.page"
+                    (click)="onPageChange(p)">
+              {{ p + 1 }}
+            </button>
+          }
+
+          <button [disabled]="filters.page === totalPages() - 1"
+                  (click)="onPageChange(filters.page! + 1)">
+            ›
+          </button>
+
+          <span class="page-info">
+            Page {{ (filters.page ?? 0) + 1 }} / {{ totalPages() }}
+            — {{ totalElements() }} résultats
+          </span>
+        </div>
+      }
+    }
+
+  </div>
+</div>
+
+<!-- ══════════════ MODAL DÉTAIL ══════════════ -->
+@if (selectedLog(); as log) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>
+          {{ getEventIcon(log.eventType) }}
+          Détail du log #{{ log.id }}
+        </h2>
+        <button class="btn-close" (click)="closeDetail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Informations générales -->
+        <div class="detail-section">
+          <h3>Informations générales</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Date</span>
+              <span>{{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Type</span>
+              <span class="event-badge" [ngClass]="getEventClass(log.eventType)">
+                {{ log.eventType }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Sévérité</span>
+              <span class="severity-badge" [ngClass]="getSeverityClass(log.severity)">
+                {{ log.severity }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Durée</span>
+              <span>{{ log.durationMs ? log.durationMs + ' ms' : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Utilisateur -->
+        <div class="detail-section">
+          <h3>Utilisateur</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Nom</span>
+              <span>{{ log.userFullName || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Username</span>
+              <span>{{ log.username || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Rôle</span>
+              <span>{{ log.userRole || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Site</span>
+              <span>{{ log.userSite || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">IP</span>
+              <span>{{ log.ipAddress || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Session</span>
+              <span class="monospace">{{ log.sessionId || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action -->
+        @if (log.action || log.entityType) {
+          <div class="detail-section">
+            <h3>Action</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Action</span>
+                <span>{{ log.action || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Entité</span>
+                <span>{{ log.entityType || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">ID Entité</span>
+                <span>{{ log.entityId || '—' }}</span>
+              </div>
+            </div>
+
+            @if (log.oldValue || log.newValue) {
+              <div class="diff-container">
+                @if (log.oldValue) {
+                  <div class="diff-block old-value">
+                    <h4>Avant</h4>
+                    <pre>{{ log.oldValue | json }}</pre>
+                  </div>
+                }
+                @if (log.newValue) {
+                  <div class="diff-block new-value">
+                    <h4>Après</h4>
+                    <pre>{{ log.newValue | json }}</pre>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Erreur -->
+        @if (log.errorMessage) {
+          <div class="detail-section">
+            <h3>Erreur</h3>
+            <div class="error-message">{{ log.errorMessage }}</div>
+            @if (log.stackTrace) {
+              <details>
+                <summary>Stack trace</summary>
+                <pre class="stack-trace">{{ log.stackTrace }}</pre>
+              </details>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+}

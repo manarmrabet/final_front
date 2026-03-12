@@ -1,0 +1,283 @@
+<div class="container-fluid py-4">
+
+  <!-- En-tête -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">Gestion des Accès</h3>
+      <p class="text-muted small">Visualisez votre équipe, gérez les permissions et les sites.</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-lg shadow-sm px-4" (click)="openModal()">
+      <i class="feather icon-user-plus me-2"></i> Nouvel Utilisateur
+    </button>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+      <div class="input-group input-group-sm w-25">
+        <span class="input-group-text bg-light border-0"><i class="feather icon-search"></i></span>
+        <input type="text" class="form-control bg-light border-0"
+               placeholder="Rechercher..." (input)="updateSearch($event)">
+      </div>
+      <span class="badge bg-soft-primary text-primary px-3 py-2">
+        {{ filteredUsers().length }} Collaborateurs
+      </span>
+    </div>
+
+    <div class="table-responsive" style="min-height: 400px;">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4">Utilisateur</th>
+            <th>Site Affecté</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isPageLoading()) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr><td colspan="5" class="p-3"><div class="skeleton text w-100"></div></td></tr>
+            }
+          } @else {
+            @for (user of filteredUsers(); track user.email) {
+              <tr class="animate-fade-in">
+                <td class="ps-4">
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-ui me-3">{{user.firstName?.[0]}}{{user.lastName?.[0]}}</div>
+                    <div>
+                      <div class="fw-bold">{{user.firstName}} {{user.lastName}}</div>
+                      <small class="text-muted">{{user.email}}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-dark fw-500">{{user.siteName || 'Non affecté'}}</span></td>
+                <td><span class="badge-role">{{user.roleName}}</span></td>
+                <td>
+                  <span class="status-indicator" [class.active]="user.isActive === 1"></span>
+                  <span class="ms-1 small">{{user.isActive === 1 ? 'Actif' : 'Inactif'}}</span>
+                </td>
+                <td class="text-end pe-4">
+                  <button type="button" class="btn btn-icon-primary me-2"
+                          (click)="openModal(user)" title="Modifier">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button type="button" class="btn btn-icon-danger"
+                          (click)="openDeleteModal(user)" title="Supprimer">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">Aucun collaborateur trouvé.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ MODAL CRÉATION / ÉDITION ══════════ -->
+  @if (showModal()) {
+    <div class="custom-modal-backdrop animate-fade-in">
+      <div class="custom-modal-content shadow-lg">
+        <div class="modal-header-styled">
+          <h5 class="mb-0 fw-bold">{{ isEditMode() ? 'Modifier le profil' : 'Création de compte' }}</h5>
+          <button type="button" class="btn-close-modal" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="p-4 scrollable-form">
+          <div class="section-title text-primary">Informations de base</div>
+
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control"
+                   [(ngModel)]="newUser().userName"
+                   placeholder="User"
+                   [disabled]="isEditMode()">
+            <label>Nom d'utilisateur</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <input type="email" class="form-control"
+                   [(ngModel)]="newUser().email"
+                   #emailField="ngModel"
+                   email
+                   placeholder="Email"
+                   [class.is-invalid]="emailField.invalid && emailField.touched">
+            <label>Email Professionnel</label>
+            @if (emailField.invalid && emailField.touched) {
+              <div class="invalid-feedback animate-fade-in">
+                Veuillez saisir une adresse e-mail valide.
+              </div>
+            }
+          </div>
+
+          <div class="row g-2 mb-4">
+            <div class="col-6">
+              <div class="form-floating">
+                <input type="text" class="form-control"
+                       [(ngModel)]="newUser().firstName"
+                       placeholder="Prénom"
+                       [class.is-invalid]="newUser().firstName && !isNameValid(newUser().firstName)">
+                <label>Prénom</label>
+                @if (newUser().firstName && !isNameValid(newUser().firstName)) {
+                  <div class="text-danger small mt-1">Lettres uniquement.</div>
+                }
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-floating">
+                <input type="text" class="form-control"
+                       [(ngModel)]="newUser().lastName"
+                       placeholder="Nom"
+                       [class.is-invalid]="newUser().lastName && !isNameValid(newUser().lastName)">
+                <label>Nom</label>
+                @if (newUser().lastName && !isNameValid(newUser().lastName)) {
+                  <div class="text-danger small mt-1">Lettres uniquement.</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title text-primary">Localisation & Statut</div>
+
+          <div class="form-group mb-3">
+            <label class="small fw-bold text-muted mb-1">Site d'affectation</label>
+            <select class="form-select form-select-lg" [(ngModel)]="newUser().siteName">
+              <option value="">Sélectionnez un site</option>
+              @for (site of sites(); track site.siteName) {
+                <option [value]="site.siteName">{{ site.siteName }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" type="checkbox" id="userStatus"
+                   [checked]="newUser().isActive === 1"
+                   (change)="newUser().isActive = ($any($event.target).checked ? 1 : 0)">
+            <label class="form-check-label fw-bold ms-2" for="userStatus" style="cursor:pointer">
+              Compte {{ newUser().isActive === 1 ? 'Activé' : 'Désactivé' }}
+            </label>
+          </div>
+
+          <div class="section-title text-primary">Rôle applicatif</div>
+          <div class="role-selection-scroll mb-4">
+            @for (role of roles(); track role.roleId) {
+              <div class="role-card-mini"
+                   [class.selected]="newUser().roleName === role.roleName"
+                   (click)="newUser().roleName = role.roleName">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0 fw-bold">{{role.roleName}}</h6>
+                    <small class="text-muted">{{role.description}}</small>
+                  </div>
+                  @if (newUser().roleName === role.roleName) {
+                    <i class="feather icon-check-circle text-primary"></i>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <button type="button"
+                  class="btn btn-success w-100 py-3 fw-bold shadow-sm"
+                  (click)="saveUser()"
+                  [disabled]="!newUser().userName
+                           || !newUser().roleName
+                           || !isEmailValid(newUser().email)
+                           || !isNameValid(newUser().firstName)
+                           || !isNameValid(newUser().lastName)
+                           || isLoading()">
+            @if (isLoading()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Traitement...
+            } @else {
+              {{ isEditMode() ? 'Mettre à jour le profil' : 'Finaliser la création' }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════ MODAL SUPPRESSION ══════════ -->
+  @if (showDeleteModal()) {
+    <div class="custom-modal-backdrop animate-fade-in">
+      <div class="delete-modal-content shadow-lg">
+
+        <div class="modal-header-styled">
+          <h5 class="mb-0 fw-bold">Supprimer un utilisateur</h5>
+          <button type="button" class="btn-close-modal" (click)="cancelDelete()">&times;</button>
+        </div>
+
+        <div class="p-4">
+
+          <!-- Nom de l'utilisateur ciblé -->
+          <p class="text-center mb-4">
+            Vous allez supprimer
+            <strong>{{ userToDelete()?.firstName }} {{ userToDelete()?.lastName }}</strong>
+          </p>
+
+          <!-- Choix du type de suppression -->
+          <div class="delete-options mb-3">
+
+            <div class="option-card"
+                 [class.selected]="!deleteForce()"
+                 (click)="deleteForce.set(false)">
+              <i class="feather icon-archive option-icon"></i>
+              <div>
+                <strong>Suppression normale</strong>
+                <p class="mb-0 small text-muted">
+                  Le compte est supprimé mais la traçabilité (audit) est conservée.
+                </p>
+              </div>
+            </div>
+
+            <div class="option-card option-danger"
+                 [class.selected]="deleteForce()"
+                 (click)="deleteForce.set(true)">
+              <i class="feather icon-alert-triangle option-icon"></i>
+              <div>
+                <strong>Suppression forcée</strong>
+                <p class="mb-0 small text-muted">
+                  Le compte ET tout l'historique d'audit sont supprimés définitivement.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Avertissement si suppression forcée -->
+          @if (deleteForce()) {
+            <div class="alert alert-danger d-flex align-items-center gap-2 py-2 animate-fade-in">
+              <i class="feather icon-alert-circle"></i>
+              <span>Cette action est <strong>irréversible</strong>. Toutes les traces seront effacées.</span>
+            </div>
+          }
+
+          <!-- Boutons -->
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-secondary px-4"
+                    (click)="cancelDelete()">
+              Annuler
+            </button>
+            <button type="button"
+                    class="btn px-4 fw-bold"
+                    [class.btn-warning]="!deleteForce()"
+                    [class.btn-danger]="deleteForce()"
+                    (click)="confirmDelete()">
+              <i class="feather me-1"
+                 [class.icon-trash-2]="!deleteForce()"
+                 [class.icon-zap]="deleteForce()"></i>
+              {{ deleteForce() ? 'Supprimer définitivement' : 'Supprimer' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

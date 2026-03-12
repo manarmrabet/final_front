@@ -1,0 +1,8 @@
+.main-content {
+  margin-left: 70px;       // sidebar hover width
+  margin-top: 70px;        // navbar height
+  padding: 24px;
+  min-height: calc(100vh - 70px);
+  background: #f3f6f9;
+  transition: margin-left .25s cubic-bezier(.4,0,.2,1);
+}

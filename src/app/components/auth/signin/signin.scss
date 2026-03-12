@@ -1,0 +1,330 @@
+// ── Variables ─────────────────────────────────────────────────────
+$cofat-blue : #004a99;
+$cofat-red  : #e30613;
+$teal       : #0ab39c;
+$teal-h     : #099885;
+$text-dark  : #343a40;
+$text-muted : #878a99;
+$border     : #ced4da;
+
+// ── Page (fond bleu-marine Velzon) ────────────────────────────────
+.auth-page {
+  min-height: 100vh;
+  background: #405189;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Nunito', 'Poppins', sans-serif;
+}
+
+.auth-page-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+// ── Carte flottante ───────────────────────────────────────────────
+.auth-card {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  min-height: 560px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 48px rgba(0,0,0,0.35);
+}
+
+// ── Panel gauche ──────────────────────────────────────────────────
+.auth-left {
+  flex: 0 0 42%;
+  position: relative;
+  overflow: hidden;
+  background: url('/assets/images/auth/img-auth-big.jpg') center/cover no-repeat;
+  background-color: #1a3a6b;
+}
+
+.auth-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(10,179,156,.90) 0%,
+    rgba(64,81,137,.95) 100%);
+  z-index: 1;
+}
+
+.dots-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image: radial-gradient(rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.left-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px 36px;
+}
+
+// Logo COFAT
+.auth-brand { display: flex; flex-direction: column; }
+
+.brand-text {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.brand-bar {
+  width: 40px;
+  height: 4px;
+  background: $cofat-red;
+  border-radius: 2px;
+  margin-top: 7px;
+}
+
+// Citation
+.auth-quote { color: #fff; }
+
+.quote-marks {
+  font-size: 5rem;
+  line-height: 1;
+  color: $teal;
+  font-family: Georgia, serif;
+  margin-bottom: -10px;
+}
+
+.quote-body {
+  font-size: .93rem;
+  line-height: 1.75;
+  font-style: italic;
+  color: rgba(255,255,255,.88);
+  margin-bottom: 22px;
+}
+
+.quote-pagination {
+  display: flex;
+  gap: 7px;
+
+  .pag-dot {
+    width: 28px; height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,.35);
+    &.active { background: #fff; }
+  }
+}
+
+// ── Panel droit ───────────────────────────────────────────────────
+.auth-right {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 44px;
+}
+
+.right-content {
+  width: 100%;
+  max-width: 360px;
+  animation: fadeUp .4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Header
+.form-header {
+  margin-bottom: 28px;
+
+  h5 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: $cofat-blue;
+    margin: 0 0 5px;
+  }
+
+  p { font-size: .87rem; color: $text-muted; margin: 0; }
+}
+
+// Alert
+.form-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: 6px;
+  font-size: .83rem;
+  margin-bottom: 18px;
+  background: #fde8ea;
+  color: #c0392b;
+  border-left: 3px solid $cofat-red;
+
+  &.blocked {
+    background: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+  }
+
+  svg { flex-shrink: 0; }
+}
+
+// Form group
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    font-size: .82rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 7px;
+  }
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  label { margin-bottom: 0; }
+}
+
+.forgot-link {
+  font-size: .78rem;
+  color: $text-muted;
+  text-decoration: none;
+  &:hover { color: $cofat-blue; }
+}
+
+// Input
+.form-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: .9rem;
+  color: $text-dark;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color .2s, box-shadow .2s;
+
+  &::placeholder { color: #adb5bd; }
+
+  &:focus {
+    outline: none;
+    border-color: $cofat-blue;
+    box-shadow: 0 0 0 3px rgba(0,74,153,.12);
+  }
+
+  &:disabled { background: #f8f9fa; cursor: not-allowed; opacity: .7; }
+}
+
+.input-pw-wrap {
+  position: relative;
+  .form-input { padding-right: 44px; }
+}
+
+.eye-btn {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  &:hover { color: $cofat-blue; }
+}
+
+// Remember me
+.remember-row { margin-bottom: 24px; }
+
+.check-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-native { display: none; }
+
+.check-box {
+  width: 17px; height: 17px;
+  border: 2px solid $border;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #fff;
+  transition: all .2s;
+
+  .check-native:checked + & {
+    background: $cofat-blue;
+    border-color: $cofat-blue;
+  }
+}
+
+.check-label { font-size: .84rem; color: $text-muted; }
+
+// Bouton Sign In
+.btn-signin {
+  width: 100%;
+  height: 44px;
+  background: $teal;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: background .2s, transform .1s;
+
+  &:hover:not(:disabled)  { background: $teal-h; }
+  &:active:not(:disabled) { transform: scale(.98); }
+  &:disabled              { opacity: .65; cursor: not-allowed; }
+}
+
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.blocked-note {
+  text-align: center;
+  font-size: .79rem;
+  color: $cofat-red;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .auth-left  { display: none; }
+  .auth-page  { background: #f3f3f9; }
+  .auth-right { padding: 40px 28px; }
+}

@@ -1,0 +1,93 @@
+<header class="navbar">
+
+  <!-- Gauche : hamburger + search -->
+  <div class="navbar-left">
+    <button class="nav-btn hamburger">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6"  x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input class="search-input" type="text" placeholder="Search..." />
+    </div>
+  </div>
+
+  <!-- Droite : actions + user -->
+  <div class="navbar-right">
+
+    <!-- Langue -->
+    <button class="nav-btn lang-btn">
+      <span class="flag-fr">🇫🇷</span>
+    </button>
+
+    <!-- Apps -->
+    <button class="nav-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </button>
+
+    <!-- Fullscreen -->
+    <button class="nav-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    </button>
+
+    <!-- Dark mode -->
+    <button class="nav-btn" (click)="toggleDark()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <!-- Notifications -->
+    <button class="nav-btn notif-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="badge">3</span>
+    </button>
+
+    <!-- User -->
+    <div class="user-menu-wrap">
+      <button class="user-btn" (click)="toggleUserMenu()">
+        <div class="user-avatar">{{ initials }}</div>
+        <div class="user-info">
+          <span class="user-name">{{ fullName }}</span>
+          <span class="user-role">{{ user?.roleName || 'Utilisateur' }}</span>
+        </div>
+      </button>
+
+      @if (showUserMenu()) {
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="user-avatar lg">{{ initials }}</div>
+            <div>
+              <div class="user-name">{{ fullName }}</div>
+              <div class="user-role">{{ user?.roleName }}</div>
+            </div>
+          </div>
+          <hr class="dropdown-divider"/>
+          <button class="dropdown-item" (click)="logout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Déconnexion
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+</header>

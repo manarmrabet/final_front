@@ -1,0 +1,70 @@
+<aside class="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <span class="logo-full">
+      <span class="logo-text">COFAT</span>
+    </span>
+    <span class="logo-icon">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="#0ab39c" stroke-width="3"/>
+        <path d="M12 20 L20 12 L28 20 L20 28 Z" fill="#0ab39c" opacity="0.7"/>
+      </svg>
+    </span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sidebar-nav">
+    @for (item of visibleItems(); track item.label) {
+
+      <!-- Item avec enfants -->
+      @if (item.children) {
+        <div class="nav-group" [class.active]="isGroupActive(item)">
+          <button class="nav-item" (click)="toggleExpand(item.label)"
+            [class.open]="expanded() === item.label"
+            [class.group-active]="isGroupActive(item)">
+            <span class="nav-icon">
+              <i class="feather {{ item.icon }}"></i>
+            </span>
+            <span class="nav-label">{{ item.label }}</span>
+            <span class="nav-arrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </button>
+
+          <!-- Tooltip (mode survolé) -->
+          <div class="nav-tooltip">{{ item.label }}</div>
+
+          <!-- Sous-menu -->
+          <div class="nav-children" [class.open]="expanded() === item.label">
+            @for (child of item.children; track child.label) {
+              <button class="nav-child"
+                [class.active]="isActive(child.path)"
+                (click)="navigate(child.path!)">
+                <span class="child-dot"></span>
+                <span class="child-label">{{ child.label }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+      <!-- Item simple -->
+      } @else {
+        <div class="nav-group">
+          <button class="nav-item"
+            [class.active]="isActive(item.path)"
+            (click)="navigate(item.path!)">
+            <span class="nav-icon">
+              <i class="feather {{ item.icon }}"></i>
+            </span>
+            <span class="nav-label">{{ item.label }}</span>
+          </button>
+          <div class="nav-tooltip">{{ item.label }}</div>
+        </div>
+      }
+    }
+  </nav>
+
+</aside>

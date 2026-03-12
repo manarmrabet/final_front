@@ -1,0 +1,203 @@
+$navbar-h    : 70px;
+$border      : #e9ebec;
+$text-muted  : #878a99;
+$text-dark   : #343a40;
+$teal        : #0ab39c;
+$hover-bg    : #f3f6f9;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 70px;                      // sidebar hover width
+  right: 0;
+  height: $navbar-h;
+  background: #fff;
+  border-bottom: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 999;
+  transition: left .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 1px 10px rgba(0,0,0,.06);
+}
+
+// ── Gauche ────────────────────────────────────────────────
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.search-input {
+  height: 36px;
+  padding: 0 14px 0 36px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: .85rem;
+  color: $text-dark;
+  background: $hover-bg;
+  width: 220px;
+  transition: width .2s, border-color .2s;
+
+  &::placeholder { color: $text-muted; }
+  &:focus { outline: none; border-color: $teal; width: 280px; background: #fff; }
+}
+
+// ── Droite ────────────────────────────────────────────────
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-btn {
+  width: 36px; height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  position: relative;
+
+  &:hover { background: $hover-bg; color: $text-dark; }
+}
+
+.flag-fr { font-size: 1.1rem; }
+
+.notif-btn { margin-right: 4px; }
+
+.badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  background: #f06548;
+  color: #fff;
+  font-size: .6rem;
+  font-weight: 700;
+  min-width: 15px; height: 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+// ── User ──────────────────────────────────────────────────
+.user-menu-wrap { position: relative; margin-left: 8px; }
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+  &:hover { background: $hover-bg; }
+}
+
+.user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $teal, #405189);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.lg { width: 42px; height: 42px; font-size: .9rem; }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-name {
+  font-size: .84rem;
+  font-weight: 600;
+  color: $text-dark;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: .73rem;
+  color: $text-muted;
+  line-height: 1.2;
+}
+
+// ── Dropdown ──────────────────────────────────────────────
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  overflow: hidden;
+  animation: dropIn .15s ease;
+  z-index: 9999;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f8f9fa;
+}
+
+.dropdown-divider {
+  margin: 0;
+  border: none;
+  border-top: 1px solid $border;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-size: .84rem;
+  color: $text-dark;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover { background: $hover-bg; }
+
+  svg { color: $text-muted; }
+}

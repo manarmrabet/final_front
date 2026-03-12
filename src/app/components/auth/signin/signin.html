@@ -1,0 +1,117 @@
+<div class="auth-page">
+  <div class="auth-page-wrapper">
+    <div class="auth-card">
+
+      <!-- Panel gauche -->
+      <div class="auth-left">
+        <div class="auth-overlay"></div>
+        <div class="dots-pattern"></div>
+        <div class="left-content">
+          <div class="auth-brand">
+            <span class="brand-text">COFAT</span>
+            <div class="brand-bar"></div>
+          </div>
+          <div class="auth-quote">
+            <div class="quote-marks">"</div>
+            <p class="quote-body">
+              Système de gestion interne — sécurisé, fiable et optimisé
+              pour vos opérations quotidiennes.
+            </p>
+            <div class="quote-pagination">
+              <span class="pag-dot active"></span>
+              <span class="pag-dot"></span>
+              <span class="pag-dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel droit -->
+      <div class="auth-right">
+        <div class="right-content">
+
+          <div class="form-header">
+            <h5>Welcome Back !</h5>
+            <p>Sign in to continue to COFAT.</p>
+          </div>
+
+          <form (submit)="onSubmit($event)" autocomplete="off">
+
+            @if (error()) {
+              <div class="form-alert" [class.blocked]="isBlocked()">
+                {{ error() }}
+              </div>
+            }
+
+            <!-- Username -->
+            <div class="form-group">
+              <label>Username</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Enter username"
+                [value]="loginModal().username"
+                (input)="loginModal.set({ username: $any($event.target).value, password: loginModal().password })"
+                name="username"
+                [disabled]="isBlocked()"
+              />
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <div class="label-row">
+                <label>Password</label>
+                <a href="#" class="forgot-link">Forgot password?</a>
+              </div>
+              <div class="input-pw-wrap">
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  class="form-input"
+                  placeholder="Enter password"
+                  [value]="loginModal().password"
+                  (input)="loginModal.set({ username: loginModal().username, password: $any($event.target).value })"
+                  name="password"
+                  [disabled]="isBlocked()"
+                />
+                <button type="button" class="eye-btn" (click)="togglePasswordVisibility()">
+                  @if (!showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            <!-- Remember me -->
+            <div class="remember-row">
+              <label class="check-wrap">
+                <input type="checkbox" class="check-native" />
+                <span class="check-box"></span>
+                <span class="check-label">Remember me</span>
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-signin" [disabled]="isLoading() || isBlocked()">
+              @if (isLoading()) { <span class="btn-spinner"></span> }
+              {{ isBlocked() ? 'Accès Bloqué' : 'Sign In' }}
+            </button>
+
+            @if (isBlocked()) {
+              <p class="blocked-note">Contactez l'administrateur pour débloquer votre accès.</p>
+            }
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
