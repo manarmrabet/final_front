@@ -1,472 +1,252 @@
-// ─── Variables ───────────────────────────────────────────────
-$primary:       #1d4ed8;
-$primary-light: #eff6ff;
-$primary-mid:   #3b82f6;
-$success:       #10b981;
+// ── Color token ───────────────────────────────────────────
+$blue        : #0d2b6e;
+$blue-light  : rgba(13,43,110,.08);
+$blue-mid    : rgba(13,43,110,.15);
+$blue-border : rgba(13,43,110,.2);
+$success     : #10b981;
 $success-light: #f0fdf4;
-$danger:        #ef4444;
-$warning:       #f59e0b;
-$text-dark:     #0f172a;
-$text-muted:    #94a3b8;
-$border:        #e2e8f0;
-$bg-light:      #f1f5f9;
-$white:         #ffffff;
-$radius:        14px;
-$shadow:        0 4px 28px rgba(29, 78, 216, 0.08);
+$danger      : #ef4444;
+$warning     : #f59e0b;
+$text-dark   : #0f172a;
+$text-muted  : #94a3b8;
+$border      : #e2e8f0;
+$bg-light    : #f1f5f9;
+$white       : #ffffff;
+$radius      : 14px;
+$shadow      : 0 4px 28px rgba(13,43,110,.08);
 
-// ─── Container ───────────────────────────────────────────────
-.container-fluid {
-  padding: 2rem;
-  background: $bg-light;
-  min-height: 100vh;
-}
+// ─── Container ───────────────────────────────────────────
+.container-fluid { padding: 2rem; background: $bg-light; min-height: 100vh; }
 
 .page-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 1.25rem;
   animation: fadeInUp 0.35s ease;
 }
 
-// ─── Page Header ─────────────────────────────────────────────
+// ─── Page Header ────────────────────────────────────────
 .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
+  display: flex; align-items: center; justify-content: space-between;
   .page-header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-
+    display: flex; align-items: center; gap: 14px;
     .page-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 13px;
-      background: linear-gradient(135deg, $primary-mid, $primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: $white;
-      font-size: 1.2rem;
-      box-shadow: 0 4px 14px rgba($primary, 0.35);
+      width: 48px; height: 48px; border-radius: 13px;
+      background: linear-gradient(135deg, lighten(#0d2b6e, 20%), $blue);
+      display: flex; align-items: center; justify-content: center;
+      color: $white; font-size: 1.2rem;
+      box-shadow: 0 4px 14px rgba(13,43,110,.3);
     }
-
-    h4 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: $text-dark;
-      margin: 0;
-    }
-
-    span {
-      font-size: 0.78rem;
-      color: $text-muted;
-      display: block;
-      margin-top: 2px;
-    }
+    h4 { font-size: 1.1rem; font-weight: 700; color: $text-dark; margin: 0; }
+    span { font-size: 0.78rem; color: $text-muted; display: block; margin-top: 2px; }
   }
 }
 
-// ─── Role Selector Card ───────────────────────────────────────
+// ─── Role Selector Card ──────────────────────────────────
 .role-selector-card {
-  background: $white;
-  border-radius: $radius;
-  box-shadow: $shadow;
-  padding: 1.35rem 1.75rem;
+  background: $white; border-radius: $radius;
+  box-shadow: $shadow; padding: 1.35rem 1.75rem;
   border: 1px solid $border;
 
   .role-selector-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: $text-muted;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    i { color: $primary-mid; }
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: $text-muted; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 6px;
+    i { color: $blue; }
   }
 
-  .role-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .role-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
   .role-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0.45rem 1.1rem;
-    border-radius: 50px;
-    border: 1.5px solid $border;
-    background: $white;
-    color: $text-dark;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 0.45rem 1.1rem; border-radius: 50px;
+    border: 1.5px solid $border; background: $white;
+    color: $text-dark; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease;
 
     .role-pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: $border;
-      transition: all 0.2s;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: $border; transition: all 0.2s;
     }
 
     &:hover {
-      border-color: $primary-mid;
-      color: $primary;
-      background: $primary-light;
-
-      .role-pill-dot { background: $primary-mid; }
+      border-color: $blue; color: $blue; background: $blue-light;
+      .role-pill-dot { background: $blue; }
     }
 
     &.active {
-      background: linear-gradient(135deg, $primary-mid, $primary);
-      border-color: transparent;
-      color: $white;
-      box-shadow: 0 4px 12px rgba($primary, 0.35);
-
+      background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+      border-color: transparent; color: $white;
+      box-shadow: 0 4px 12px rgba(13,43,110,.35);
       .role-pill-dot { background: rgba($white, 0.7); }
     }
   }
 }
 
-// ─── Stats Bar ────────────────────────────────────────────────
+// ─── Stats Bar ───────────────────────────────────────────
 .stats-bar {
-  background: $white;
-  border-radius: $radius;
-  border: 1px solid $border;
-  padding: 1rem 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  background: $white; border-radius: $radius;
+  border: 1px solid $border; padding: 1rem 1.75rem;
+  display: flex; align-items: center; gap: 1.5rem;
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 
   .stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
     .stat-value {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: $text-dark;
-      line-height: 1;
-
+      font-size: 1.4rem; font-weight: 800; color: $text-dark; line-height: 1;
       &.active { color: $success; }
       &.muted  { color: $text-muted; }
     }
-
     .stat-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: $text-muted;
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: $text-muted;
     }
   }
 
-  .stat-divider {
-    width: 1px;
-    height: 32px;
-    background: $border;
-  }
+  .stat-divider { width: 1px; height: 32px; background: $border; }
 
-  .stats-bar-actions {
-    margin-left: auto;
-    display: flex;
-    gap: 8px;
-  }
+  .stats-bar-actions { margin-left: auto; display: flex; gap: 8px; }
 
   .btn-select-all,
   .btn-deselect-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0.4rem 1rem;
-    border-radius: 8px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1.5px solid;
-
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.4rem 1rem; border-radius: 8px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; border: 1.5px solid;
     i { font-size: 0.82rem; }
   }
 
   .btn-select-all {
-    background: $success-light;
-    border-color: rgba($success, 0.3);
-    color: $success;
-
-    &:hover {
-      background: $success;
-      color: $white;
-      border-color: $success;
-    }
+    background: $success-light; border-color: rgba($success, 0.3); color: $success;
+    &:hover { background: $success; color: $white; border-color: $success; }
   }
 
   .btn-deselect-all {
-    background: $bg-light;
-    border-color: $border;
-    color: $text-muted;
-
-    &:hover {
-      background: $danger;
-      color: $white;
-      border-color: $danger;
-    }
+    background: $bg-light; border-color: $border; color: $text-muted;
+    &:hover { background: $danger; color: $white; border-color: $danger; }
   }
 }
 
-// ─── Menus Grid ───────────────────────────────────────────────
+// ─── Menus Grid ──────────────────────────────────────────
 .menus-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 10px;
 }
 
-// ─── Menu Card ────────────────────────────────────────────────
+// ─── Menu Card ───────────────────────────────────────────
 .menu-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: $white;
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  animation: rowFadeIn 0.3s ease both;
-  user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  background: $white; border: 1.5px solid $border; border-radius: 12px;
+  padding: 1rem 1.25rem; cursor: pointer; transition: all 0.2s ease;
+  animation: rowFadeIn 0.3s ease both; user-select: none;
 
   @for $i from 1 through 30 {
     &:nth-child(#{$i}) { animation-delay: #{$i * 0.03}s; }
   }
 
   &:hover {
-    border-color: rgba($primary-mid, 0.35);
-    box-shadow: 0 4px 16px rgba($primary, 0.08);
+    border-color: $blue-border;
+    box-shadow: 0 4px 16px rgba(13,43,110,.08);
     transform: translateY(-1px);
   }
 
   &.active {
-    background: $primary-light;
-    border-color: rgba($primary-mid, 0.4);
-    box-shadow: 0 4px 16px rgba($primary, 0.1);
+    background: $blue-light;
+    border-color: $blue-border;
+    box-shadow: 0 4px 16px rgba(13,43,110,.1);
   }
 
-  // Left
   .menu-card-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 12px;
 
     .menu-card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: $bg-light;
-      border: 1.5px solid $border;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: $text-muted;
-      font-size: 1rem;
-      transition: all 0.2s;
-      flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 10px;
+      background: $bg-light; border: 1.5px solid $border;
+      display: flex; align-items: center; justify-content: center;
+      color: $text-muted; font-size: 1rem; transition: all 0.2s; flex-shrink: 0;
 
       &.active {
-        background: linear-gradient(135deg, $primary-mid, $primary);
-        border-color: transparent;
-        color: $white;
-        box-shadow: 0 3px 10px rgba($primary, 0.3);
+        background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+        border-color: transparent; color: $white;
+        box-shadow: 0 3px 10px rgba(13,43,110,.3);
       }
     }
 
     .menu-card-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .menu-card-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: $text-dark;
-      }
-
+      display: flex; flex-direction: column; gap: 2px;
+      .menu-card-label { font-size: 0.875rem; font-weight: 600; color: $text-dark; }
       .menu-card-link {
-        font-size: 0.72rem;
-        color: $text-muted;
-        font-family: monospace;
-        background: $bg-light;
-        padding: 1px 6px;
-        border-radius: 4px;
-        display: inline-block;
+        font-size: 0.72rem; color: $text-muted; font-family: monospace;
+        background: $bg-light; padding: 1px 6px; border-radius: 4px; display: inline-block;
       }
     }
   }
 
-  // Toggle
   .toggle-switch {
-    width: 44px;
-    height: 24px;
-    border-radius: 24px;
-    background: $border;
-    position: relative;
-    transition: all 0.25s ease;
-    flex-shrink: 0;
+    width: 44px; height: 24px; border-radius: 24px;
+    background: $border; position: relative; transition: all 0.25s ease; flex-shrink: 0;
 
     .toggle-knob {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: $white;
-      top: 3px;
-      left: 3px;
+      position: absolute; width: 18px; height: 18px; border-radius: 50%;
+      background: $white; top: 3px; left: 3px;
       transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
 
     &.on {
-      background: linear-gradient(135deg, $primary-mid, $primary);
-      box-shadow: 0 2px 8px rgba($primary, 0.4);
-
+      background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+      box-shadow: 0 2px 8px rgba(13,43,110,.4);
       .toggle-knob { transform: translateX(20px); }
     }
   }
 }
 
-// ─── Save Footer ──────────────────────────────────────────────
+// ─── Save Footer ─────────────────────────────────────────
 .save-footer {
-  background: $white;
-  border-radius: $radius;
-  border: 1px solid $border;
-  padding: 1.1rem 1.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  background: $white; border-radius: $radius; border: 1px solid $border;
+  padding: 1.1rem 1.75rem; display: flex; align-items: center;
+  justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 
   .save-footer-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: $text-muted;
-
-    i { color: $primary-mid; font-size: 0.9rem; }
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.8rem; color: $text-muted;
+    i { color: $blue; font-size: 0.9rem; }
   }
 
   .btn-save {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, $primary-mid, $primary);
-    border: none;
-    border-radius: 10px;
-    padding: 0.65rem 1.75rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: $white;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 3px 12px rgba($primary, 0.35);
-
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+    border: none; border-radius: 10px; padding: 0.65rem 1.75rem;
+    font-size: 0.875rem; font-weight: 700; color: $white; cursor: pointer;
+    transition: all 0.25s ease; box-shadow: 0 3px 12px rgba(13,43,110,.35);
     i { font-size: 0.9rem; }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba($primary, 0.45);
-    }
-
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13,43,110,.45); }
     &:active { transform: translateY(0); }
   }
 }
 
-// ─── Empty State ──────────────────────────────────────────────
+// ─── Empty State ─────────────────────────────────────────
 .empty-state {
-  background: $white;
-  border-radius: $radius;
-  border: 1px solid $border;
-  padding: 4rem 2rem;
-  text-align: center;
-  box-shadow: $shadow;
+  background: $white; border-radius: $radius; border: 1px solid $border;
+  padding: 4rem 2rem; text-align: center; box-shadow: $shadow;
 
   .empty-state-icon {
-    position: relative;
-    display: inline-flex;
-    margin-bottom: 1.5rem;
-
-    i {
-      font-size: 3.5rem;
-      color: $border;
-      animation: float 3s ease-in-out infinite;
-    }
-
+    position: relative; display: inline-flex; margin-bottom: 1.5rem;
+    i { font-size: 3.5rem; color: $border; animation: float 3s ease-in-out infinite; }
     .empty-ping {
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 2px solid rgba($primary-mid, 0.2);
-      animation: ping 2s ease-in-out infinite;
+      position: absolute; inset: -6px; border-radius: 50%;
+      border: 2px solid $blue-border; animation: ping 2s ease-in-out infinite;
     }
   }
 
-  h5 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: $text-dark;
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    font-size: 0.82rem;
-    color: $text-muted;
-    max-width: 340px;
-    margin: 0 auto 1.5rem;
-    line-height: 1.7;
-  }
-
-  .empty-arrows {
-    color: $primary-mid;
-    animation: bounceUp 1.5s ease-in-out infinite;
-    font-size: 1.2rem;
-  }
+  h5 { font-size: 1rem; font-weight: 700; color: $text-dark; margin-bottom: 0.5rem; }
+  p  { font-size: 0.82rem; color: $text-muted; max-width: 340px; margin: 0 auto 1.5rem; line-height: 1.7; }
+  .empty-arrows { color: $blue; animation: bounceUp 1.5s ease-in-out infinite; font-size: 1.2rem; }
 }
 
-// ─── Animations ──────────────────────────────────────────────
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes rowFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-@keyframes ping {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50%       { transform: scale(1.15); opacity: 0.2; }
-}
-
-@keyframes bounceUp {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
-}
+// ─── Animations ──────────────────────────────────────────
+@keyframes fadeInUp  { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rowFadeIn { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: translateY(0); } }
+@keyframes float     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes ping      { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.15); opacity: 0.2; } }
+@keyframes bounceUp  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }

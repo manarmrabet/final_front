@@ -14,14 +14,14 @@ import { UserDTO, Role, Site } from '../../models/user.model';
 export class UserManagementComponent implements OnInit {
   private adminService = inject(AdminService);
 
-  users         = signal<UserDTO[]>([]);
-  roles         = signal<Role[]>([]);
-  sites         = signal<Site[]>([]);
-  isLoading     = signal(false);
-  isPageLoading = signal(true);
-  showModal     = signal(false);
-  isEditMode    = signal(false);
-  searchTerm    = signal('');
+  users           = signal<UserDTO[]>([]);
+  roles           = signal<Role[]>([]);
+  sites           = signal<Site[]>([]);
+  isLoading       = signal(false);
+  isPageLoading   = signal(true);
+  showModal       = signal(false);
+  isEditMode      = signal(false);
+  searchTerm      = signal('');
   showDeleteModal = signal(false);
   deleteForce     = signal(false);
   userToDelete    = signal<UserDTO | null>(null);
@@ -43,14 +43,14 @@ export class UserManagementComponent implements OnInit {
   loadInitialData(): void {
     this.isPageLoading.set(true);
     this.refreshUsers();
-    this.adminService.getRoles().subscribe({ next: (res: Role[]) => this.roles.set(res), error: (err: any) => console.error('Erreur rôles:', err) });
-    this.adminService.getSites().subscribe({ next: (res: Site[]) => this.sites.set(res), error: (err: any) => console.error('Erreur sites:', err) });
+    this.adminService.getRoles().subscribe({ next: r => this.roles.set(r), error: e => console.error(e) });
+    this.adminService.getSites().subscribe({ next: r => this.sites.set(r), error: e => console.error(e) });
   }
 
   refreshUsers(): void {
     this.adminService.getUsers().subscribe({
-      next: (res: UserDTO[]) => { this.users.set(res); this.isPageLoading.set(false); },
-      error: () => this.isPageLoading.set(false)
+      next: res => { this.users.set(res); this.isPageLoading.set(false); },
+      error: ()  => this.isPageLoading.set(false)
     });
   }
 
@@ -58,8 +58,8 @@ export class UserManagementComponent implements OnInit {
     return { userName:'', email:'', firstName:'', lastName:'', roleName:'', siteName:'', isActive:1, authorities:[] };
   }
 
-  isEmailValid(email: string = ''): boolean { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
-  isNameValid(name: string = ''): boolean   { return /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ\s\-]+$/.test(name); }
+  isEmailValid(email = ''): boolean { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
+  isNameValid(name  = ''): boolean  { return /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ\s\-]+$/.test(name); }
 
   openModal(user?: UserDTO): void {
     this.isEditMode.set(!!user);
@@ -71,22 +71,36 @@ export class UserManagementComponent implements OnInit {
 
   saveUser(): void {
     const user = this.newUser();
-    if (!this.isEmailValid(user.email))                           { alert('E-mail invalide.');                      return; }
-    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName)) { alert('Nom/prénom invalide.'); return; }
-    if (!user.userName || !user.roleName)                         { alert('Username et rôle obligatoires.');        return; }
+    if (!this.isEmailValid(user.email))                                         { alert('E-mail invalide.');                 return; }
+    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName))  { alert('Nom/prénom invalide.');             return; }
+    if (!user.userName || !user.roleName)                                       { alert('Username et rôle obligatoires.');   return; }
 
     const id = user.id ?? (user as any).userId;
     if (this.isEditMode() && !id) { alert("Impossible d'identifier l'utilisateur."); return; }
 
     this.isLoading.set(true);
-    const obs = this.isEditMode() ? this.adminService.updateUser(id, user) : this.adminService.createUser(user);
+    const obs = this.isEditMode()
+      ? this.adminService.updateUser(id, user)
+      : this.adminService.createUser(user);
 
     obs.subscribe({
-      next: () => { this.refreshUsers(); this.closeModal(); },
-      error: (err: any) => {
-        this.isLoading.set(false);
-        alert(err.error?.message ?? `Erreur (Code: ${err.status})`);
-      }
+      next:  ()  => { this.refreshUsers(); this.closeModal(); },
+      error: err => { this.isLoading.set(false); alert(err.error?.message ?? `Erreur (${err.status})`); }
+    });
+  }
+
+  // ── Toggle statut directement en base ─────────────────
+  toggleStatus(user: UserDTO): void {
+    const id = user.id ?? (user as any).userId;
+    if (!id) return;
+    const updated = { ...user, isActive: user.isActive === 1 ? 0 : 1 };
+    this.adminService.updateUser(id, updated).subscribe({
+      next: () => {
+        this.users.update(list =>
+          list.map(u => (u.id === id || (u as any).userId === id) ? updated : u)
+        );
+      },
+      error: err => console.error('Erreur toggle statut:', err)
     });
   }
 
@@ -97,9 +111,14 @@ export class UserManagementComponent implements OnInit {
     const user = this.userToDelete();
     const id   = user?.id ?? (user as any)?.userId;
     if (!user || !id) return;
-    const del$ = this.deleteForce() ? this.adminService.forceDeleteUser(id) : this.adminService.deleteUser(id);
-    del$.subscribe({ next: () => { this.cancelDelete(); this.refreshUsers(); }, error: (err: any) => console.error('Erreur suppression:', err) });
+    const del$ = this.deleteForce()
+      ? this.adminService.forceDeleteUser(id)
+      : this.adminService.deleteUser(id);
+    del$.subscribe({
+      next:  () => { this.cancelDelete(); this.refreshUsers(); },
+      error: err => console.error('Erreur suppression:', err)
+    });
   }
 
-  updateSearch(event: Event): void { this.searchTerm.set((event.target as HTMLInputElement).value); }
+  updateSearch(e: Event): void { this.searchTerm.set((e.target as HTMLInputElement).value); }
 }

@@ -1,283 +1,313 @@
 <div class="container-fluid py-4">
 
   <!-- En-tête -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h3 class="fw-bold text-dark mb-1">Gestion des Accès</h3>
-      <p class="text-muted small">Visualisez votre équipe, gérez les permissions et les sites.</p>
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#405189" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div>
+        <h4 class="page-title">Gestion des Accès</h4>
+        <p class="page-sub">{{ filteredUsers().length }} collaborateur(s) configuré(s)</p>
+      </div>
     </div>
-    <button type="button" class="btn btn-primary btn-lg shadow-sm px-4" (click)="openModal()">
-      <i class="feather icon-user-plus me-2"></i> Nouvel Utilisateur
-    </button>
+    <button class="btn-primary-add" (click)="openModal()">Ajouter un utilisateur</button>
   </div>
 
-  <!-- Tableau -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
-      <div class="input-group input-group-sm w-25">
-        <span class="input-group-text bg-light border-0"><i class="feather icon-search"></i></span>
-        <input type="text" class="form-control bg-light border-0"
-               placeholder="Rechercher..." (input)="updateSearch($event)">
+  <!-- Table card -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="toolbar-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Rechercher..." (input)="updateSearch($event)" />
       </div>
-      <span class="badge bg-soft-primary text-primary px-3 py-2">
-        {{ filteredUsers().length }} Collaborateurs
-      </span>
     </div>
 
-    <div class="table-responsive" style="min-height: 400px;">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="bg-light">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
           <tr>
-            <th class="ps-4">Utilisateur</th>
-            <th>Site Affecté</th>
+            <th>#</th>
+            <th>Utilisateur</th>
             <th>Rôle</th>
+            <th>Site</th>
             <th>Statut</th>
-            <th class="text-end pe-4">Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           @if (isPageLoading()) {
             @for (i of [1,2,3,4,5]; track i) {
-              <tr><td colspan="5" class="p-3"><div class="skeleton text w-100"></div></td></tr>
+              <tr><td colspan="6"><div class="skeleton-line"></div></td></tr>
             }
           } @else {
-            @for (user of filteredUsers(); track user.email) {
-              <tr class="animate-fade-in">
-                <td class="ps-4">
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-ui me-3">{{user.firstName?.[0]}}{{user.lastName?.[0]}}</div>
-                    <div>
-                      <div class="fw-bold">{{user.firstName}} {{user.lastName}}</div>
-                      <small class="text-muted">{{user.email}}</small>
-                    </div>
+            @for (user of filteredUsers(); track user.email; let i = $index) {
+              <tr>
+                <td><span class="row-num">{{ i + 1 }}</span></td>
+
+                <!-- Utilisateur : nom + email en dessous -->
+                <td>
+                  <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                  <div class="user-email">{{ user.email }}</div>
+                </td>
+
+                <td><span class="badge-role">{{ user.roleName }}</span></td>
+                <td><span class="cell-muted">{{ user.siteName || '—' }}</span></td>
+
+                <!-- Switch statut — appelle toggleStatus() -->
+                <td>
+                  <div class="switch-wrap">
+                    <label class="switch">
+                      <input type="checkbox"
+                        [checked]="user.isActive === 1"
+                        (change)="toggleStatus(user)" />
+                      <span class="switch-track">
+                        <span class="switch-thumb"></span>
+                      </span>
+                    </label>
+                    <span class="switch-text" [class.on]="user.isActive === 1">
+                      {{ user.isActive === 1 ? 'Actif' : 'Inactif' }}
+                    </span>
                   </div>
                 </td>
-                <td><span class="text-dark fw-500">{{user.siteName || 'Non affecté'}}</span></td>
-                <td><span class="badge-role">{{user.roleName}}</span></td>
+
                 <td>
-                  <span class="status-indicator" [class.active]="user.isActive === 1"></span>
-                  <span class="ms-1 small">{{user.isActive === 1 ? 'Actif' : 'Inactif'}}</span>
-                </td>
-                <td class="text-end pe-4">
-                  <button type="button" class="btn btn-icon-primary me-2"
-                          (click)="openModal(user)" title="Modifier">
-                    <i class="feather icon-edit"></i>
-                  </button>
-                  <button type="button" class="btn btn-icon-danger"
-                          (click)="openDeleteModal(user)" title="Supprimer">
-                    <i class="feather icon-trash-2"></i>
-                  </button>
+                  <div class="action-btns">
+                    <button class="btn-edit" (click)="openModal(user)">Éditer</button>
+                    <button class="btn-delete" (click)="openDeleteModal(user)">Supprimer</button>
+                  </div>
                 </td>
               </tr>
             } @empty {
-              <tr>
-                <td colspan="5" class="text-center py-5 text-muted">Aucun collaborateur trouvé.</td>
-              </tr>
+              <tr><td colspan="6" class="empty-cell">Aucun collaborateur trouvé.</td></tr>
             }
           }
         </tbody>
       </table>
     </div>
   </div>
-
-  <!-- ══════════ MODAL CRÉATION / ÉDITION ══════════ -->
-  @if (showModal()) {
-    <div class="custom-modal-backdrop animate-fade-in">
-      <div class="custom-modal-content shadow-lg">
-        <div class="modal-header-styled">
-          <h5 class="mb-0 fw-bold">{{ isEditMode() ? 'Modifier le profil' : 'Création de compte' }}</h5>
-          <button type="button" class="btn-close-modal" (click)="closeModal()">&times;</button>
-        </div>
-
-        <div class="p-4 scrollable-form">
-          <div class="section-title text-primary">Informations de base</div>
-
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control"
-                   [(ngModel)]="newUser().userName"
-                   placeholder="User"
-                   [disabled]="isEditMode()">
-            <label>Nom d'utilisateur</label>
-          </div>
-
-          <div class="form-floating mb-3">
-            <input type="email" class="form-control"
-                   [(ngModel)]="newUser().email"
-                   #emailField="ngModel"
-                   email
-                   placeholder="Email"
-                   [class.is-invalid]="emailField.invalid && emailField.touched">
-            <label>Email Professionnel</label>
-            @if (emailField.invalid && emailField.touched) {
-              <div class="invalid-feedback animate-fade-in">
-                Veuillez saisir une adresse e-mail valide.
-              </div>
-            }
-          </div>
-
-          <div class="row g-2 mb-4">
-            <div class="col-6">
-              <div class="form-floating">
-                <input type="text" class="form-control"
-                       [(ngModel)]="newUser().firstName"
-                       placeholder="Prénom"
-                       [class.is-invalid]="newUser().firstName && !isNameValid(newUser().firstName)">
-                <label>Prénom</label>
-                @if (newUser().firstName && !isNameValid(newUser().firstName)) {
-                  <div class="text-danger small mt-1">Lettres uniquement.</div>
-                }
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-floating">
-                <input type="text" class="form-control"
-                       [(ngModel)]="newUser().lastName"
-                       placeholder="Nom"
-                       [class.is-invalid]="newUser().lastName && !isNameValid(newUser().lastName)">
-                <label>Nom</label>
-                @if (newUser().lastName && !isNameValid(newUser().lastName)) {
-                  <div class="text-danger small mt-1">Lettres uniquement.</div>
-                }
-              </div>
-            </div>
-          </div>
-
-          <div class="section-title text-primary">Localisation & Statut</div>
-
-          <div class="form-group mb-3">
-            <label class="small fw-bold text-muted mb-1">Site d'affectation</label>
-            <select class="form-select form-select-lg" [(ngModel)]="newUser().siteName">
-              <option value="">Sélectionnez un site</option>
-              @for (site of sites(); track site.siteName) {
-                <option [value]="site.siteName">{{ site.siteName }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-check form-switch mb-4">
-            <input class="form-check-input" type="checkbox" id="userStatus"
-                   [checked]="newUser().isActive === 1"
-                   (change)="newUser().isActive = ($any($event.target).checked ? 1 : 0)">
-            <label class="form-check-label fw-bold ms-2" for="userStatus" style="cursor:pointer">
-              Compte {{ newUser().isActive === 1 ? 'Activé' : 'Désactivé' }}
-            </label>
-          </div>
-
-          <div class="section-title text-primary">Rôle applicatif</div>
-          <div class="role-selection-scroll mb-4">
-            @for (role of roles(); track role.roleId) {
-              <div class="role-card-mini"
-                   [class.selected]="newUser().roleName === role.roleName"
-                   (click)="newUser().roleName = role.roleName">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-0 fw-bold">{{role.roleName}}</h6>
-                    <small class="text-muted">{{role.description}}</small>
-                  </div>
-                  @if (newUser().roleName === role.roleName) {
-                    <i class="feather icon-check-circle text-primary"></i>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-
-          <button type="button"
-                  class="btn btn-success w-100 py-3 fw-bold shadow-sm"
-                  (click)="saveUser()"
-                  [disabled]="!newUser().userName
-                           || !newUser().roleName
-                           || !isEmailValid(newUser().email)
-                           || !isNameValid(newUser().firstName)
-                           || !isNameValid(newUser().lastName)
-                           || isLoading()">
-            @if (isLoading()) {
-              <span class="spinner-border spinner-border-sm me-2"></span> Traitement...
-            } @else {
-              {{ isEditMode() ? 'Mettre à jour le profil' : 'Finaliser la création' }}
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ══════════ MODAL SUPPRESSION ══════════ -->
-  @if (showDeleteModal()) {
-    <div class="custom-modal-backdrop animate-fade-in">
-      <div class="delete-modal-content shadow-lg">
-
-        <div class="modal-header-styled">
-          <h5 class="mb-0 fw-bold">Supprimer un utilisateur</h5>
-          <button type="button" class="btn-close-modal" (click)="cancelDelete()">&times;</button>
-        </div>
-
-        <div class="p-4">
-
-          <!-- Nom de l'utilisateur ciblé -->
-          <p class="text-center mb-4">
-            Vous allez supprimer
-            <strong>{{ userToDelete()?.firstName }} {{ userToDelete()?.lastName }}</strong>
-          </p>
-
-          <!-- Choix du type de suppression -->
-          <div class="delete-options mb-3">
-
-            <div class="option-card"
-                 [class.selected]="!deleteForce()"
-                 (click)="deleteForce.set(false)">
-              <i class="feather icon-archive option-icon"></i>
-              <div>
-                <strong>Suppression normale</strong>
-                <p class="mb-0 small text-muted">
-                  Le compte est supprimé mais la traçabilité (audit) est conservée.
-                </p>
-              </div>
-            </div>
-
-            <div class="option-card option-danger"
-                 [class.selected]="deleteForce()"
-                 (click)="deleteForce.set(true)">
-              <i class="feather icon-alert-triangle option-icon"></i>
-              <div>
-                <strong>Suppression forcée</strong>
-                <p class="mb-0 small text-muted">
-                  Le compte ET tout l'historique d'audit sont supprimés définitivement.
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Avertissement si suppression forcée -->
-          @if (deleteForce()) {
-            <div class="alert alert-danger d-flex align-items-center gap-2 py-2 animate-fade-in">
-              <i class="feather icon-alert-circle"></i>
-              <span>Cette action est <strong>irréversible</strong>. Toutes les traces seront effacées.</span>
-            </div>
-          }
-
-          <!-- Boutons -->
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="button" class="btn btn-secondary px-4"
-                    (click)="cancelDelete()">
-              Annuler
-            </button>
-            <button type="button"
-                    class="btn px-4 fw-bold"
-                    [class.btn-warning]="!deleteForce()"
-                    [class.btn-danger]="deleteForce()"
-                    (click)="confirmDelete()">
-              <i class="feather me-1"
-                 [class.icon-trash-2]="!deleteForce()"
-                 [class.icon-zap]="deleteForce()"></i>
-              {{ deleteForce() ? 'Supprimer définitivement' : 'Supprimer' }}
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  }
-
 </div>
+
+<!-- ══════════ MODAL CRÉATION / ÉDITION ══════════ -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()"></div>
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <div class="modal-panel-header">
+      <div class="modal-title-group">
+        <div class="modal-icon" [class.edit]="isEditMode()">
+          @if (isEditMode()) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          }
+        </div>
+        <div>
+          <h5 class="modal-title">{{ isEditMode() ? 'Modifier le profil' : 'Nouvel utilisateur' }}</h5>
+          <p class="modal-subtitle">{{ isEditMode() ? 'Modifiez les informations du compte' : 'Remplissez les informations du nouveau compte' }}</p>
+        </div>
+      </div>
+      <button class="btn-close-x" (click)="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-panel-body">
+      <p class="form-section-title">Informations de base</p>
+
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" [(ngModel)]="newUser().userName"
+               placeholder="username" [disabled]="isEditMode()" />
+        <label>Nom d'utilisateur</label>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input type="email" class="form-control" [(ngModel)]="newUser().email"
+               #emailField="ngModel" email placeholder="email"
+               [class.is-invalid]="emailField.invalid && emailField.touched" />
+        <label>Email Professionnel</label>
+        @if (emailField.invalid && emailField.touched) {
+          <div class="invalid-feedback">Adresse e-mail invalide.</div>
+        }
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <div class="form-floating">
+            <input type="text" class="form-control" [(ngModel)]="newUser().firstName" placeholder="Prénom"
+                   [class.is-invalid]="newUser().firstName && !isNameValid(newUser().firstName)" />
+            <label>Prénom</label>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-floating">
+            <input type="text" class="form-control" [(ngModel)]="newUser().lastName" placeholder="Nom"
+                   [class.is-invalid]="newUser().lastName && !isNameValid(newUser().lastName)" />
+            <label>Nom</label>
+          </div>
+        </div>
+      </div>
+
+      <p class="form-section-title">Localisation & Statut</p>
+
+      <div class="mb-3">
+        <label class="field-label">Site d'affectation</label>
+        <select class="form-select" [(ngModel)]="newUser().siteName">
+          <option value="">Sélectionnez un site</option>
+          @for (site of sites(); track site.siteName) {
+            <option [value]="site.siteName">{{ site.siteName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="status-toggle-row mb-4">
+        <span class="field-label">Statut du compte</span>
+        <label class="switch">
+          <input type="checkbox"
+            [checked]="newUser().isActive === 1"
+            (change)="newUser.update(u => ({ ...u, isActive: $any($event.target).checked ? 1 : 0 }))" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+        <span class="switch-text" [class.on]="newUser().isActive === 1">
+          {{ newUser().isActive === 1 ? 'Activé' : 'Désactivé' }}
+        </span>
+      </div>
+
+      <p class="form-section-title">Rôle applicatif</p>
+      <div class="roles-grid mb-4">
+        @for (role of roles(); track role.roleId) {
+          <div class="role-item" [class.selected]="newUser().roleName === role.roleName"
+               (click)="newUser.update(u => ({ ...u, roleName: role.roleName }))">
+            <div>
+              <div class="role-item-name">{{ role.roleName }}</div>
+              @if (role.description) {
+                <div class="role-item-desc">{{ role.description }}</div>
+              }
+            </div>
+            @if (newUser().roleName === role.roleName) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#405189" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            }
+          </div>
+        }
+      </div>
+
+      <button class="btn-submit-form" (click)="saveUser()"
+        [disabled]="!newUser().userName || !newUser().roleName
+          || !isEmailValid(newUser().email)
+          || !isNameValid(newUser().firstName)
+          || !isNameValid(newUser().lastName)
+          || isLoading()">
+        @if (isLoading()) {
+          <span class="spinner-sm"></span> Traitement...
+        } @else {
+          {{ isEditMode() ? 'Mettre à jour' : 'Créer le compte' }}
+        }
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ══════════ MODAL SUPPRESSION ══════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay" (click)="cancelDelete()"></div>
+  <div class="modal-panel modal-panel-sm" (click)="$event.stopPropagation()">
+
+    <div class="modal-panel-header">
+      <div class="modal-title-group">
+        <div class="modal-icon danger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </div>
+        <div>
+          <h5 class="modal-title">Supprimer un utilisateur</h5>
+          <p class="modal-subtitle">Cette action affecte les données du compte</p>
+        </div>
+      </div>
+      <button class="btn-close-x" (click)="cancelDelete()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-panel-body">
+      <div class="delete-target">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#878a99" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span><strong>{{ userToDelete()?.firstName }} {{ userToDelete()?.lastName }}</strong></span>
+      </div>
+
+      <p class="field-label mb-2">Choisissez le type de suppression</p>
+      <div class="delete-choice-list">
+        <div class="delete-choice" [class.selected]="!deleteForce()" (click)="deleteForce.set(false)">
+          <div class="delete-choice-radio" [class.checked]="!deleteForce()"></div>
+          <div>
+            <div class="delete-choice-title">Suppression normale</div>
+            <div class="delete-choice-desc">Le compte est supprimé, l'historique d'audit est conservé.</div>
+          </div>
+        </div>
+        <div class="delete-choice danger" [class.selected]="deleteForce()" (click)="deleteForce.set(true)">
+          <div class="delete-choice-radio danger" [class.checked]="deleteForce()"></div>
+          <div>
+            <div class="delete-choice-title">Suppression forcée</div>
+            <div class="delete-choice-desc">Compte ET historique d'audit effacés définitivement.</div>
+          </div>
+        </div>
+      </div>
+
+      @if (deleteForce()) {
+        <div class="warn-box mt-3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Cette action est <strong>irréversible</strong>. Toutes les traces seront effacées.
+        </div>
+      }
+
+      <div class="modal-footer-btns">
+        <button class="btn-cancel-del" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-confirm-del" [class.force]="deleteForce()" (click)="confirmDelete()">
+          @if (deleteForce()) {
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+              <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Supprimer définitivement
+          } @else {
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+            Supprimer
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
