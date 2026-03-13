@@ -1,39 +1,51 @@
-@if (isLoading()) {
-  <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Chargement...</span>
+@if (showProposal() && pendingMenu()) {
+  <div class="proposal-banner">
+    <div class="proposal-banner__icon">⚡</div>
+    <div class="proposal-banner__body">
+      <strong>Nouveau menu : « {{ pendingMenu()!.label }} »</strong>
+      <span>Voulez-vous afficher une carte sur le dashboard ?</span>
     </div>
+    <div class="proposal-banner__actions">
+      <button class="btn-proposal btn-proposal--accept" (click)="acceptProposal()">✓ Ajouter</button>
+      <button class="btn-proposal btn-proposal--refuse" (click)="refuseProposal()">✕ Ignorer</button>
+    </div>
+  </div>
+}
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:200px">
+    <div class="spinner-border text-primary" role="status"></div>
   </div>
 } @else {
 
   @if (visibleCards().length === 0) {
     <div class="text-center py-5">
-      <i class="feather icon-layout" style="font-size:3rem; opacity:0.3"></i>
-      <p class="mt-3 text-muted">Aucune carte configurée pour votre rôle.</p>
+      <p class="text-muted">Aucune carte configurée pour votre rôle.</p>
     </div>
   }
 
-  <div class="row g-3">
+  <div class="cards-grid">
     @for (card of visibleCards(); track card.id) {
-      <div class="col-6 col-md-4 col-xl-3">
-        <div class="stat-card"
-             [class.stat-card--clickable]="card.navigateTo"
-             (click)="navigateTo(card)">
+      <div class="stat-card"
+           [class.stat-card--clickable]="card.navigateTo"
+           [style.--accent]="card.iconColor"
+           [style.--accent-bg]="card.iconBg"
+           (click)="navigateTo(card)">
 
-          <div class="stat-card__icon" [style.background]="card.iconBg">
-            <i [class]="'feather ' + card.icon" [style.color]="card.iconColor"></i>
-          </div>
+        <button class="stat-card__remove" title="Masquer" (click)="removeCard(card, $event)">✕</button>
 
-          <div class="stat-card__body">
-            @if (card.resolvedValue && card.resolvedValue !== '—') {
-              <div class="stat-card__value">{{ card.resolvedValue }}</div>
-            }
-            <div class="stat-card__label">{{ card.subLabel || card.title }}</div>
-          </div>
+        <div class="stat-card__top">
+          <div class="stat-card__icon" [innerHTML]="getSvgIcon(card.icon, card.iconColor)"></div>
+          <span class="stat-card__badge">{{ card.title }}</span>
+        </div>
 
+        <div class="stat-card__value">{{ card.resolvedValue || '—' }}</div>
+        <div class="stat-card__label">{{ card.title }}</div>
+
+        <div class="stat-card__bar">
+          <div class="stat-card__bar-fill"></div>
         </div>
       </div>
     }
   </div>
-
 }

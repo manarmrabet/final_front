@@ -1,0 +1,113 @@
+<div class="cm-layout">
+
+  <!-- ── Panneau gauche : liste des rôles ──────────────────────────────── -->
+  <aside class="cm-roles">
+    <div class="cm-roles__header">
+      <span class="cm-section-title">Rôles</span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="cm-loading">
+        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      </div>
+    } @else {
+      <div class="cm-roles__list">
+        @for (role of roles(); track role.roleId) {
+          <button class="cm-role-item"
+                  [class.cm-role-item--active]="selectedRole()?.roleId === role.roleId"
+                  (click)="selectRole(role)">
+            <div class="cm-role-item__avatar">
+              {{ role.roleName | slice:5:7 }}
+            </div>
+            <div class="cm-role-item__info">
+              <span class="cm-role-item__name">{{ role.roleName }}</span>
+              @if (selectedRole()?.roleId === role.roleId) {
+                <span class="cm-role-item__sub">
+                  {{ visibleCount() }}/{{ totalCount() }} cartes visibles
+                </span>
+              }
+            </div>
+            @if (selectedRole()?.roleId === role.roleId) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            }
+          </button>
+        }
+      </div>
+    }
+  </aside>
+
+  <!-- ── Panneau droit : cards du rôle sélectionné ─────────────────────── -->
+  <main class="cm-cards">
+
+    @if (!selectedRole()) {
+      <div class="cm-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:.25"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <p>Sélectionnez un rôle pour configurer ses cartes</p>
+      </div>
+    } @else {
+
+      <!-- Header -->
+      <div class="cm-cards__header">
+        <div>
+          <h6 class="cm-cards__title">{{ selectedRole()!.roleName }}</h6>
+          <span class="cm-cards__subtitle">
+            {{ visibleCount() }} carte(s) visible(s) sur {{ totalCount() }}
+          </span>
+        </div>
+        <div class="cm-cards__actions">
+          <button class="cm-btn cm-btn--ghost" (click)="deselectAll()">Tout masquer</button>
+          <button class="cm-btn cm-btn--ghost" (click)="selectAll()">Tout afficher</button>
+          <button class="cm-btn cm-btn--ghost cm-btn--danger" (click)="reset()">Réinitialiser</button>
+          <button class="cm-btn cm-btn--primary" [class.cm-btn--saved]="isSaved()" (click)="save()">
+            @if (isSaved()) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Enregistré
+            } @else {
+              Enregistrer
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Grille des cards -->
+      <div class="cm-cards__grid">
+        @for (menu of cardMenus(); track menu.menuItemId) {
+          <div class="cm-card"
+               [class.cm-card--visible]="isVisible(menu.menuItemId!)"
+               [class.cm-card--hidden]="!isVisible(menu.menuItemId!)"
+               (click)="toggle(menu.menuItemId!)">
+
+            <div class="cm-card__toggle">
+              @if (isVisible(menu.menuItemId!)) {
+                <div class="cm-toggle cm-toggle--on">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              } @else {
+                <div class="cm-toggle cm-toggle--off"></div>
+              }
+            </div>
+
+            <div class="cm-card__icon"
+                 [style.background]="getIconBg(menu)"
+                 [innerHTML]="getSvgIcon(menu)">
+            </div>
+
+            <div class="cm-card__body">
+              <span class="cm-card__label">{{ menu.label }}</span>
+              <span class="cm-card__link">{{ menu.link }}</span>
+            </div>
+
+            <span class="cm-card__status"
+                  [class.cm-card__status--on]="isVisible(menu.menuItemId!)"
+                  [class.cm-card__status--off]="!isVisible(menu.menuItemId!)">
+              {{ isVisible(menu.menuItemId!) ? 'Visible' : 'Masquée' }}
+            </span>
+
+          </div>
+        }
+      </div>
+
+    }
+  </main>
+
+</div>

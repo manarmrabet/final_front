@@ -2,10 +2,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin/admin';
+import { DashboardNotification } from '../../services/dashboard/dashboard-notification';
 import { MenuItemDTO } from '../../models/menu-item';
 import { ApiResponse } from '../../models/shared';
-import { LucideAngularModule } from 'lucide-angular';
-
+import{ LucideAngularModule } from 'lucide-angular';
 @Component({
   selector: 'app-menu-management',
   standalone: true,
@@ -15,13 +15,14 @@ import { LucideAngularModule } from 'lucide-angular';
 })
 export class MenuManagementComponent implements OnInit {
   private adminService = inject(AdminService);
+  private notifSvc     = inject(DashboardNotification);
 
   menus        = signal<MenuItemDTO[]>([]);
   displayModal = false;
   isEditMode   = false;
   isSubMenu    = false;
 
-  newMenu: MenuItemDTO = { menuItemId:0, label:'', icon:'', link:'', isTitle:0, isLayout:0, parentId:null };
+  newMenu: MenuItemDTO = { menuItemId: 0, label: '', icon: '', link: '', isTitle: 0, isLayout: 0, parentId: null };
 
   ngOnInit(): void { this.loadMenus(); }
 
@@ -33,8 +34,8 @@ export class MenuManagementComponent implements OnInit {
   }
 
   openAddModal(): void {
-    this.isEditMode = false;
-    this.isSubMenu  = false;
+    this.isEditMode   = false;
+    this.isSubMenu    = false;
     this.resetForm();
     this.displayModal = true;
   }
@@ -61,14 +62,22 @@ export class MenuManagementComponent implements OnInit {
   submitMenu(): void {
     const payload = { ...this.newMenu };
     if (!this.isSubMenu) payload.parentId = null;
+
     const req = this.isEditMode
       ? this.adminService.updateMenuItem(payload.menuItemId, payload)
       : this.adminService.createMenuItem(payload);
+
     req.subscribe({
-      next:  () => {
+      next: (res: ApiResponse<MenuItemDTO>) => {
         this.displayModal = false;
         this.loadMenus();
         this.resetForm();
+
+        // ── Nouveau menu créé → proposer une card au dashboard ──
+        if (!this.isEditMode && res.data) {
+          this.notifSvc.proposeDashboardCard(res.data);
+        }
+
         alert(this.isEditMode ? 'Menu modifié !' : 'Menu ajouté !');
       },
       error: (err: any) => console.error('Erreur envoi', err)
@@ -76,7 +85,7 @@ export class MenuManagementComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.newMenu = { menuItemId:0, label:'', icon:'', link:'', isTitle:0, isLayout:0, parentId:null };
+    this.newMenu   = { menuItemId: 0, label: '', icon: '', link: '', isTitle: 0, isLayout: 0, parentId: null };
     this.isSubMenu = false;
   }
 

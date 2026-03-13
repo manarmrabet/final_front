@@ -30,7 +30,13 @@ export const routes: Routes = [
       { path: 'role-permissions', loadComponent: () => import('./components/role-permissions/role-permissions').then(m => m.RolePermissionsComponent) },
       { path: 'menu-management',  loadComponent: () => import('./components/menu-management/menu-management').then(m => m.MenuManagementComponent) },
       { path: 'audit',            canActivate: [authGuard], loadComponent: () => import('./components/audit/audit-list/audit-list').then(m => m.AuditListComponent) },
-
+      {
+  path: 'card-management',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./components/card-management/card-management')
+      .then(m => m.CardManagementComponent)
+},
       // ← Ajouter cette ligne : toute route inconnue dans /app → not-found
       { path: '**', loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent) }
     ]

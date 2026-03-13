@@ -1,56 +1,153 @@
-// dashboard-v1.scss — Cartes simples et professionnelles
-
-.stat-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #f0f0f0;
-  padding: 20px;
+.proposal-banner {
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  gap: 1rem;
+  background: #fffbeb;
+  border: 1px solid #fbbf24;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  animation: slideDown 0.3s ease;
+
+  &__icon { font-size: 1.1rem; }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    strong { font-size: 0.82rem; color: #92400e; }
+    span   { font-size: 0.75rem; color: #b45309; }
+  }
+
+  &__actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+}
+
+.btn-proposal {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  &--accept { background: #16a34a; color: #fff; }
+  &--refuse { background: #e5e7eb; color: #374151; }
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────
+.stat-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid var(--accent, #4f6ef7);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
 
   &--clickable {
     cursor: pointer;
-
     &:hover {
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
       transform: translateY(-2px);
     }
   }
 
+  &__remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: #bbb;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    &:hover { background: #fee2e2; color: #ef4444; }
+  }
+  &:hover &__remove { opacity: 1; }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
   &__icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--accent-bg, #eef2ff);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.4rem;
+
+    svg { display: block; }
   }
 
-  &__body {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
+  &__badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent, #4f6ef7);
+    background: var(--accent-bg, #eef2ff);
+    padding: 2px 7px;
+    border-radius: 20px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__value {
-    font-size: 1.9rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #1a1a2e;
+    color: #111827;
     line-height: 1;
   }
 
   &__label {
-    font-size: 0.82rem;
-    color: #8a93a2;
-    font-weight: 400;
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  &__bar {
+    margin-top: 10px;
+    height: 3px;
+    background: #f1f5f9;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    width: 65%;
+    background: var(--accent, #4f6ef7);
+    border-radius: 2px;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

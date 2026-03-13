@@ -1,6 +1,7 @@
-import { Component, inject, signal, computed, OnInit, AfterViewChecked } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { AuthService } from '../../../services/auth/auth';
 import { AdminService } from '../../../services/admin/admin';
 import { MenuItemDTO } from '../../../models/menu-item';
 import { filter } from 'rxjs/operators';
@@ -8,14 +9,12 @@ import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule
-  ],
+  imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss']
 })
-export class SidebarComponent implements OnInit, AfterViewChecked {
+export class SidebarComponent implements OnInit {
+  private auth         = inject(AuthService);
   private router       = inject(Router);
   private adminService = inject(AdminService);
 
@@ -23,44 +22,28 @@ export class SidebarComponent implements OnInit, AfterViewChecked {
   expanded   = signal<string | null>(null);
   menuItems  = signal<MenuItemDTO[]>([]);
   isLoading  = signal(true);
-  private featherDirty = false;
 
-  rootMenus = computed(() => this.menuItems().filter(m => !m.parentId));
+  rootMenus = computed(() =>
+    this.menuItems().filter(m => !m.parentId)
+  );
 
   getChildren(parentId: number): MenuItemDTO[] {
     return this.menuItems().filter(m => m.parentId === parentId);
   }
+
   hasChildren(item: MenuItemDTO): boolean {
     return this.menuItems().some(m => m.parentId === item.menuItemId);
-  }
-  getFeatherName(iconClass: string): string {
-    if (!iconClass) return 'menu';
-    const match = iconClass.match(/icon-([a-z0-9-]+)/);
-    return match ? match[1] : iconClass;
   }
 
   constructor() {
     this.activeUrl.set(this.router.url);
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((e: any) => {
-        this.activeUrl.set(e.urlAfterRedirects);
-        this.featherDirty = true;
-      });
+      .subscribe((e: any) => this.activeUrl.set(e.urlAfterRedirects));
   }
 
-  ngOnInit(): void { this.loadMenus(); }
-
-  ngAfterViewChecked(): void {
-    if (this.featherDirty) {
-      this.initFeather();
-      this.featherDirty = false;
-    }
-  }
-
-  private initFeather(): void {
-    const feather = (window as any)['feather'];
-    if (feather) feather.replace({ width: 18, height: 18, 'stroke-width': 1.5 });
+  ngOnInit(): void {
+    this.loadMenus();
   }
 
   loadMenus(): void {
@@ -69,9 +52,10 @@ export class SidebarComponent implements OnInit, AfterViewChecked {
       next: (items) => {
         this.menuItems.set(items);
         this.isLoading.set(false);
-        this.featherDirty = true;
 
-        const active = items.find(m => m.parentId && this.activeUrl().includes(m.link || ''));
+        const active = items.find(m =>
+          m.parentId && this.activeUrl().includes(m.link || '')
+        );
         if (active?.parentId) {
           const parent = items.find(m => m.menuItemId === active.parentId);
           if (parent) this.expanded.set(parent.label);
@@ -83,12 +67,11 @@ export class SidebarComponent implements OnInit, AfterViewChecked {
 
   toggleExpand(label: string): void {
     this.expanded.set(this.expanded() === label ? null : label);
-    this.featherDirty = true;
   }
 
   isActive(link?: string): boolean {
     if (!link) return false;
-    return this.activeUrl().includes(link);
+    return this.activeUrl() === link || this.activeUrl().startsWith(link + '/');
   }
 
   isGroupActive(item: MenuItemDTO): boolean {
@@ -97,6 +80,10 @@ export class SidebarComponent implements OnInit, AfterViewChecked {
   }
 
   navigate(link: string): void {
-    this.router.navigate(['/app' + link]);
+    if (!link) return;
+    const link2 = link.trim();
+    // Liens en DB sans /app/ → on préfixe uniquement si pas déjà présent
+    const url = link2.startsWith('/app') ? link2 : '/app' + (link2.startsWith('/') ? link2 : '/' + link2);
+    this.router.navigateByUrl(url);
   }
 }
