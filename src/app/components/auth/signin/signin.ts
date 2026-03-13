@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth';
+import { InactivityService } from '../../../services/auth/inactivity';
+import { ActivatedRoute } from '@angular/router';
+
 
 @Component({
   selector: 'app-signin',
@@ -16,6 +19,8 @@ export class SigninComponent {
   private cd     = inject(ChangeDetectorRef);
   private router = inject(Router);
   private auth   = inject(AuthService);
+  private readonly inactivity = inject(InactivityService);
+  private readonly route = inject(ActivatedRoute);
 
   error        = signal('');
   showPassword = signal(false);
@@ -48,7 +53,9 @@ export class SigninComponent {
         this.isLoading.set(false);
         this.attemptsLeft.set(3);
         this.cd.detectChanges();
-        this.router.navigate(['/app/dashboard']); // ← corrigé
+        this.inactivity.start();
+        this.router.navigate(['/app/dashboard']); 
+        
       },
       error: (err: any) => {
         this.isLoading.set(false);
@@ -72,8 +79,19 @@ export class SigninComponent {
       }
     });
   }
+  
 
   togglePasswordVisibility(): void {
     this.showPassword.update(v => !v);
   }
+  readonly sessionMessage = signal('');
+ 
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['reason'] === 'session_expired') {
+        this.sessionMessage.set('Votre session a expiré. Veuillez vous reconnecter.');
+      }
+    });
+  }
+
 }

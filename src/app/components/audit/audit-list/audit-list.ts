@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AuditFilter, AuditLog, EventType, Severity } from '../../../models/audit-log';
 import{PageResponse, ApiResponse}from '../../../models/shared';
 import { AuditService } from '../../../services/audit/audit';
+import { LucideAngularModule } from 'lucide-angular'; 
 
 @Component({
   selector: 'app-audit-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, NgClass],
+  imports: [CommonModule, FormsModule, DatePipe, NgClass, LucideAngularModule],
   templateUrl: './audit-list.html',
   styleUrls: ['./audit-list.scss']
 })

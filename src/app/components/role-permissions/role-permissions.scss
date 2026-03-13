@@ -1,8 +1,11 @@
 // ── Color token ───────────────────────────────────────────
-$blue        : #0d2b6e;
-$blue-light  : rgba(13,43,110,.08);
 $blue-mid    : rgba(13,43,110,.15);
 $blue-border : rgba(13,43,110,.2);
+$blue        : #1d4ed8;
+$primary:       #1d4ed8;
+$primary-mid:   #3b82f6;
+$blue-light  : #eef2ff;
+$primary-light: #eff6ff;
 $success     : #10b981;
 $success-light: #f0fdf4;
 $danger      : #ef4444;
@@ -12,8 +15,10 @@ $text-muted  : #94a3b8;
 $border      : #e2e8f0;
 $bg-light    : #f1f5f9;
 $white       : #ffffff;
+$text-title  : #343a40;
 $radius      : 14px;
 $shadow      : 0 4px 28px rgba(13,43,110,.08);
+$font        : 'Poppins', sans-serif;
 
 // ─── Container ───────────────────────────────────────────
 .container-fluid { padding: 2rem; background: $bg-light; min-height: 100vh; }
@@ -25,21 +30,36 @@ $shadow      : 0 4px 28px rgba(13,43,110,.08);
 }
 
 // ─── Page Header ────────────────────────────────────────
-.page-header {
-  display: flex; align-items: center; justify-content: space-between;
-  .page-header-left {
-    display: flex; align-items: center; gap: 14px;
-    .page-icon {
-      width: 48px; height: 48px; border-radius: 13px;
-      background: linear-gradient(135deg, lighten(#0d2b6e, 20%), $blue);
-      display: flex; align-items: center; justify-content: center;
-      color: $white; font-size: 1.2rem;
-      box-shadow: 0 4px 14px rgba(13,43,110,.3);
-    }
-    h4 { font-size: 1.1rem; font-weight: 700; color: $text-dark; margin: 0; }
-    span { font-size: 0.78rem; color: $text-muted; display: block; margin-top: 2px; }
-  }
-}
+.card-header {
+    background: $white;
+    border-bottom: 1px solid $border;
+    padding: 1.35rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: $primary-light;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $primary;
+        font-size: 1.1rem;
+      }
+
+      
+      .page-card-title { font-size: 1rem; font-weight: 600; color: $text-title; margin: 0; font-family: $font; }
+
+      .page-card-sub   { font-size: .75rem; color: $text-muted; margin: 2px 0 0; font-family: $font; }
+    }}
 
 // ─── Role Selector Card ──────────────────────────────────
 .role-selector-card {
@@ -166,7 +186,7 @@ $shadow      : 0 4px 28px rgba(13,43,110,.08);
       color: $text-muted; font-size: 1rem; transition: all 0.2s; flex-shrink: 0;
 
       &.active {
-        background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+        background:  $blue;
         border-color: transparent; color: $white;
         box-shadow: 0 3px 10px rgba(13,43,110,.3);
       }
@@ -176,7 +196,7 @@ $shadow      : 0 4px 28px rgba(13,43,110,.08);
       display: flex; flex-direction: column; gap: 2px;
       .menu-card-label { font-size: 0.875rem; font-weight: 600; color: $text-dark; }
       .menu-card-link {
-        font-size: 0.72rem; color: $text-muted; font-family: monospace;
+        font-size: 0.72rem; color: $text-muted; font-family: $font;
         background: $bg-light; padding: 1px 6px; border-radius: 4px; display: inline-block;
       }
     }
@@ -215,7 +235,7 @@ $shadow      : 0 4px 28px rgba(13,43,110,.08);
 
   .btn-save {
     display: inline-flex; align-items: center; gap: 8px;
-    background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
+    background:  $blue;
     border: none; border-radius: 10px; padding: 0.65rem 1.75rem;
     font-size: 0.875rem; font-weight: 700; color: $white; cursor: pointer;
     transition: all 0.25s ease; box-shadow: 0 3px 12px rgba(13,43,110,.35);

@@ -1,13 +1,18 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular'; 
 import { AdminService } from '../../services/admin/admin';
 import { UserDTO, Role, Site } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    LucideAngularModule 
+  ],
   templateUrl: './user-management.html',
   styleUrls: ['./user-management.scss']
 })

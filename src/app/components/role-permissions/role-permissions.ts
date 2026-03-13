@@ -5,11 +5,12 @@ import { Role } from '../../models/user.model';
 import { MenuItemDTO } from '../../models/menu-item';
 import { AdminService } from '../../services/admin/admin';
 import { RoleMappingService } from '../../services/role-mapping/role-mapping';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-role-permissions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './role-permissions.html',
   styleUrls: ['./role-permissions.scss']
 })

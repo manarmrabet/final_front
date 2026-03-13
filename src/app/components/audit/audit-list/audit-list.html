@@ -1,27 +1,23 @@
 <div class="container-fluid py-4">
 
-  <!-- Header -->
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
-        </svg>
-      </div>
-      <div>
-        <h4 class="page-title">Journal d'Audit</h4>
-        <p class="page-sub">{{ totalElements() }} entrée(s) enregistrée(s)</p>
+  <!-- Card principale -->
+  <div class="page-wrap">
+
+    <!-- Header -->
+      <div class="card-header">
+      <div class="header-left">
+        <div class="header-icon">
+        <lucide-icon name="Book" class="w-8 h-8 text-blue-500"></lucide-icon>
+        </div>
+        <div>
+          <h5 class="page-card-title">Journal d'Audit</h5>
+          <p class="page-card-sub">{{ totalElements() }} entrée(s) enregistrée(s)</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Filtres -->
-  <div class="filters-card">
-    <div class="filters-grid">
+    <!-- Filtres -->
+    <div class="filters-bar">
       <div class="filter-group">
         <label>Type d'événement</label>
         <select [(ngModel)]="filters.eventType">
@@ -48,36 +44,32 @@
         <label>Au</label>
         <input type="datetime-local" [(ngModel)]="filters.to" />
       </div>
+      <div class="filter-actions">
+        <button class="btn-search" (click)="applyFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Rechercher
+        </button>
+        <button class="btn-reset" (click)="resetFilters()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+          </svg>
+          Réinitialiser
+        </button>
+      </div>
     </div>
-    <div class="filters-actions">
-      <button class="btn-search" (click)="applyFilters()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        Rechercher
-      </button>
-      <button class="btn-reset" (click)="resetFilters()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="1 4 1 10 7 10"/>
-          <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
-        </svg>
-        Réinitialiser
-      </button>
-    </div>
-  </div>
 
-  <!-- Table -->
-  <div class="table-card">
+    <!-- Table -->
     @if (loading()) {
       <div class="loading-state">
-        <div class="loading-dots">
-          <span></span><span></span><span></span>
-        </div>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
         <p>Chargement des données...</p>
       </div>
     } @else {
       <div class="table-responsive">
-        <table class="data-table">
+        <table class="velzon-table">
           <thead>
             <tr>
               <th>#</th>
@@ -94,11 +86,11 @@
           </thead>
           <tbody>
             @if (logs().length === 0) {
-              <tr><td colspan="10" class="empty-cell">Aucun log trouvé pour ces critères.</td></tr>
+              <tr><td colspan="10" class="empty-row">Aucun log trouvé pour ces critères.</td></tr>
             } @else {
               @for (log of logs(); track log.id; let i = $index) {
                 <tr [class]="'row-sev-' + log.severity.toLowerCase()">
-                  <td><span class="row-num">{{ i + 1 }}</span></td>
+                  <td><span class="cell-num">{{ i + 1 }}</span></td>
                   <td class="td-date">{{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
                   <td>
                     <span class="event-badge" [ngClass]="getEventClass(log.eventType)">
@@ -116,19 +108,21 @@
                       <div class="user-email">&#64;{{ log.username }}</div>
                     }
                   </td>
-                  <td><span class="cell-muted">{{ log.userRole || '—' }}</span></td>
-                  <td><span class="cell-muted">{{ log.userSite || '—' }}</span></td>
+                  <td class="cell-muted">{{ log.userRole || '—' }}</td>
+                  <td class="cell-muted">{{ log.userSite || '—' }}</td>
                   <td>
                     @if (log.action) {
                       <span class="action-tag">{{ log.action }}</span>
                     } @else if (log.endpoint) {
                       <span class="endpoint-tag">{{ log.httpMethod }} {{ log.endpoint }}</span>
-                    } @else { <span class="cell-muted">—</span> }
+                    } @else {
+                      <span class="cell-muted">—</span>
+                    }
                   </td>
                   <td class="td-ip">{{ log.ipAddress || '—' }}</td>
                   <td>
-                    <button class="btn-detail" (click)="openDetail(log)" title="Voir détails">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="btn-view" (click)="openDetail(log)" title="Voir détails">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                         <circle cx="12" cy="12" r="3"/>
                       </svg>
@@ -143,83 +137,138 @@
 
       <!-- Pagination -->
       @if (totalPages() > 1) {
-        <div class="pagination">
-          <button class="page-btn" [disabled]="filters.page === 0" (click)="onPageChange(filters.page! - 1)">‹</button>
+        <div class="pagination-bar">
+          <button class="page-btn" [disabled]="filters.page === 0"
+                  (click)="onPageChange(filters.page! - 1)">‹</button>
           @for (p of pages(); track p) {
-            <button class="page-btn" [class.active]="p === filters.page" (click)="onPageChange(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [class.active]="p === filters.page"
+                    (click)="onPageChange(p)">{{ p + 1 }}</button>
           }
-          <button class="page-btn" [disabled]="filters.page === totalPages() - 1" (click)="onPageChange(filters.page! + 1)">›</button>
-          <span class="page-info">Page {{ (filters.page ?? 0) + 1 }} / {{ totalPages() }} — {{ totalElements() }} résultats</span>
+          <button class="page-btn" [disabled]="filters.page === totalPages() - 1"
+                  (click)="onPageChange(filters.page! + 1)">›</button>
+          <span class="page-info">
+            Page {{ (filters.page ?? 0) + 1 }} / {{ totalPages() }} — {{ totalElements() }} résultats
+          </span>
         </div>
       }
     }
   </div>
 </div>
 
-<!-- Modal détail -->
+<!-- ══════════ MODAL DÉTAIL ══════════ -->
 @if (selectedLog(); as log) {
   <div class="modal-overlay" (click)="closeDetail()"></div>
-  <div class="modal-panel modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-panel-header">
-      <div class="modal-title-group">
-        <div class="modal-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
-        </div>
-        <div>
-          <h5 class="modal-title">Détail du log #{{ log.id }}</h5>
-          <p class="modal-subtitle">{{ log.eventType }} — {{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
-        </div>
+  <div class="modal-velzon" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-v-header">
+      <div class="modal-v-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
       </div>
-      <button class="btn-close-x" (click)="closeDetail()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="modal-v-titles">
+        <h5>Détail du log #{{ log.id }}</h5>
+        <p>{{ log.eventType }} — {{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+      </div>
+      <button class="btn-modal-close" (click)="closeDetail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
-    <div class="modal-panel-body">
+    <div class="modal-v-sep"></div>
 
-      <p class="form-section-title">Informations générales</p>
+    <!-- Corps -->
+    <div class="modal-v-body">
+
+      <p class="v-section">Informations générales</p>
       <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">Date</span><span>{{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span></div>
-        <div class="detail-item"><span class="detail-label">Type</span><span class="event-badge" [ngClass]="getEventClass(log.eventType)">{{ log.eventType }}</span></div>
-        <div class="detail-item"><span class="detail-label">Sévérité</span><span class="severity-badge" [ngClass]="getSeverityClass(log.severity)">{{ log.severity }}</span></div>
-        <div class="detail-item"><span class="detail-label">Durée</span><span>{{ log.durationMs ? log.durationMs + ' ms' : '—' }}</span></div>
+        <div class="detail-item">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Type</span>
+          <span class="event-badge" [ngClass]="getEventClass(log.eventType)">{{ log.eventType }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Sévérité</span>
+          <span class="severity-badge" [ngClass]="getSeverityClass(log.severity)">{{ log.severity }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Durée</span>
+          <span class="detail-value">{{ log.durationMs ? log.durationMs + ' ms' : '—' }}</span>
+        </div>
       </div>
 
-      <p class="form-section-title">Utilisateur</p>
+      <p class="v-section">Utilisateur</p>
       <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">Nom</span><span>{{ log.userFullName || '—' }}</span></div>
-        <div class="detail-item"><span class="detail-label">Username</span><span>{{ log.username || '—' }}</span></div>
-        <div class="detail-item"><span class="detail-label">Rôle</span><span>{{ log.userRole || '—' }}</span></div>
-        <div class="detail-item"><span class="detail-label">Site</span><span>{{ log.userSite || '—' }}</span></div>
-        <div class="detail-item"><span class="detail-label">IP</span><span class="mono">{{ log.ipAddress || '—' }}</span></div>
-        <div class="detail-item"><span class="detail-label">Session</span><span class="mono">{{ log.sessionId || '—' }}</span></div>
+        <div class="detail-item">
+          <span class="detail-label">Nom</span>
+          <span class="detail-value">{{ log.userFullName || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Username</span>
+          <span class="detail-value">{{ log.username || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Rôle</span>
+          <span class="detail-value">{{ log.userRole || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Site</span>
+          <span class="detail-value">{{ log.userSite || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">IP</span>
+          <span class="detail-value mono">{{ log.ipAddress || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Session</span>
+          <span class="detail-value mono">{{ log.sessionId || '—' }}</span>
+        </div>
       </div>
 
       @if (log.action || log.entityType) {
-        <p class="form-section-title">Action</p>
+        <p class="v-section">Action</p>
         <div class="detail-grid">
-          <div class="detail-item"><span class="detail-label">Action</span><span>{{ log.action || '—' }}</span></div>
-          <div class="detail-item"><span class="detail-label">Entité</span><span>{{ log.entityType || '—' }}</span></div>
-          <div class="detail-item"><span class="detail-label">ID Entité</span><span>{{ log.entityId || '—' }}</span></div>
+          <div class="detail-item">
+            <span class="detail-label">Action</span>
+            <span class="detail-value">{{ log.action || '—' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Entité</span>
+            <span class="detail-value">{{ log.entityType || '—' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ID Entité</span>
+            <span class="detail-value">{{ log.entityId || '—' }}</span>
+          </div>
         </div>
         @if (log.oldValue || log.newValue) {
           <div class="diff-container">
             @if (log.oldValue) {
-              <div class="diff-block diff-old"><h6>Avant</h6><pre>{{ log.oldValue | json }}</pre></div>
+              <div class="diff-block diff-old">
+                <h6>Avant</h6>
+                <pre>{{ log.oldValue | json }}</pre>
+              </div>
             }
             @if (log.newValue) {
-              <div class="diff-block diff-new"><h6>Après</h6><pre>{{ log.newValue | json }}</pre></div>
+              <div class="diff-block diff-new">
+                <h6>Après</h6>
+                <pre>{{ log.newValue | json }}</pre>
+              </div>
             }
           </div>
         }
       }
 
       @if (log.errorMessage) {
-        <p class="form-section-title">Erreur</p>
+        <p class="v-section">Erreur</p>
         <div class="error-box">{{ log.errorMessage }}</div>
         @if (log.stackTrace) {
           <details class="stack-details">
@@ -228,6 +277,11 @@
           </details>
         }
       }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-v-footer">
+      <button class="btn-v-cancel" (click)="closeDetail()">Fermer</button>
     </div>
   </div>
 }

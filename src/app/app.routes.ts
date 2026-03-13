@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth-guard';
+import { lockGuard }  from './guards/lock-guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -9,10 +10,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/auth/signin/signin').then(m => m.SigninComponent)
   },
+  {
+    path: 'lock',
+    canActivate: [authGuard],          // must have a token
+    loadComponent: () =>
+      import('./components/lock-screen/lock-screen')
+        .then(m => m.LockScreenComponent),
+  },
 
   {
     path: 'app',
-    canActivate: [authGuard],
+    canActivate: [authGuard, lockGuard],
     loadComponent: () =>
       import('./components/layout/layout').then(m => m.LayoutComponent),
     children: [

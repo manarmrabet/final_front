@@ -12,6 +12,7 @@ $bg-light:      #f1f5f9;
 $white:         #ffffff;
 $radius:        14px;
 $shadow:        0 4px 28px rgba(29, 78, 216, 0.08);
+$font        : 'Poppins', sans-serif;
 
 // ─── Container ───────────────────────────────────────────────
 .container-fluid {
@@ -169,7 +170,7 @@ $shadow:        0 4px 28px rgba(29, 78, 216, 0.08);
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 500;
-  font-family: monospace;
+  font-family: $font;
 }
 
 .parent-badge {
@@ -415,7 +416,7 @@ $shadow:        0 4px 28px rgba(29, 78, 216, 0.08);
           .preview-link {
             font-size: 0.75rem;
             color: $primary-mid;
-            font-family: monospace;
+            font-family: $font;
           }
         }
       }

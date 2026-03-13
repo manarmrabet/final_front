@@ -5,7 +5,11 @@
     <div class="card-header">
       <div class="header-left">
         <div class="header-icon">
-          <i class="feather icon-menu"></i>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </div>
         <div>
           <h5 class="mb-0">Gestion des Menus</h5>
@@ -13,7 +17,9 @@
         </div>
       </div>
       <button class="btn-add" (click)="openAddModal()">
-        <i class="feather icon-plus"></i>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
         Ajouter un menu
       </button>
     </div>
@@ -52,11 +58,18 @@
               <td>
                 <div class="action-group">
                   <button class="btn-action edit" (click)="openEditModal(item)" title="Éditer">
-                    <i class="feather icon-edit-2"></i>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
                     Éditer
                   </button>
                   <button class="btn-action delete" (click)="deleteMenu(item.menuItemId)" title="Supprimer">
-                    <i class="feather icon-trash-2"></i>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                    </svg>
                     Supprimer
                   </button>
                 </div>
@@ -66,7 +79,13 @@
             <tr>
               <td colspan="6">
                 <div class="empty-state">
-                  <div class="empty-icon"><i class="feather icon-inbox"></i></div>
+                  <div class="empty-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="2" y="3" width="20" height="14" rx="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                  </div>
                   <p>Aucun menu trouvé</p>
                   <span>Cliquez sur "Ajouter un menu" pour commencer</span>
                 </div>
@@ -89,7 +108,17 @@
     <div class="modal-custom-header">
       <div class="modal-title-wrap">
         <div class="modal-icon" [class.edit-mode]="isEditMode">
-          <i class="feather" [class.icon-edit-2]="isEditMode" [class.icon-plus]="!isEditMode"></i>
+          @if (isEditMode) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          }
         </div>
         <div>
           <h6>{{ isEditMode ? 'Modifier le menu' : 'Ajouter un menu' }}</h6>
@@ -97,7 +126,10 @@
         </div>
       </div>
       <button class="btn-close-custom" (click)="displayModal=false">
-        <i class="feather icon-x"></i>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
     </div>
 
@@ -124,7 +156,10 @@
         <!-- Label -->
         <div class="form-field">
           <label class="field-label">
-            <i class="feather icon-tag"></i>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
             Label <span class="required">*</span>
           </label>
           <input
@@ -138,7 +173,10 @@
         <!-- Lien -->
         <div class="form-field">
           <label class="field-label">
-            <i class="feather icon-link"></i>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
             Lien <span class="required">*</span>
           </label>
           <div class="input-prefix-wrap">
@@ -155,7 +193,9 @@
         <!-- Icône -->
         <div class="form-field full-width">
           <label class="field-label">
-            <i class="feather icon-star"></i>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
             Icône (classe CSS)
           </label>
           <div class="icon-input-wrap">
@@ -176,7 +216,12 @@
         <div class="form-field full-width">
           <div class="toggle-wrap" [class.active]="isSubMenu">
             <div class="toggle-info">
-              <i class="feather icon-git-branch"></i>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="6" y1="3" x2="6" y2="15"/>
+                <circle cx="18" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <path d="M18 9a9 9 0 0 1-9 9"/>
+              </svg>
               <div>
                 <span class="toggle-title">Sous-menu</span>
                 <span class="toggle-desc">Ce menu est un enfant d'un autre menu</span>
@@ -193,7 +238,10 @@
         @if (isSubMenu) {
           <div class="form-field full-width" style="animation: slideDown 0.25s ease">
             <label class="field-label">
-              <i class="feather icon-corner-down-right"></i>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 10 20 15 15 20"/>
+                <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
+              </svg>
               Menu parent <span class="required">*</span>
             </label>
             <select class="field-select" [(ngModel)]="newMenu.parentId">
@@ -211,11 +259,23 @@
     <!-- Footer -->
     <div class="modal-custom-footer">
       <button class="btn-cancel" (click)="displayModal=false">
-        <i class="feather icon-x"></i>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
         Annuler
       </button>
       <button class="btn-submit" (click)="submitMenu()">
-        <i class="feather" [class.icon-check]="isEditMode" [class.icon-plus]="!isEditMode"></i>
+        @if (isEditMode) {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        } @else {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        }
         {{ isEditMode ? 'Enregistrer les modifications' : 'Ajouter le menu' }}
       </button>
     </div>

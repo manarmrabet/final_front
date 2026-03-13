@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin/admin';
 import { AuthService } from '../../services/auth/auth';
 import { UserDTO, Role, Site } from '../../models/user.model';
+import { LucideAngularModule } from 'lucide-angular';
 
 interface DashboardCard {
   id: string;
@@ -23,7 +24,7 @@ interface DashboardCard {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
