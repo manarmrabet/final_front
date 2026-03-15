@@ -1,12 +1,12 @@
-<div *ngIf="sessionMessage()" class="alert alert-warning" role="alert">
+<div *ngIf="sessionMsg()" class="alert alert-warning" role="alert">
   <i class="ri-alarm-warning-line me-2"></i>
-  {{ sessionMessage() }}
+  {{ sessionMsg() }}
 </div>
+
 <div class="auth-page">
   <div class="auth-page-wrapper">
     <div class="auth-card">
 
-      <!-- Panel gauche -->
       <div class="auth-left">
         <div class="auth-overlay"></div>
         <div class="dots-pattern"></div>
@@ -30,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Panel droit -->
       <div class="auth-right">
         <div class="right-content">
 
@@ -39,29 +38,25 @@
             <p>Sign in to continue to COFAT.</p>
           </div>
 
-          <form (submit)="onSubmit($event)" autocomplete="off">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
 
-            @if (error()) {
-              <div class="form-alert" [class.blocked]="isBlocked()">
-                {{ error() }}
+            @if (errorMsg()) {
+              <div class="form-alert">
+                {{ errorMsg() }}
               </div>
             }
 
-            <!-- Username -->
             <div class="form-group">
               <label>Username</label>
               <input
                 type="text"
                 class="form-input"
                 placeholder="Enter username"
-                [value]="loginModal().username"
-                (input)="loginModal.set({ username: $any($event.target).value, password: loginModal().password })"
+                formControlName="username"
                 name="username"
-                [disabled]="isBlocked()"
               />
             </div>
 
-            <!-- Password -->
             <div class="form-group">
               <div class="label-row">
                 <label>Password</label>
@@ -69,16 +64,14 @@
               </div>
               <div class="input-pw-wrap">
                 <input
-                  [type]="showPassword() ? 'text' : 'password'"
+                  [type]="showPwd() ? 'text' : 'password'"
                   class="form-input"
                   placeholder="Enter password"
-                  [value]="loginModal().password"
-                  (input)="loginModal.set({ username: loginModal().username, password: $any($event.target).value })"
+                  formControlName="password"
                   name="password"
-                  [disabled]="isBlocked()"
                 />
-                <button type="button" class="eye-btn" (click)="togglePasswordVisibility()">
-                  @if (!showPassword()) {
+                <button type="button" class="eye-btn" (click)="showPwd.set(!showPwd())">
+                  @if (!showPwd()) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                       <circle cx="12" cy="12" r="3"/>
@@ -93,7 +86,6 @@
               </div>
             </div>
 
-            <!-- Remember me -->
             <div class="remember-row">
               <label class="check-wrap">
                 <input type="checkbox" class="check-native" />
@@ -102,15 +94,10 @@
               </label>
             </div>
 
-            <!-- Submit -->
-            <button type="submit" class="btn-signin" [disabled]="isLoading() || isBlocked()">
-              @if (isLoading()) { <span class="btn-spinner"></span> }
-              {{ isBlocked() ? 'Accès Bloqué' : 'Sign In' }}
+            <button type="submit" class="btn-signin" [disabled]="loading() || form.invalid">
+              @if (loading()) { <span class="btn-spinner"></span> }
+              {{ loading() ? 'Connexion...' : 'Sign In' }}
             </button>
-
-            @if (isBlocked()) {
-              <p class="blocked-note">Contactez l'administrateur pour débloquer votre accès.</p>
-            }
 
           </form>
         </div>

@@ -1,97 +1,65 @@
-import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth/auth';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService }       from '../../../services/auth/auth';
 import { InactivityService } from '../../../services/auth/inactivity';
-import { ActivatedRoute } from '@angular/router';
-
 
 @Component({
   selector: 'app-signin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './signin.html',
   styleUrls: ['./signin.scss'],
-  host: { ngSkipHydration: 'true' }
 })
-export class SigninComponent {
-  private cd     = inject(ChangeDetectorRef);
-  private router = inject(Router);
-  private auth   = inject(AuthService);
+export class SigninComponent implements OnInit {
+  private readonly auth       = inject(AuthService);
   private readonly inactivity = inject(InactivityService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly router     = inject(Router);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly fb         = inject(FormBuilder);
 
-  error        = signal('');
-  showPassword = signal(false);
-  isLoading    = signal(false);
-  attemptsLeft = signal(3);
-  isBlocked    = signal(false);
-  loginModal   = signal({ username: '', password: '' });
+  readonly form = this.fb.group({
+    username: ['', Validators.required],
+    password: ['', Validators.required],
+  });
 
-  onSubmit(event: Event): void {
-    event.preventDefault();
+  readonly loading    = signal(false);
+  readonly errorMsg   = signal('');
+  readonly sessionMsg = signal('');
+  readonly showPwd    = signal(false);
 
-    if (this.isBlocked()) {
-      this.error.set('Compte temporairement bloqué.');
-      return;
-    }
+  ngOnInit(): void {
+    // Message si redirigé après expiration de session
+    this.route.queryParams.subscribe(p => {
+      if (p['reason'] === 'session_expired') {
+        this.sessionMsg.set('Votre session a expiré. Veuillez vous reconnecter.');
+      }
+    });
+  }
 
-    const { username, password } = this.loginModal();
+  onSubmit(): void {
+    if (this.form.invalid) return;
+    this.loading.set(true);
+    this.errorMsg.set('');
 
-    if (!username.trim() || !password.trim()) {
-      this.error.set('Veuillez remplir tous les champs.');
-      return;
-    }
-
-    this.error.set('');
-    this.isLoading.set(true);
-    this.cd.detectChanges();
+    const { username, password } = this.form.value as { username: string; password: string };
 
     this.auth.login({ username, password }).subscribe({
       next: () => {
-        this.isLoading.set(false);
-        this.attemptsLeft.set(3);
-        this.cd.detectChanges();
-        this.inactivity.start();
-        this.router.navigate(['/app/dashboard']); 
-        
+        this.loading.set(false);
+        // Démarrer le timer d'inactivité après connexion réussie
+        this.inactivity.start((url) => this.auth.lockSession(url));
+        this.router.navigate(['/app/dashboard']);
       },
-      error: (err: any) => {
-        this.isLoading.set(false);
-
-        if (err.status === 401) {
-          this.attemptsLeft.update(v => v - 1);
-          if (this.attemptsLeft() <= 0) {
-            this.isBlocked.set(true);
-            this.error.set('Accès bloqué : 3 tentatives échouées.');
-          } else {
-            this.error.set(`Identifiants incorrects. Il vous reste ${this.attemptsLeft()} tentative(s).`);
-          }
-        } else if (err.status === 403) {
-          this.isBlocked.set(true);
-          this.error.set('Compte bloqué. Contactez l\'administrateur.');
-        } else {
-          this.error.set('Utilisateur non enregistré ou erreur serveur.');
-        }
-
-        this.cd.detectChanges();
-      }
+      error: (err) => {
+        this.loading.set(false);
+        this.errorMsg.set(
+          err?.status === 401 || err?.status === 403
+            ? 'Identifiants incorrects.'
+            : 'Erreur serveur, réessayez.'
+        );
+      },
     });
   }
-  
-
-  togglePasswordVisibility(): void {
-    this.showPassword.update(v => !v);
-  }
-  readonly sessionMessage = signal('');
- 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (params['reason'] === 'session_expired') {
-        this.sessionMessage.set('Votre session a expiré. Veuillez vous reconnecter.');
-      }
-    });
-  }
-
 }

@@ -35,8 +35,8 @@
               [class.open]="expanded() === item.label"
               [class.group-active]="isGroupActive(item)">
               <span class="nav-icon">
-                <i class="{{ item.icon }}"></i>
-              </span>
+  <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
+</span>
               <span class="nav-label">{{ item.label }}</span>
               <span class="nav-arrow">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -54,6 +54,7 @@
                   [class.active]="isActive(child.link)"
                   (click)="navigate(child.link!)">
                   <span class="child-dot"></span>
+                  <lucide-angular [name]="child.icon || 'circle'" size="16"></lucide-angular>
                   <span class="child-label">{{ child.label }}</span>
                 </button>
               }
@@ -67,8 +68,8 @@
               [class.active]="isActive(item.link)"
               (click)="navigate(item.link!)">
               <span class="nav-icon">
-                <i class="{{ item.icon }}"></i>
-              </span>
+  <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
+</span>
               <span class="nav-label">{{ item.label }}</span>
             </button>
             <div class="nav-tooltip">{{ item.label }}</div>

@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule }   from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService }       from '../../services/auth/auth';
@@ -10,7 +10,7 @@ import { InactivityService } from '../../services/auth/inactivity';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './lock-screen.html',
-  styleUrls:  ['./lock-screen.scss'],
+  styleUrls: ['./lock-screen.scss'],
 })
 export class LockScreenComponent implements OnInit {
   private readonly auth       = inject(AuthService);
@@ -24,17 +24,20 @@ export class LockScreenComponent implements OnInit {
   readonly loading         = signal(false);
   readonly errorMessage    = signal('');
   readonly showPassword    = signal(false);
-  readonly isTokenExpiring = signal(false);   // lock déclenché par pré-expiration
+  /** true si redirigé ici parce que le token expire bientôt */
+  readonly isTokenExpiring = signal(false);
 
   userName     = '';
   userInitials = '';
 
   ngOnInit(): void {
+    // Si pas d'utilisateur → login
     const user = this.auth.currentUserValue;
     if (!user) { this.router.navigate(['/login']); return; }
 
     this.userName     = user.firstName && user.lastName
-      ? `${user.firstName} ${user.lastName}` : user.userName;
+      ? `${user.firstName} ${user.lastName}`
+      : user.userName;
     this.userInitials = this.buildInitials(this.userName);
 
     this.route.queryParams.subscribe(p =>
@@ -52,13 +55,14 @@ export class LockScreenComponent implements OnInit {
     this.auth.unlock(this.form.value.password ?? '').subscribe({
       next: () => {
         this.loading.set(false);
-        this.inactivity.start();
+        // Redémarrer le timer d'inactivité avec le nouveau token
+        this.inactivity.start((url) => this.auth.lockSession(url));
         this.router.navigateByUrl(this.auth.getRedirectUrl());
       },
       error: (err) => {
         this.loading.set(false);
-        if (err?.status === 401 && this.auth.isTokenExpired(localStorage.getItem('token') ?? '')) {
-          // Token expiré entre le lock et la saisie → login complet
+        // Si le token a expiré pendant l'attente sur /lock → /login direct
+        if (this.auth.isTokenExpired(localStorage.getItem('token') ?? '')) {
           this.auth.forceLogout();
           this.router.navigate(['/login'], { queryParams: { reason: 'session_expired' } });
         } else {
@@ -71,6 +75,7 @@ export class LockScreenComponent implements OnInit {
   goToLogin(): void { this.auth.logout(); }
 
   private buildInitials(name: string): string {
-    return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map(w => w[0].toUpperCase()).join('');
   }
 }

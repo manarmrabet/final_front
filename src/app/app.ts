@@ -1,29 +1,28 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import{AuthService} from './services/auth/auth';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { AuthService }       from './services/auth/auth';
 import { InactivityService } from './services/auth/inactivity';
-
+import { TokenWarningBannerComponent }   from './components/token-warning-banner/token-warning-banner';
+import { SessionExpiryOverlayComponent } from './components/session-expiry-overlay/session-expiry-overlay';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  imports: [RouterOutlet, TokenWarningBannerComponent, SessionExpiryOverlayComponent],
+  template: `
+    <app-token-warning-banner/>
+    <router-outlet/>
+    <app-session-expiry-overlay/>
+  `,
 })
 export class App implements OnInit {
-  private router = inject(Router);
   private readonly auth       = inject(AuthService);
   private readonly inactivity = inject(InactivityService);
 
   ngOnInit(): void {
-    this.router.events.subscribe(evt => {
-      if (evt instanceof NavigationEnd) {
-        window.scrollTo(0, 0);
-      }
-      if (this.auth.currentUserValue && !this.auth.isLocked()) {
-      this.inactivity.start();
+    // Reprendre le timer après refresh de page si token encore valide
+    if (this.auth.currentUserValue && !this.auth.isLocked()) {
+      this.inactivity.start((url) => this.auth.lockSession(url));
     }
-    });
   }
 }
