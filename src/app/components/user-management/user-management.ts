@@ -1,23 +1,21 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule } from 'lucide-angular'; 
+import { LucideAngularModule } from 'lucide-angular';
 import { AdminService } from '../../services/admin/admin';
+import { DataStoreService } from '../../services/dataStore/data-store';
 import { UserDTO, Role, Site } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule, 
-    LucideAngularModule 
-  ],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './user-management.html',
   styleUrls: ['./user-management.scss']
 })
 export class UserManagementComponent implements OnInit {
   private adminService = inject(AdminService);
+  private dataStore    = inject(DataStoreService);  // ← service partagé
 
   users           = signal<UserDTO[]>([]);
   roles           = signal<Role[]>([]);
@@ -47,16 +45,32 @@ export class UserManagementComponent implements OnInit {
 
   loadInitialData(): void {
     this.isPageLoading.set(true);
-    this.refreshUsers();
-    this.adminService.getRoles().subscribe({ next: r => this.roles.set(r), error: e => console.error(e) });
-    this.adminService.getSites().subscribe({ next: r => this.sites.set(r), error: e => console.error(e) });
+
+    // Charger depuis le DataStore si déjà chargé, sinon déclencher loadAll
+    if (this.dataStore.users.length > 0) {
+      this.users.set(this.dataStore.users);
+      this.isPageLoading.set(false);
+    }
+
+    // S'abonner aux changements du store → mise à jour locale auto
+    this.dataStore.users$.subscribe(u => {
+      this.users.set(u);
+      this.isPageLoading.set(false);
+    });
+    this.dataStore.roles$.subscribe(r => this.roles.set(r));
+    this.dataStore.sites$.subscribe(s => this.sites.set(s));
+
+    // Charger tout si pas encore fait
+    if (!this.dataStore.users.length) this.dataStore.loadAll();
+    else {
+      this.dataStore.refreshRoles();
+      this.dataStore.refreshSites();
+    }
   }
 
   refreshUsers(): void {
-    this.adminService.getUsers().subscribe({
-      next: res => { this.users.set(res); this.isPageLoading.set(false); },
-      error: ()  => this.isPageLoading.set(false)
-    });
+    // Rafraîchit le store → tous les composants abonnés reçoivent les nouvelles données
+    this.dataStore.refreshUsers();
   }
 
   initUser(): UserDTO {
@@ -76,9 +90,9 @@ export class UserManagementComponent implements OnInit {
 
   saveUser(): void {
     const user = this.newUser();
-    if (!this.isEmailValid(user.email))                                         { alert('E-mail invalide.');                 return; }
-    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName))  { alert('Nom/prénom invalide.');             return; }
-    if (!user.userName || !user.roleName)                                       { alert('Username et rôle obligatoires.');   return; }
+    if (!this.isEmailValid(user.email))                                        { alert('E-mail invalide.');               return; }
+    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName)) { alert('Nom/prénom invalide.');           return; }
+    if (!user.userName || !user.roleName)                                      { alert('Username et rôle obligatoires.'); return; }
 
     const id = user.id ?? (user as any).userId;
     if (this.isEditMode() && !id) { alert("Impossible d'identifier l'utilisateur."); return; }
@@ -89,21 +103,26 @@ export class UserManagementComponent implements OnInit {
       : this.adminService.createUser(user);
 
     obs.subscribe({
-      next:  ()  => { this.refreshUsers(); this.closeModal(); },
+      next: (saved) => {
+        if (this.isEditMode()) {
+          this.dataStore.updateUserLocally(user); // mise à jour optimiste immédiate
+        } else {
+          this.dataStore.addUserLocally(saved);   // ajout optimiste immédiat
+        }
+        this.dataStore.refreshUsers();            // sync avec le backend
+        this.closeModal();
+      },
       error: err => { this.isLoading.set(false); alert(err.error?.message ?? `Erreur (${err.status})`); }
     });
   }
 
-  // ── Toggle statut directement en base ─────────────────
   toggleStatus(user: UserDTO): void {
     const id = user.id ?? (user as any).userId;
     if (!id) return;
     const updated = { ...user, isActive: user.isActive === 1 ? 0 : 1 };
     this.adminService.updateUser(id, updated).subscribe({
       next: () => {
-        this.users.update(list =>
-          list.map(u => (u.id === id || (u as any).userId === id) ? updated : u)
-        );
+        this.dataStore.updateUserLocally(updated); // dashboard stats se mettent à jour immédiatement
       },
       error: err => console.error('Erreur toggle statut:', err)
     });
@@ -120,7 +139,11 @@ export class UserManagementComponent implements OnInit {
       ? this.adminService.forceDeleteUser(id)
       : this.adminService.deleteUser(id);
     del$.subscribe({
-      next:  () => { this.cancelDelete(); this.refreshUsers(); },
+      next: () => {
+        this.dataStore.removeUserLocally(id); // suppression optimiste immédiate
+        this.dataStore.refreshUsers();         // sync backend
+        this.cancelDelete();
+      },
       error: err => console.error('Erreur suppression:', err)
     });
   }
