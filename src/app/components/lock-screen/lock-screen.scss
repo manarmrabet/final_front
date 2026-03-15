@@ -1,332 +1,248 @@
 // ════════════════════════════════════════════════════════
-// LOCK SCREEN — style Velzon
+// LOCK SCREEN — backdrop-filter blur (CSS uniquement)
 // ════════════════════════════════════════════════════════
-$blue        : #1d4ed8;
-$primary:       #1d4ed8;
-$primary-mid:   #3b82f6;
-$blue-light  : #eef2ff;
-$primary-light: #eff6ff;
-$blue-border : rgba(64,81,137,.2);
+@use 'sass:color';
+
+$primary     : #1d4ed8;
+$primary-mid : #3b82f6;
 $danger      : #ef4444;
 $warning     : #f7b84b;
-$success     : #0ab39c;
 $text-dark   : #495057;
 $text-title  : #343a40;
 $text-muted  : #878a99;
 $border      : #e9ebec;
-$bg          : #f3f3f9;
-$bg-soft     : #f8f8fb;
 $white       : #ffffff;
-$radius      : 10px;
+$radius      : 12px;
 $font        : 'Poppins', sans-serif;
-.lock-wrapper {
 
+// ── Wrapper ──────────────────────────────────────────────
+// backdrop-filter floute TOUT ce qui est derrière le wrapper
+// (sidebar, navbar, page active) sans toucher au layout
+.lock-wrapper {
   position: fixed;
   inset: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  z-index: 2000;
-
+  z-index: 9999;
   font-family: $font;
+
+  // ✅ C'est tout ce qu'il faut : floute le contenu derrière
+  backdrop-filter: blur(8px) brightness(0.85);
+  -webkit-backdrop-filter: blur(8px) brightness(0.85);
+
+  // Légère teinte pour assombrir sans cacher
+  background: rgba(180, 195, 220, 0.2);
 }
 
-/* background blur */
-
-.lock-wrapper::before {
-
-  content: "";
-  position: absolute;
-  inset: 0;
-
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  background: rgba(255,255,255,0.2);
-
-  z-index: 1;
-}
-
-/* card */
-
+// ── Carte blanche centrée ─────────────────────────────────
 .lock-card {
-
-  position: relative;
-  z-index: 2;
-
   width: 100%;
-  max-width: 380px;
-
+  max-width: 420px;
+  margin: 16px;
   background: $white;
-
   border-radius: $radius;
-
-  border: 1px solid $border;
-
-  padding: 30px 34px;
-
+  border: 1px solid rgba(0,0,0,0.07);
+  padding: 40px 40px 32px;
   text-align: center;
-
-  box-shadow: 0 5px 30px rgba(0,0,0,.12);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.04),
+    0 20px 60px rgba(0,0,0,0.14);
+  animation: slideUp .35s cubic-bezier(.22,1,.36,1) both;
 }
 
-/* header */
-
-.lc-header {
-  margin-bottom: 22px;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 rgba($primary-mid, 0.35); }
+  70%  { box-shadow: 0 0 0 10px rgba($primary-mid, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($primary-mid, 0); }
+}
+
+// ── Header ───────────────────────────────────────────────
+.lc-header { margin-bottom: 22px; }
 
 .lc-title {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: $text-title;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .lc-sub {
   font-size: .78rem;
   color: $text-muted;
+  line-height: 1.5;
 }
 
-/* warning */
-
+// ── Warning ──────────────────────────────────────────────
 .lc-warn {
-
   display: flex;
+  align-items: flex-start;
   gap: 8px;
-
-  background: rgba($warning,.12);
-
-  border: 1px solid rgba($warning,.25);
-
-  padding: 10px 12px;
-
-  border-radius: 7px;
-
-  font-size: .76rem;
-
-  color: darken($warning,15%);
-
-  margin-bottom: 18px;
-
+  background: rgba($warning, 0.1);
+  border: 1px solid rgba($warning, 0.25);
+  padding: 10px 13px;
+  border-radius: 8px;
+  font-size: .74rem;
+  color: color.adjust($warning, $lightness: -15%);
+  margin-bottom: 20px;
   text-align: left;
+  line-height: 1.5;
+  svg { flex-shrink: 0; margin-top: 1px; }
 }
 
-/* avatar */
-
-.lc-avatar-wrap {
-  margin-bottom: 10px;
-}
+// ── Avatar ───────────────────────────────────────────────
+.lc-avatar-wrap { margin-bottom: 12px; }
 
 .lc-avatar {
-
-  width: 64px;
-  height: 64px;
-
+  width: 72px;
+  height: 72px;
   margin: 0 auto;
-
   border-radius: 50%;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
-
   color: $white;
-
-  background: linear-gradient(135deg,$primary-mid,$primary);
-
-  box-shadow: 0 6px 16px rgba($primary,.35);
+  background: linear-gradient(135deg, $primary-mid, $primary);
+  box-shadow: 0 6px 18px rgba($primary, 0.35);
+  animation: pulseRing 3s ease-in-out infinite;
 }
 
-/* username */
-
+// ── Name ─────────────────────────────────────────────────
 .lc-name {
-
   font-size: .9rem;
   font-weight: 600;
-
   color: $text-title;
-
   margin-bottom: 20px;
 }
 
-/* form */
-
+// ── Form ─────────────────────────────────────────────────
 form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.lc-field {
-  text-align: left;
-}
+.lc-field { text-align: left; }
 
 .lc-label {
-
   font-size: .78rem;
   font-weight: 500;
-
   color: $text-dark;
-
-  margin-bottom: 4px;
-
+  margin-bottom: 5px;
   display: block;
 }
 
-/* input */
-
-.lc-input-wrap {
-  position: relative;
-}
+// ── Input ────────────────────────────────────────────────
+.lc-input-wrap { position: relative; }
 
 .lc-input {
-
   width: 100%;
-  height: 38px;
-
-  padding: 0 38px 0 12px;
-
-  border: 1px solid $border;
-
-  border-radius: 6px;
-
-  font-size: .83rem;
-
-  font-family: $font;
-
-  color: $text-dark;
-
+  height: 42px;
+  padding: 0 42px 0 14px;
   background: $white;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font-size: .84rem;
+  font-family: $font;
+  color: $text-dark;
+  transition: all .18s ease;
+  box-sizing: border-box;
 
-  transition: all .15s;
+  &::placeholder { color: #c0c4cc; }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-mid;
+    box-shadow: 0 0 0 3px rgba($primary-mid, 0.12);
+  }
 }
 
-.lc-input:focus {
-
-  outline: none;
-
-  border-color: $primary;
-
-  box-shadow: 0 0 0 3px rgba($primary,.1);
-}
-
-/* eye icon */
-
+// ── Eye ──────────────────────────────────────────────────
 .lc-eye {
-
   position: absolute;
-
-  right: 10px;
+  right: 11px;
   top: 50%;
-
   transform: translateY(-50%);
-
   border: none;
   background: none;
-
   cursor: pointer;
-
   color: $text-muted;
+  padding: 4px;
+  transition: color .15s;
+  &:hover { color: $text-dark; }
 }
 
-.lc-eye:hover {
-  color: $text-dark;
-}
-
-/* error */
-
+// ── Error ────────────────────────────────────────────────
 .lc-error {
-
-  font-size: .73rem;
-
+  font-size: .72rem;
   color: $danger;
-
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
-/* button */
-
+// ── Bouton bleu ───────────────────────────────────────────
 .lc-btn {
-
-  height: 38px;
-
-  border-radius: 6px;
-
+  height: 44px;
+  border-radius: 8px;
   border: none;
-
-  background: $primary;
-
+  background: linear-gradient(135deg, $primary-mid, $primary);
   color: $white;
-
-  font-size: .82rem;
+  font-size: .88rem;
   font-weight: 600;
-
+  font-family: $font;
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  transition: all .18s ease;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba($primary, 0.35);
 
-  gap: 6px;
-
-  transition: all .15s;
-
-  box-shadow: 0 3px 10px rgba($primary,.3);
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba($primary, 0.45);
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 }
 
-.lc-btn:hover:not(:disabled) {
-  background: darken($primary,6%);
-}
-
-.lc-btn:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
-
-/* spinner */
-
+// ── Spinner ──────────────────────────────────────────────
 .lc-spinner {
-
-  width: 14px;
-  height: 14px;
-
-  border: 2px solid rgba(255,255,255,.35);
-  border-top-color: $white;
-
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
   border-radius: 50%;
-
-  animation: spin .6s linear infinite;
+  animation: spin .65s linear infinite;
 }
 
-/* footer */
-
+// ── Footer ───────────────────────────────────────────────
 .lc-footer {
-
-  margin-top: 16px;
-
-  font-size: .75rem;
-
+  margin-top: 18px;
+  font-size: .76rem;
   color: $text-muted;
 }
 
 .lc-link {
-
   border: none;
   background: none;
-
-  color: $primary;
-
+  color: $primary-mid;
   font-weight: 600;
-
+  font-family: $font;
   cursor: pointer;
-}
-
-.lc-link:hover {
-  text-decoration: underline;
+  font-size: .76rem;
+  padding: 0;
+  transition: color .15s;
+  &:hover { color: $primary; text-decoration: underline; }
 }
