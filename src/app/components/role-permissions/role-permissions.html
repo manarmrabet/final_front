@@ -1,149 +1,130 @@
-<div class="rp-page">
+<div class="container-fluid py-4">
+  <div class="page-wrapper">
 
-  <!-- ══ Header ═══════════════════════════════════════════ -->
-  <div class="rp-header">
-    <div class="rp-header-left">
-      <div class="rp-header-icon">
-        <lucide-icon name="ShieldCheck"></lucide-icon>
-      </div>
-      <div>
-        <h1 class="rp-title">Configuration des Accès</h1>
-        <p class="rp-subtitle">Gérez les permissions de chaque rôle utilisateur</p>
-      </div>
-    </div>
-    <div class="rp-live-badge">
-      <span class="rp-live-dot"></span>
-      Contrôle d'accès actif
-    </div>
-  </div>
-
-  <!-- ══ Role Selector ═════════════════════════════════════ -->
-  <div class="rp-section">
-    <div class="rp-section-label">
-      <i class="feather icon-users"></i>
-      Sélectionner un rôle
-    </div>
-    <div class="rp-pills">
-      @for (role of roles(); track role.roleId) {
-        <button class="rp-pill"
-          [class.active]="selectedRoleId() === role.roleId"
-          (click)="onRoleChange(role.roleId)">
-          <span class="rp-pill-dot"></span>
-          {{ role.roleName }}
-        </button>
-      }
-    </div>
-  </div>
-
-  <!-- ══ Content ═══════════════════════════════════════════ -->
-  @if (selectedRoleId()) {
-
-    <!-- Stats -->
-    <div class="rp-stats-row">
-      <div class="rp-stat-block">
-        <span class="rp-stat-num">{{ allMenus().length }}</span>
-        <span class="rp-stat-lbl">Total menus</span>
-      </div>
-      <div class="rp-stat-sep"></div>
-      <div class="rp-stat-block">
-        <span class="rp-stat-num --green">{{ selectedMenuIds().length }}</span>
-        <span class="rp-stat-lbl">Activés</span>
-      </div>
-      <div class="rp-stat-sep"></div>
-      <div class="rp-stat-block">
-        <span class="rp-stat-num --muted">{{ allMenus().length - selectedMenuIds().length }}</span>
-        <span class="rp-stat-lbl">Désactivés</span>
-      </div>
-
-      <div class="rp-progress-wrap">
-        <div class="rp-progress-bar">
-          <div class="rp-progress-fill"
-               [style.width.%]="allMenus().length ? (selectedMenuIds().length / allMenus().length) * 100 : 0">
-          </div>
+    <div class="card-header">
+      <div class="header-left">
+        <div class="header-icon">
+          <lucide-angular name="ShieldCheck" size="32" class="text-blue-500"></lucide-angular>
         </div>
-        <span class="rp-progress-pct">
-          {{ allMenus().length ? ((selectedMenuIds().length / allMenus().length) * 100 | number:'1.0-0') : 0 }}%
-        </span>
-      </div>
-
-      <div class="rp-actions">
-        <button class="rp-act --on" (click)="selectAll()">
-          <i class="feather icon-check-square"></i> Tout activer
-        </button>
-        <button class="rp-act --off" (click)="deselectAll()">
-          <i class="feather icon-square"></i> Tout désactiver
-        </button>
-      </div>
-    </div>
-
-    <!-- Grid -->
-    <div class="rp-grid">
-      @for (menu of allMenus(); track menu.menuItemId; let idx = $index) {
-        <div class="rp-card"
-          [class.--on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)"
-          (click)="toggleMenu(menu.menuItemId)">
-
-          <!-- Icône : utilise menu.icon si dispo, sinon initiale du label -->
-          <div class="rp-card-icon"
-            [class.--on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)"
-            [attr.data-color]="['blue','purple','amber','teal','green','red','pink'][idx % 7]">
-
-            @if (menu.icon) {
-              <i class="{{ menu.icon }}"></i>
-            } @else {
-              <span class="rp-icon-letter">{{ menu.label?.charAt(0)?.toUpperCase() }}</span>
-            }
-
-          </div>
-
-          <div class="rp-card-body">
-            <span class="rp-card-name">{{ menu.label }}</span>
-            <span class="rp-card-path">
-              <i class="feather icon-link-2"></i>
-              {{ menu.link }}
-            </span>
-          </div>
-
-          <!-- Checkbox tick uniquement — pas de toggle slider -->
-          <div class="rp-checkbox"
-            [class.--on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
-            <svg class="rp-check-svg" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-
+        <div>
+          <h5 class="page-card-title">Configuration des Accès</h5>
+          <span class="page-card-sub">Gérez les permissions de chaque rôle</span>
         </div>
-      }
-    </div>
-
-    <!-- Footer -->
-    <div class="rp-footer">
-      <div class="rp-footer-hint">
-        <i class="feather icon-info"></i>
-        Les modifications seront appliquées immédiatement après sauvegarde
       </div>
-      <button class="rp-save-btn" (click)="save()">
-        <i class="feather icon-save"></i>
-        Enregistrer les permissions
-      </button>
     </div>
 
-  } @else {
+    <!-- Role Selector Card -->
+    <div class="role-selector-card">
+      <div class="role-selector-label">
+        <i class="feather icon-users"></i>
+        Sélectionner un rôle
+      </div>
+      <div class="role-pills">
+        @for (role of roles(); track role.roleId) {
+          <button class="role-pill"
+            [class.active]="selectedRoleId() === role.roleId"
+            (click)="onRoleChange(role.roleId)">
+            <span class="role-pill-dot"></span>
+            {{ role.roleName }}
+          </button>
+        }
+      </div>
+    </div>
 
-    <div class="rp-empty">
-      <div class="rp-empty-visual">
-        <span class="rp-empty-ring r1"></span>
-        <span class="rp-empty-ring r2"></span>
-        <div class="rp-empty-ico">
+    <!-- Content -->
+    @if (selectedRoleId()) {
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-value">{{ allMenus().length }}</span>
+          <span class="stat-label">Total menus</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value active">{{ selectedMenuIds().length }}</span>
+          <span class="stat-label">Activés</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-value muted">{{ allMenus().length - selectedMenuIds().length }}</span>
+          <span class="stat-label">Désactivés</span>
+        </div>
+
+        <div class="stats-bar-actions">
+          <button class="btn-select-all" (click)="selectAll()">
+            <i class="feather icon-check-square"></i>
+            Tout activer
+          </button>
+          <button class="btn-deselect-all" (click)="deselectAll()">
+            <i class="feather icon-square"></i>
+            Tout désactiver
+          </button>
+        </div>
+      </div>
+
+      <!-- Menus Grid -->
+      <div class="menus-grid">
+        @for (menu of allMenus(); track menu.menuItemId) {
+          <div class="menu-card"
+            [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)"
+            (click)="toggleMenu(menu.menuItemId)">
+
+            <div class="menu-card-left">
+              <div class="menu-card-icon"
+                [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
+                <!-- Icône Lucide -->
+                <lucide-angular
+                  [name]="menu.icon || 'menu'"
+                  size="24"
+                  [class.text-active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
+                </lucide-angular>
+              </div>
+              <div class="menu-card-info">
+                <span class="menu-card-label">{{ menu.label }}</span>
+                <span class="menu-card-link">{{ menu.link }}</span>
+              </div>
+            </div>
+
+            <div class="menu-card-right">
+              <div class="toggle-switch"
+                [class.on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
+                <div class="toggle-knob"></div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+
+      <!-- Save Footer -->
+      <div class="save-footer">
+        <div class="save-footer-info">
+          <i class="feather icon-info"></i>
+          <span>Les modifications seront appliquées immédiatement après sauvegarde</span>
+        </div>
+        <button class="btn-save" (click)="save()">
+          <i class="feather icon-save"></i>
+          Enregistrer les permissions
+        </button>
+      </div>
+
+    } @else {
+
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-icon">
           <i class="feather icon-shield"></i>
+          <div class="empty-ping"></div>
+        </div>
+        <h5>Aucun rôle sélectionné</h5>
+        <p>Choisissez un rôle ci-dessus pour configurer ses permissions d'accès à la navigation</p>
+        <div class="empty-arrows">
+          <i class="feather icon-arrow-up"></i>
         </div>
       </div>
-      <h3 class="rp-empty-title">Aucun rôle sélectionné</h3>
-      <p class="rp-empty-desc">Choisissez un rôle ci-dessus pour configurer ses permissions d'accès</p>
-      <div class="rp-empty-arrow"><i class="feather icon-arrow-up"></i></div>
-    </div>
 
-  }
+    }
 
+  </div>
 </div>
