@@ -5,6 +5,8 @@ import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { UserDTO } from '../../models/user.model';
 import { API } from '../../utils/api-endpoints';
+import { TokenWarningService }         from '../token-warning';
+import { SessionExpiryOverlayService } from '../session-expiry-overlay';
 
 interface JwtPayload {
   sub: string;
@@ -19,21 +21,27 @@ interface JwtPayload {
 
 interface LoginResponse { token: string; }
 
-/** Combien de ms avant expiration on verrouille l'écran pour forcer re-auth */
-const LOCK_BEFORE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+/**
+ * 5 minutes avant expiration :
+ *  - si session active  → afficher la WARNING BANNER (refresh possible sans quitter la page)
+ *  - si session lockée → overlay 5s → /login directement
+ */
+const WARN_BEFORE_MS = 4000000;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService implements OnDestroy {
-  private readonly http   = inject(HttpClient);
-  private readonly router = inject(Router);
+  private readonly http    = inject(HttpClient);
+  private readonly router  = inject(Router);
+  private readonly warning = inject(TokenWarningService);
+  private readonly overlay = inject(SessionExpiryOverlayService);
 
   private readonly subject = new BehaviorSubject<UserDTO | null>(null);
   readonly currentUser$    = this.subject.asObservable();
 
-  /** Signal: session verrouillée par inactivité ou pré-expiration */
+  /** true quand la session est verrouillée par inactivité (30 min sans mouvement) */
   readonly isLocked = signal<boolean>(false);
 
-  private redirectUrl  = '/dashboard';
+  private redirectUrl   = '/app/dashboard';
   private expiryTimer?: ReturnType<typeof setTimeout>;
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
@@ -41,7 +49,6 @@ export class AuthService implements OnDestroy {
     const token = localStorage.getItem('token');
     if (token) {
       if (this.isTokenExpired(token)) {
-        // Token déjà expiré au chargement → login obligatoire
         this.clearStorage();
       } else {
         try {
@@ -52,8 +59,7 @@ export class AuthService implements OnDestroy {
         }
       }
     }
-    const locked = sessionStorage.getItem('isLocked') === 'true';
-    if (locked) this.isLocked.set(true);
+    if (sessionStorage.getItem('isLocked') === 'true') this.isLocked.set(true);
   }
 
   // ── Login ──────────────────────────────────────────────────────────────────
@@ -64,6 +70,7 @@ export class AuthService implements OnDestroy {
           localStorage.setItem('token', res.token);
           this.subject.next(this.decode(res.token));
           this.isLocked.set(false);
+          this.warning.hide();
           sessionStorage.removeItem('isLocked');
           sessionStorage.removeItem('lockReturnUrl');
           this.scheduleExpiryActions(res.token);
@@ -73,7 +80,7 @@ export class AuthService implements OnDestroy {
     );
   }
 
-  // ── Unlock (lock screen) ──────────────────────────────────────────────────
+  // ── Unlock (depuis lock screen OU mini-modale warning banner) ─────────────
   unlock(password: string): Observable<LoginResponse> {
     const username = this.currentUserValue?.userName ?? '';
     return this.http.post<LoginResponse>(API.AUTH.LOGIN, { username, password }).pipe(
@@ -82,17 +89,18 @@ export class AuthService implements OnDestroy {
           localStorage.setItem('token', res.token);
           this.subject.next(this.decode(res.token));
           this.isLocked.set(false);
+          this.warning.hide();
           sessionStorage.removeItem('isLocked');
           sessionStorage.removeItem('lockReturnUrl');
-          this.scheduleExpiryActions(res.token);  // repart le timer avec le nouveau token
+          this.scheduleExpiryActions(res.token);
         }
       }),
       catchError((err: HttpErrorResponse) => throwError(() => err))
     );
   }
 
-  // ── Lock / Unlock helpers ─────────────────────────────────────────────────
-  lockSession(returnUrl: string = '/dashboard'): void {
+  // ── Lock ──────────────────────────────────────────────────────────────────
+  lockSession(returnUrl: string = '/app/dashboard'): void {
     this.redirectUrl = returnUrl;
     this.isLocked.set(true);
     sessionStorage.setItem('isLocked', 'true');
@@ -103,16 +111,14 @@ export class AuthService implements OnDestroy {
     return sessionStorage.getItem('lockReturnUrl') ?? this.redirectUrl;
   }
 
-  /**
-   * Appelé par l'intercepteur HTTP sur 401 (token expiré côté serveur).
-   * La navigation est faite par l'intercepteur lui-même.
-   */
+  /** Appelé par l'intercepteur HTTP sur 401/403-expiré */
   forceLogout(): void {
     this.clearStorage();
     clearTimeout(this.expiryTimer);
+    this.warning.hide();
   }
 
-  // ── Logout ────────────────────────────────────────────────────────────────
+  // ── Logout manuel ─────────────────────────────────────────────────────────
   logout(): void {
     const token = localStorage.getItem('token');
     if (token) {
@@ -121,13 +127,88 @@ export class AuthService implements OnDestroy {
         catchError(() => throwError(() => null))
       ).subscribe({ error: () => console.warn('Backend logout inaccessible') });
     }
-    this.clearStorage();
-    clearTimeout(this.expiryTimer);
+    this.forceLogout();
     this.router.navigate(['/login']);
   }
 
-  // ── Token expiry ──────────────────────────────────────────────────────────
+  // ── Planification expiration ───────────────────────────────────────────────
+  /**
+   * LOGIQUE COMPLÈTE :
+   *
+   * T1 = exp - 5min
+   *   Cas A — session ACTIVE (pas lockée) :
+   *     → Afficher la WARNING BANNER avec compte à rebours + bouton "Rafraîchir"
+   *     → Si l'user clique Rafraîchir : mini-modale mdp → nouveau token → continue
+   *     → Si l'user ne fait rien : T2 se déclenche
+   *
+   *   Cas B — session LOCKÉE (inactivité déjà déclenchée) :
+   *     → Lock + expiry simultanés → overlay 5s → /login directement (pas de lock screen)
+   *
+   * T2 = exp exacte (si pas de refresh depuis T1)
+   *     → forceLogout + overlay 5s → /login
+   *
+   * INACTIVITÉ (géré par InactivityService, indépendant) :
+   *     → après 30 min sans mouvement → lockSession() + navigate('/lock')
+   *     → sur /lock : si user tape mdp → unlock() → retour à la page précédente
+   *     → sur /lock : si token expire PENDANT l'attente → T2 ci-dessus → /login direct
+   */
+  scheduleExpiryActions(token: string): void {
+    clearTimeout(this.expiryTimer);
+    this.warning.stop();
 
+    try {
+      const { exp } = this.parsePayload(token);
+      if (!exp) return;
+
+      const expiresAtMs = exp * 1000;
+      const expiresInMs = expiresAtMs - Date.now();
+      const warnInMs    = expiresInMs - WARN_BEFORE_MS;
+
+      console.log(`[Auth] Token expire dans ${Math.round(expiresInMs / 1000)}s | bannière dans ${Math.round(Math.max(0, warnInMs) / 1000)}s`);
+
+      if (expiresInMs <= 0) {
+        this.forceLogout();
+        this.overlay.show();
+        return;
+      }
+
+      const triggerWarn = () => {
+        // Cas B : lockée + expiry → logout direct sans lock screen
+        if (this.isLocked()) {
+          console.warn('[Auth] Session lockée + token expiré → /login direct');
+          this.forceLogout();
+          this.overlay.show();
+          return;
+        }
+
+        // Cas A : session active → bannière warning
+        console.log('[Auth] Affichage warning banner');
+        this.warning.start(expiresAtMs);
+
+        // T2 : si toujours pas refreshé à expiry exacte
+        const remaining = expiresAtMs - Date.now();
+        this.expiryTimer = setTimeout(() => {
+          this.warning.hide();
+          console.warn('[Auth] Token expiré sans refresh → overlay → /login');
+          this.forceLogout();
+          this.overlay.show();
+        }, remaining);
+      };
+
+      if (warnInMs > 0) {
+        this.expiryTimer = setTimeout(triggerWarn, warnInMs);
+      } else {
+        // Déjà dans les 5 dernières minutes
+        triggerWarn();
+      }
+
+    } catch (e) {
+      console.error('[Auth] Erreur scheduleExpiryActions:', e);
+      this.forceLogout();
+    }
+  }
+
+  // ── Helpers token ─────────────────────────────────────────────────────────
   isTokenExpired(token: string): boolean {
     try {
       const { exp } = this.parsePayload(token);
@@ -146,92 +227,25 @@ export class AuthService implements OnDestroy {
     } catch { return 0; }
   }
 
-  /**
-   * Planifie deux timeouts :
-   *
-   *  T1 = expiry - 5min → verrouille l'écran (lock screen) pour forcer
-   *       l'utilisateur à saisir son mdp → génère un nouveau token (30min de plus)
-   *
-   *  T2 = expiry exacte → si toujours sur lock screen sans avoir unlock,
-   *       on efface la session et on redirige vers /login
-   *       (l'endpoint /login ne nécessite pas de token → ça marche)
-   */
-  private scheduleExpiryActions(token: string): void {
-    clearTimeout(this.expiryTimer);
-
-    try {
-      const { exp } = this.parsePayload(token);
-      if (!exp) return;
-
-      const expiresInMs = exp * 1000 - Date.now();
-      const lockInMs    = expiresInMs - LOCK_BEFORE_EXPIRY_MS;
-
-      if (expiresInMs <= 0) {
-        // Déjà expiré
-        this.forceLogout();
-        this.router.navigate(['/login'], { queryParams: { reason: 'session_expired' } });
-        return;
-      }
-
-      if (lockInMs > 0) {
-        // Cas normal : on a plus de 5 min → verrouiller dans lockInMs
-        this.expiryTimer = setTimeout(() => {
-          const url = this.router.url;
-          if (!url.startsWith('/lock') && !url.startsWith('/login')) {
-            this.lockSession(url);
-            this.router.navigate(['/lock'], { queryParams: { reason: 'token_expiring' } });
-          }
-          // Planifier le logout complet si toujours pas unlock dans 5 min
-          this.expiryTimer = setTimeout(() => {
-            if (this.isLocked()) {
-              // Toujours verrouillé → token vraiment expiré → login complet
-              this.forceLogout();
-              this.router.navigate(['/login'], { queryParams: { reason: 'session_expired' } });
-            }
-          }, LOCK_BEFORE_EXPIRY_MS);
-        }, lockInMs);
-
-      } else {
-        // Moins de 5 min restantes → verrouiller maintenant
-        const url = this.router.url;
-        if (!url.startsWith('/lock') && !url.startsWith('/login')) {
-          this.lockSession(url);
-          this.router.navigate(['/lock'], { queryParams: { reason: 'token_expiring' } });
-        }
-        // Logout dans le temps restant
-        this.expiryTimer = setTimeout(() => {
-          if (this.isLocked()) {
-            this.forceLogout();
-            this.router.navigate(['/login'], { queryParams: { reason: 'session_expired' } });
-          }
-        }, expiresInMs);
-      }
-    } catch {
-      this.forceLogout();
-    }
-  }
-
-  // ── Decode ────────────────────────────────────────────────────────────────
+  // ── Decode JWT ────────────────────────────────────────────────────────────
   private parsePayload(token: string): JwtPayload {
-    return JSON.parse(
-      atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
-    );
+    return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
   }
 
   private decode(token: string): UserDTO {
     try {
-      const payload = this.parsePayload(token);
-      const raw     = payload.authorities || payload.roles || [];
-      const roles   = (Array.isArray(raw) ? raw : [raw]).map((r: string) => {
+      const p   = this.parsePayload(token);
+      const raw = p.authorities || p.roles || [];
+      const roles = (Array.isArray(raw) ? raw : [raw]).map((r: string) => {
         const n = r.trim().toUpperCase().replace(/\s+/g, '_');
         return n.startsWith('ROLE_') ? n : `ROLE_${n}`;
       });
       return {
-        userName:    payload.sub       || '',
-        firstName:   payload.firstName || '',
-        lastName:    payload.lastName  || '',
-        email:       payload.email     || '',
-        roleName:    roles[0]          || '',
+        userName:    p.sub         || '',
+        firstName:   p.firstName   || '',
+        lastName:    p.lastName    || '',
+        email:       p.email       || '',
+        roleName:    roles[0]      || '',
         authorities: roles,
       };
     } catch {
@@ -239,7 +253,6 @@ export class AuthService implements OnDestroy {
     }
   }
 
-  // ── Accessors ─────────────────────────────────────────────────────────────
   get currentUserValue(): UserDTO | null { return this.subject.value; }
 
   hasRole(role: string): boolean {

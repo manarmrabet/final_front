@@ -191,26 +191,42 @@
         </div>
 
         <!-- Icône -->
-        <div class="form-field full-width">
-          <label class="field-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-            Icône (classe CSS)
-          </label>
-          <div class="icon-input-wrap">
-            <input
-              class="field-input"
-              [(ngModel)]="newMenu.icon"
-              placeholder="ex: feather icon-home"
-              [class.filled]="newMenu.icon"
-            />
-            <div class="icon-preview-inline">
-              <i class="{{ newMenu.icon || 'feather icon-menu' }}"></i>
-            </div>
-          </div>
-          <span class="field-hint">Classes Feather : feather icon-home, feather icon-users...</span>
-        </div>
+
+<div class="form-field full-width">
+  <label class="field-label">
+    <svg width="13" height="13" ...> ... </svg>
+    Icône
+  </label>
+
+  <input
+    class="field-input"
+    [(ngModel)]="iconSearch"
+    placeholder="Rechercher une icône (ex: home, users, settings)"
+  />
+
+  <div class="icon-selector-grid">
+    @for (icon of filteredIcons; track icon) {
+      <div
+        class="icon-item"
+        [class.selected]="newMenu.icon === icon"
+        (click)="selectIcon(icon)"
+        title="{{ icon }}"
+      >
+        <lucide-angular [name]="icon" size="24"></lucide-angular>
+      </div>
+    }
+    @if (filteredIcons.length === 0) {
+      <div class="no-icons">Aucune icône trouvée</div>
+    }
+  </div>
+
+  <div class="selected-icon-preview" *ngIf="newMenu.icon">
+    Icône sélectionnée : <lucide-angular [name]="newMenu.icon" size="20"></lucide-angular>
+    <code>{{ newMenu.icon }}</code>
+  </div>
+
+  <span class="field-hint">Cliquez sur une icône pour la sélectionner</span>
+</div>
 
         <!-- Toggle Sous-menu -->
         <div class="form-field full-width">

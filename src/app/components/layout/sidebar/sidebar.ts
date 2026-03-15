@@ -1,27 +1,31 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+// sidebar.component.ts
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth';
 import { AdminService } from '../../../services/admin/admin';
 import { MenuItemDTO } from '../../../models/menu-item';
-import { filter } from 'rxjs/operators';
+import { filter, Subscription } from 'rxjs';
+import { LucideAngularModule } from 'lucide-angular';  // icons non nécessaire ici
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   private auth         = inject(AuthService);
   private router       = inject(Router);
   private adminService = inject(AdminService);
 
-  activeUrl  = signal('');
+  activeUrl  = signal<string>('');
   expanded   = signal<string | null>(null);
   menuItems  = signal<MenuItemDTO[]>([]);
-  isLoading  = signal(true);
+  isLoading  = signal<boolean>(true);
+
+  private authSub?: Subscription;
 
   rootMenus = computed(() =>
     this.menuItems().filter(m => !m.parentId)
@@ -37,41 +41,78 @@ export class SidebarComponent implements OnInit {
 
   constructor() {
     this.activeUrl.set(this.router.url);
-    this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((e: any) => this.activeUrl.set(e.urlAfterRedirects));
   }
 
   ngOnInit(): void {
-    this.loadMenus();
+    // 1. Écouter les changements d'authentification (login / logout / refresh)
+    this.authSub = this.auth.currentUser$.subscribe(user => {
+      if (user) {
+        // Utilisateur connecté → charger les menus
+        this.loadMenus();
+      } else {
+        // Déconnecté → vider les menus
+        this.menuItems.set([]);
+        this.isLoading.set(false);
+        this.expanded.set(null);
+      }
+    });
+
+    // 2. Mettre à jour l'URL active à chaque navigation terminée
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e: NavigationEnd) => {
+      this.activeUrl.set(e.urlAfterRedirects);
+      // Optionnel : re-vérifier l'expansion du groupe actif après navigation
+      this.autoExpandActiveGroup();
+    });
+
+    // Chargement initial (si déjà connecté au démarrage)
+    if (this.auth.currentUserValue) {
+      this.loadMenus();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.authSub?.unsubscribe();
   }
 
   loadMenus(): void {
     this.isLoading.set(true);
     this.adminService.getAuthorizedMenus().subscribe({
       next: (items) => {
-        this.menuItems.set(items);
+        console.log('Menus chargés :', items);
+        this.menuItems.set(items || []);
         this.isLoading.set(false);
-
-        const active = items.find(m =>
-          m.parentId && this.activeUrl().includes(m.link || '')
-        );
-        if (active?.parentId) {
-          const parent = items.find(m => m.menuItemId === active.parentId);
-          if (parent) this.expanded.set(parent.label);
-        }
+        this.autoExpandActiveGroup();
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('Erreur chargement menus', err);
+        this.menuItems.set([]);
+        this.isLoading.set(false);
+      }
     });
   }
 
+  private autoExpandActiveGroup(): void {
+    const activeChild = this.menuItems().find(m =>
+      m.link && this.isActive(m.link) && m.parentId != null
+    );
+    if (activeChild?.parentId) {
+      const parent = this.menuItems().find(p => p.menuItemId === activeChild.parentId);
+      if (parent?.label) {
+        this.expanded.set(parent.label);
+      }
+    }
+  }
+
   toggleExpand(label: string): void {
-    this.expanded.set(this.expanded() === label ? null : label);
+    this.expanded.update(current => current === label ? null : label);
   }
 
   isActive(link?: string): boolean {
     if (!link) return false;
-    return this.activeUrl() === link || this.activeUrl().startsWith(link + '/');
+    const current = this.activeUrl();
+    return current === link || current.startsWith(link + '/');
   }
 
   isGroupActive(item: MenuItemDTO): boolean {
@@ -81,9 +122,8 @@ export class SidebarComponent implements OnInit {
 
   navigate(link: string): void {
     if (!link) return;
-    const link2 = link.trim();
-    // Liens en DB sans /app/ → on préfixe uniquement si pas déjà présent
-    const url = link2.startsWith('/app') ? link2 : '/app' + (link2.startsWith('/') ? link2 : '/' + link2);
+    const trimmed = link.trim();
+    const url = trimmed.startsWith('/app') ? trimmed : '/app' + (trimmed.startsWith('/') ? trimmed : '/' + trimmed);
     this.router.navigateByUrl(url);
   }
 }

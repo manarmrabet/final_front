@@ -1,81 +1,92 @@
 <div class="lock-wrapper">
 
-  <!-- ── Left panel ── -->
-  <div class="lock-panel left-panel" aria-hidden="true">
-    <div class="brand">
-      <span class="brand-vel">COFAT</span>
+  <!-- ── Panneau gauche ── -->
+  <div class="lock-left" aria-hidden="true">
+    <div class="lock-brand">
+      <span class="brand-v">vel</span><span class="brand-z">ZON</span>
     </div>
-    <div class="testimonial">
+    <div class="lock-quote">
+      <div class="quote-mark">❝</div>
+      <p>"The theme is really great with an amazing customer&nbsp;support."</p>
+      <div class="quote-dots">
+        <span class="dot"></span>
+        <span class="dot active"></span>
+        <span class="dot"></span>
+      </div>
     </div>
   </div>
 
-  <!-- ── Right panel ── -->
-  <div class="lock-panel right-panel">
+  <!-- ── Panneau droit ── -->
+  <div class="lock-right">
     <div class="lock-card">
 
-      <header class="card-header">
-        <h1 class="card-title">Lock Screen</h1>
-        <p class="card-subtitle">Enter your password to unlock the screen!</p>
+      <header class="lc-header">
+        <h1 class="lc-title">Lock Screen</h1>
+        <p class="lc-sub">Enter your password to unlock the screen!</p>
       </header>
 
-      <!-- ⚠️ Token expiring warning -->
-      <div *ngIf="isTokenExpiring()" class="warning-banner" role="alert">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        Votre session expire dans moins de 5 minutes. Reconnectez-vous pour la prolonger.
-      </div>
+      <!-- Avertissement token expirant -->
+      @if (isTokenExpiring()) {
+        <div class="lc-warn" role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Votre session expire bientôt. Saisissez votre mot de passe pour la prolonger.
+        </div>
+      }
 
-      <!-- Avatar -->
-      <div class="avatar-wrap">
-        <div class="avatar">{{ userInitials }}</div>
+      <!-- Avatar initiales -->
+      <div class="lc-avatar-wrap">
+        <div class="lc-avatar">{{ userInitials }}</div>
       </div>
-      <p class="user-name">{{ userName }}</p>
+      <p class="lc-name">{{ userName }}</p>
 
-      <!-- Form -->
+      <!-- Formulaire -->
       <form [formGroup]="form" (ngSubmit)="onUnlock()" novalidate>
-        <div class="field-group">
-          <label class="field-label" for="lockPassword">Password</label>
-          <div class="input-wrap">
-            <input
-              id="lockPassword"
-              class="field-input"
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Enter password"
-              autocomplete="current-password"
-            />
-            <button type="button" class="toggle-btn" (click)="togglePassword()"
+
+        <div class="lc-field">
+          <label class="lc-label" for="lockPwd">Password</label>
+          <div class="lc-input-wrap">
+            <input id="lockPwd" class="lc-input"
+                   [type]="showPassword() ? 'text' : 'password'"
+                   formControlName="password"
+                   placeholder="Enter password"
+                   autocomplete="current-password"/>
+            <button type="button" class="lc-eye" (click)="togglePassword()"
                     [attr.aria-label]="showPassword() ? 'Hide' : 'Show'">
-              <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
-                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
-              </svg>
+              @if (!showPassword()) {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              } @else {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              }
             </button>
           </div>
-          <p *ngIf="errorMessage()" class="error-msg" role="alert">{{ errorMessage() }}</p>
+          @if (errorMessage()) {
+            <p class="lc-error" role="alert">{{ errorMessage() }}</p>
+          }
         </div>
 
-        <button type="submit" class="unlock-btn" [disabled]="form.invalid || loading()">
-          <span *ngIf="!loading()">Unlock</span>
-          <span *ngIf="loading()" class="spinner" aria-label="Chargement…"></span>
+        <button type="submit" class="lc-btn" [disabled]="form.invalid || loading()">
+          @if (!loading()) { Unlock }
+          @else { <span class="lc-spinner"></span> }
         </button>
+
       </form>
 
-      <p class="signin-link">
+      <p class="lc-footer">
         Not you?&nbsp;
-        <button type="button" class="link-btn" (click)="goToLogin()">return Signin</button>
+        <button type="button" class="lc-link" (click)="goToLogin()">return Signin</button>
       </p>
 
     </div>
