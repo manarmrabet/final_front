@@ -1,3 +1,4 @@
+<!-- ── Proposal Banner ──────────────────────────────────────────────────── -->
 @if (showProposal() && pendingMenu()) {
   <div class="proposal-banner">
     <div class="proposal-banner__icon">⚡</div>
@@ -12,40 +13,340 @@
   </div>
 }
 
-@if (isLoading()) {
-  <div class="d-flex justify-content-center align-items-center" style="min-height:200px">
-    <div class="spinner-border text-primary" role="status"></div>
-  </div>
-} @else {
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION ADMIN                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+@if (isAdmin()) {
 
-  @if (visibleCards().length === 0) {
-    <div class="text-center py-5">
-      <p class="text-muted">Aucune carte configurée pour votre rôle.</p>
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="db-header">
+    <div class="db-header__left">
+      <div class="db-header__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <div>
+        <h5 class="db-header__title">Tableau de bord</h5>
+        <span class="db-header__sub">COFAT — Système de gestion interne</span>
+      </div>
+    </div>
+    <div class="db-header__right">
+      <span class="db-header__date">{{ currentDate | date:'EEEE d MMMM yyyy — HH:mm':'':'fr' }}</span>
+      <button class="db-header__refresh" (click)="refreshStats()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ───────────────────────────────────────────────────────── -->
+  @if (statsLoading()) {
+    <div class="kpi-grid">
+      @for (i of [1,2,3,4]; track i) { <div class="skeleton-kpi"></div> }
+    </div>
+  } @else {
+    <div class="kpi-grid">
+      @for (stat of statCards(); track stat.id) {
+        <div class="kpi-card" [style.--kc]="stat.iconColor">
+          <div class="kpi-card__top">
+            <div class="kpi-card__icon" [style.background]="stat.iconBg" [innerHTML]="getSvgIcon(stat.icon, stat.iconColor)"></div>
+            <span class="kpi-card__label">{{ stat.title }}</span>
+          </div>
+          <div class="kpi-card__value">{{ stat.value }}</div>
+          @if (stat.subValue) {
+            <div class="kpi-card__sub">{{ stat.subValue }}</div>
+          }
+          <div class="kpi-card__bar"></div>
+        </div>
+      }
     </div>
   }
 
+  <!-- ── Graphique + Activité récente ────────────────────────────────────── -->
+  <div class="db-row">
+
+    <!-- Graphique connexions 7 jours -->
+    <div class="db-card db-card--chart">
+      <div class="db-card__header">
+        <span class="db-card__title">Activité — connexions 7 derniers jours</span>
+        <button class="db-card__action" (click)="navigateTo({id:'',title:'',icon:'',iconBg:'',iconColor:'',subLabel:'',resolvedValue:'',resolvedSubValue:'',navigateTo:'/audit'})">
+          Voir audit
+        </button>
+      </div>
+      <div class="chart-bars">
+        @for (day of chartDays(); track day.label) {
+          <div class="chart-col">
+            <div class="chart-col__bars">
+              <div class="chart-bar chart-bar--login"
+                   [style.height.%]="day.max > 0 ? (day.logins / day.max) * 100 : 0"
+                   [title]="day.logins + ' connexions'">
+              </div>
+              <div class="chart-bar chart-bar--logout"
+                   [style.height.%]="day.max > 0 ? (day.logouts / day.max) * 100 : 0"
+                   [title]="day.logouts + ' déconnexions'">
+              </div>
+            </div>
+            <span class="chart-col__label">{{ day.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="chart-legend">
+        <span class="chart-legend__item"><span class="chart-legend__dot" style="background:#4f6ef7"></span>Connexions</span>
+        <span class="chart-legend__item"><span class="chart-legend__dot" style="background:#e2e8f0"></span>Déconnexions</span>
+      </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="db-card db-card--activity">
+      <div class="db-card__header">
+        <span class="db-card__title">Activité récente</span>
+        <button class="db-card__action" (click)="navigateTo({id:'',title:'',icon:'',iconBg:'',iconColor:'',subLabel:'',resolvedValue:'',resolvedSubValue:'',navigateTo:'/audit'})">
+          Audit
+        </button>
+      </div>
+
+      <!-- Sévérité aujourd'hui -->
+      <div class="severity-row">
+        <span class="severity-badge severity-badge--info">INFO {{ auditSeverity().info }}</span>
+        <span class="severity-badge severity-badge--warn">WARN {{ auditSeverity().warning }}</span>
+        <span class="severity-badge severity-badge--err">ERR {{ auditSeverity().error }}</span>
+      </div>
+
+      <div class="activity-list">
+        @for (item of activityItems(); track item.id) {
+          <div class="activity-item">
+            <span class="activity-item__dot" [style.background]="item.color"></span>
+            <div class="activity-item__body">
+              <span class="activity-item__label">{{ item.label }}</span>
+              <span class="activity-item__time">{{ item.sub }}</span>
+            </div>
+          </div>
+        }
+        @if (activityItems().length === 0) {
+          <div class="activity-empty">Aucune activité récente</div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Utilisateurs récents + Répartition ──────────────────────────────── -->
+  <div class="db-row db-row--3">
+
+    <!-- Utilisateurs récents -->
+    <div class="db-card db-card--users">
+      <div class="db-card__header">
+        <span class="db-card__title">Utilisateurs récents</span>
+        <span class="db-card__badge">{{ allUsers().length }} total</span>
+      </div>
+      <div class="users-table">
+        <div class="users-table__head">
+          <span>NOM</span><span>RÔLE</span><span>STATUT</span>
+        </div>
+        @for (u of recentUsers(); track u.userName) {
+          <div class="users-table__row">
+            <div class="user-cell">
+              <div class="user-avatar" [style.background]="getRoleColor(u.roleName) + '22'" [style.color]="getRoleColor(u.roleName)">
+                {{ getUserInitials(u) }}
+              </div>
+              <div class="user-info">
+                <span class="user-info__name">{{ u.firstName }} {{ u.lastName }}</span>
+                <span class="user-info__email">{{ u.email }}</span>
+              </div>
+            </div>
+            <span class="role-badge" [style.color]="getRoleColor(u.roleName)" [style.background]="getRoleColor(u.roleName) + '18'">
+              {{ u.roleName | slice:0:4 }}.
+            </span>
+            <span class="status-dot" [class.status-dot--active]="u.isActive === 1" [class.status-dot--inactive]="u.isActive !== 1">
+              {{ u.isActive === 1 ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Répartition par rôle -->
+    <div class="db-card">
+      <div class="db-card__header">
+        <span class="db-card__title">Répartition par rôle</span>
+        <span class="db-card__badge">{{ allRoles().length }} rôles</span>
+      </div>
+
+      <!-- Donut SVG -->
+      <div class="donut-wrap">
+        <svg viewBox="0 0 100 100" class="donut-svg">
+          @for (rd of roleDistribution(); track rd.name; let i = $index) {
+            <circle class="donut-seg"
+                    [attr.stroke]="['#4f6ef7','#16a34a','#ea580c','#7c3aed','#0891b2'][i % 5]"
+                    [attr.stroke-dasharray]="(rd.percent / 100 * 238.76) + ' 238.76'"
+                    r="38" cx="50" cy="50">
+            </circle>
+          }
+          <text x="50" y="47" class="donut-center-val">{{ allUsers().length }}</text>
+          <text x="50" y="57" class="donut-center-label">users</text>
+        </svg>
+      </div>
+
+      <div class="role-legend">
+        @for (rd of roleDistribution(); track rd.name; let i = $index) {
+          <div class="role-legend__row">
+            <span class="role-legend__dot" [style.background]="['#4f6ef7','#16a34a','#ea580c','#7c3aed','#0891b2'][i % 5]"></span>
+            <span class="role-legend__name">{{ rd.name }}</span>
+            <span class="role-legend__count">{{ rd.count }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Utilisateurs par site -->
+    <div class="db-card">
+      <div class="db-card__header">
+        <span class="db-card__title">Utilisateurs par site</span>
+        <span class="db-card__badge">{{ allSites().length }} sites</span>
+      </div>
+      <div class="site-list">
+        @for (s of siteDistribution(); track s.name) {
+          <div class="site-row">
+            <span class="site-row__name">{{ s.name }}</span>
+            <div class="site-row__bar-wrap">
+              <div class="site-row__bar" [style.width.%]="(s.count / s.total) * 100"></div>
+            </div>
+            <span class="site-row__count">{{ s.count }} / {{ s.total }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-divider"></div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- RACCOURCIS                                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="dashboard-header">
+  <span class="section-title">
+    <span class="section-title__dot" style="background:#ca8a04"></span>
+    Raccourcis
+  </span>
+  <button class="btn-customize" (click)="showManager.set(true)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Personnaliser
+  </button>
+</div>
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:120px">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+} @else {
+  @if (visibleCards().length === 0) {
+    <div class="empty-state">
+      <p>Aucune carte visible. <button class="btn-link" (click)="showManager.set(true)">Personnaliser</button></p>
+    </div>
+  }
   <div class="cards-grid">
     @for (card of visibleCards(); track card.id) {
-      <div class="stat-card"
-           [class.stat-card--clickable]="card.navigateTo"
-           [style.--accent]="card.iconColor"
-           [style.--accent-bg]="card.iconBg"
-           (click)="navigateTo(card)">
-
+      <div class="stat-card" [class.stat-card--clickable]="card.navigateTo" [class.stat-card--dragover]="dragOverId() === card.id"
+           [style.--accent]="card.iconColor" [style.--accent-bg]="card.iconBg"
+           draggable="true" (dragstart)="onDragStart($event, card)" (dragover)="onDragOver($event, card)"
+           (drop)="onDrop($event, card)" (dragend)="onDragEnd()" (click)="navigateTo(card)">
         <button class="stat-card__remove" title="Masquer" (click)="removeCard(card, $event)">✕</button>
-
         <div class="stat-card__top">
           <div class="stat-card__icon" [innerHTML]="getSvgIcon(card.icon, card.iconColor)"></div>
           <span class="stat-card__badge">{{ card.title }}</span>
         </div>
-
         <div class="stat-card__value">{{ card.resolvedValue || '—' }}</div>
         <div class="stat-card__label">{{ card.title }}</div>
-
-        <div class="stat-card__bar">
-          <div class="stat-card__bar-fill"></div>
-        </div>
+        <div class="stat-card__bar"><div class="stat-card__bar-fill"></div></div>
       </div>
     }
+  </div>
+}
+
+<!-- ── Slide-over ──────────────────────────────────────────────────────── -->
+@if (showManager()) {
+  <div class="slideover-backdrop" (click)="showManager.set(false)"></div>
+  <div class="slideover">
+    <div class="slideover__header">
+      <span class="slideover__title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Personnaliser les cartes
+      </span>
+      <button class="slideover__close" (click)="showManager.set(false)">✕</button>
+    </div>
+    <div class="slideover__body">
+      <div class="manager-section">
+        <div class="manager-section__label">
+          <span>Cartes raccourcis</span>
+          <span class="manager-section__count">{{ visibleCards().length }}</span>
+        </div>
+        <p class="manager-hint">Glissez pour réordonner · ✎ pour personnaliser</p>
+        @for (card of allCards(); track card.id) {
+          <div class="manager-row" [class.manager-row--hidden]="!isCardVisible(card)" draggable="true"
+               (dragstart)="onDragStart($event, card)" (dragover)="onDragOver($event, card)"
+               (drop)="onDrop($event, card)" (dragend)="onDragEnd()">
+            <span class="manager-row__drag">⠿</span>
+            <div class="manager-row__icon" [style.background]="card.iconBg" [innerHTML]="getSvgIcon(card.icon, card.iconColor)"></div>
+            <span class="manager-row__label">{{ card.title }}</span>
+            <div class="manager-row__actions">
+              <button class="manager-btn" title="Modifier" (click)="openEdit(card)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="manager-btn manager-btn--toggle" [class.manager-btn--active]="isCardVisible(card)" (click)="toggleCardVisibility(card)">
+                @if (isCardVisible(card)) {
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                } @else {
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal édition ────────────────────────────────────────────────────── -->
+@if (editingCard()) {
+  <div class="edit-backdrop" (click)="closeEdit()"></div>
+  <div class="edit-modal">
+    <div class="edit-modal__header">
+      <span>Modifier « {{ editingCard()!.title }} »</span>
+      <button class="slideover__close" (click)="closeEdit()">✕</button>
+    </div>
+    <div class="edit-modal__body">
+      <div class="edit-preview" [style.--accent]="editingCard()!.iconColor">
+        <div class="edit-preview__icon" [style.background]="editingCard()!.iconBg" [innerHTML]="getSvgIcon(editingCard()!.icon, editingCard()!.iconColor)"></div>
+        <div class="edit-preview__label">{{ editingCard()!.title }}</div>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section__label">Couleur</div>
+        <div class="color-grid">
+          @for (c of colorPalette; track c.color) {
+            <button class="color-dot" [style.background]="c.color" [class.color-dot--active]="editingCard()!.iconColor === c.color" (click)="setEditColor(c)"></button>
+          }
+        </div>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section__label">Icône</div>
+        <div class="icon-grid">
+          @for (ico of iconOptions; track ico) {
+            <button class="icon-btn" [class.icon-btn--active]="editingCard()!.icon === ico"
+                    [style.borderColor]="editingCard()!.icon === ico ? editingCard()!.iconColor : 'transparent'"
+                    [innerHTML]="getSvgIcon(ico, editingCard()!.icon === ico ? editingCard()!.iconColor : '#9ca3af')"
+                    (click)="setEditIcon(ico)"></button>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="edit-modal__footer">
+      <button class="btn-reset" (click)="resetCardCustom(editingCard()!)">Réinitialiser</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-cancel" (click)="closeEdit()">Annuler</button>
+        <button class="btn-save" [style.background]="editingCard()!.iconColor" (click)="saveEdit()">Enregistrer</button>
+      </div>
+    </div>
   </div>
 }
