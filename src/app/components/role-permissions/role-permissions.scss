@@ -1,272 +1,557 @@
-// ── Color token ───────────────────────────────────────────
-$blue-mid    : rgba(13,43,110,.15);
-$blue-border : rgba(13,43,110,.2);
-$blue        : #1d4ed8;
-$primary:       #1d4ed8;
-$primary-mid:   #3b82f6;
-$blue-light  : #eef2ff;
-$primary-light: #eff6ff;
-$success     : #10b981;
-$success-light: #f0fdf4;
-$danger      : #ef4444;
-$warning     : #f59e0b;
-$text-dark   : #0f172a;
-$text-muted  : #94a3b8;
-$border      : #e2e8f0;
-$bg-light    : #f1f5f9;
-$white       : #ffffff;
-$text-title  : #343a40;
-$radius      : 14px;
-$shadow      : 0 4px 28px rgba(13,43,110,.08);
-$font        : 'Poppins', sans-serif;
+// ════════════════════════════════════════════════════════
+// ROLE PERMISSIONS — Mix 3 × 4
+// Initiale comme fallback icône + checkbox tick uniquement
+// ════════════════════════════════════════════════════════
+@use 'sass:color';
 
-// ─── Container ───────────────────────────────────────────
-.container-fluid { padding: 2rem; background: $bg-light; min-height: 100vh; }
+$primary      : #1d4ed8;
+$primary-mid  : #3b82f6;
+$primary-soft : #dbeafe;
+$primary-bg   : #eff6ff;
+$success      : #10b981;
+$success-soft : #d1fae5;
+$success-bg   : #f0fdf4;
+$danger       : #ef4444;
+$danger-soft  : #fee2e2;
+$warning      : #f59e0b;
+$warning-soft : #fef3c7;
 
-.page-wrapper {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 1.25rem;
-  animation: fadeInUp 0.35s ease;
+$ink          : #0f172a;
+$ink-mid      : #334155;
+$ink-light    : #64748b;
+$ink-ghost    : #94a3b8;
+
+$border       : #e2e8f0;
+$border-soft  : #f1f5f9;
+$surface      : #ffffff;
+$bg           : #f8fafc;
+
+$r-xs   : 6px;
+$r-sm   : 10px;
+$r-md   : 14px;
+$r-lg   : 18px;
+$r-full : 99px;
+
+$sh-xs : 0 1px 2px rgba(0,0,0,.04);
+$sh-sm : 0 2px 8px rgba(0,0,0,.05);
+$sh-md : 0 4px 16px rgba(13,43,110,.08);
+
+$font : 'Poppins', sans-serif;
+
+// ── Page ─────────────────────────────────────────────────
+.rp-page {
+  padding: 1.75rem 2rem;
+  background: $bg;
+  min-height: 100vh;
+  font-family: $font;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: rpIn .3s ease both;
 }
 
-// ─── Page Header ────────────────────────────────────────
-.card-header {
-    background: $white;
-    border-bottom: 1px solid $border;
-    padding: 1.35rem 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+// ── Header ───────────────────────────────────────────────
+.rp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: linear-gradient(135deg, $primary-bg 0%, $success-bg 100%);
+  border: 1px solid $primary-soft;
+  border-radius: $r-lg;
+  padding: 1.2rem 1.6rem;
+  box-shadow: $sh-xs;
+}
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+.rp-header-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
 
-      .header-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: $primary-light;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: $primary;
-        font-size: 1.1rem;
-      }
+.rp-header-icon {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: $surface;
+  border: 1.5px solid $primary-soft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary;
+  box-shadow: $sh-xs;
+  flex-shrink: 0;
+  lucide-icon { width: 22px; height: 22px; }
+}
 
-      
-      .page-card-title { font-size: 1rem; font-weight: 600; color: $text-title; margin: 0; font-family: $font; }
+.rp-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $ink;
+  margin: 0 0 2px;
+  letter-spacing: -.02em;
+}
 
-      .page-card-sub   { font-size: .75rem; color: $text-muted; margin: 2px 0 0; font-family: $font; }
-    }}
+.rp-subtitle {
+  font-size: .73rem;
+  color: $ink-light;
+  margin: 0;
+}
 
-// ─── Role Selector Card ──────────────────────────────────
-.role-selector-card {
-  background: $white; border-radius: $radius;
-  box-shadow: $shadow; padding: 1.35rem 1.75rem;
+.rp-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: $surface;
+  border: 1px solid $success-soft;
+  color: $success;
+  font-size: .71rem;
+  font-weight: 600;
+  padding: 5px 13px;
+  border-radius: $r-full;
+  white-space: nowrap;
+  box-shadow: $sh-xs;
+}
+
+.rp-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: $success;
+  animation: rpPulse 2s ease-in-out infinite;
+}
+
+// ── Section ───────────────────────────────────────────────
+.rp-section {
+  background: $surface;
   border: 1px solid $border;
-
-  .role-selector-label {
-    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: $text-muted; margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 6px;
-    i { color: $blue; }
-  }
-
-  .role-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-
-  .role-pill {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 0.45rem 1.1rem; border-radius: 50px;
-    border: 1.5px solid $border; background: $white;
-    color: $text-dark; font-size: 0.82rem; font-weight: 600;
-    cursor: pointer; transition: all 0.2s ease;
-
-    .role-pill-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: $border; transition: all 0.2s;
-    }
-
-    &:hover {
-      border-color: $blue; color: $blue; background: $blue-light;
-      .role-pill-dot { background: $blue; }
-    }
-
-    &.active {
-      background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
-      border-color: transparent; color: $white;
-      box-shadow: 0 4px 12px rgba(13,43,110,.35);
-      .role-pill-dot { background: rgba($white, 0.7); }
-    }
-  }
+  border-radius: $r-md;
+  padding: 1.1rem 1.6rem;
+  box-shadow: $sh-xs;
 }
 
-// ─── Stats Bar ───────────────────────────────────────────
-.stats-bar {
-  background: $white; border-radius: $radius;
-  border: 1px solid $border; padding: 1rem 1.75rem;
-  display: flex; align-items: center; gap: 1.5rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-
-  .stat-item {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    .stat-value {
-      font-size: 1.4rem; font-weight: 800; color: $text-dark; line-height: 1;
-      &.active { color: $success; }
-      &.muted  { color: $text-muted; }
-    }
-    .stat-label {
-      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.8px; color: $text-muted;
-    }
-  }
-
-  .stat-divider { width: 1px; height: 32px; background: $border; }
-
-  .stats-bar-actions { margin-left: auto; display: flex; gap: 8px; }
-
-  .btn-select-all,
-  .btn-deselect-all {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 0.4rem 1rem; border-radius: 8px;
-    font-size: 0.78rem; font-weight: 600; cursor: pointer;
-    transition: all 0.2s; border: 1.5px solid;
-    i { font-size: 0.82rem; }
-  }
-
-  .btn-select-all {
-    background: $success-light; border-color: rgba($success, 0.3); color: $success;
-    &:hover { background: $success; color: $white; border-color: $success; }
-  }
-
-  .btn-deselect-all {
-    background: $bg-light; border-color: $border; color: $text-muted;
-    &:hover { background: $danger; color: $white; border-color: $danger; }
-  }
+.rp-section-label {
+  font-size: .67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: $ink-ghost;
+  margin-bottom: .8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  i { color: $primary-mid; font-size: .78rem; }
 }
 
-// ─── Menus Grid ──────────────────────────────────────────
-.menus-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 10px;
+.rp-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
-// ─── Menu Card ───────────────────────────────────────────
-.menu-card {
-  display: flex; align-items: center; justify-content: space-between;
-  background: $white; border: 1.5px solid $border; border-radius: 12px;
-  padding: 1rem 1.25rem; cursor: pointer; transition: all 0.2s ease;
-  animation: rowFadeIn 0.3s ease both; user-select: none;
+.rp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: .38rem 1.05rem;
+  border-radius: $r-full;
+  border: 1.5px solid $border;
+  background: $bg;
+  color: $ink-mid;
+  font-size: .79rem;
+  font-weight: 600;
+  font-family: $font;
+  cursor: pointer;
+  transition: all .18s ease;
 
-  @for $i from 1 through 30 {
-    &:nth-child(#{$i}) { animation-delay: #{$i * 0.03}s; }
+  .rp-pill-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: $border;
+    transition: background .18s;
   }
 
   &:hover {
-    border-color: $blue-border;
-    box-shadow: 0 4px 16px rgba(13,43,110,.08);
+    border-color: $primary-soft;
+    color: $primary;
+    background: $primary-bg;
     transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba($primary,.1);
+    .rp-pill-dot { background: $primary-mid; }
   }
 
   &.active {
-    background: $blue-light;
-    border-color: $blue-border;
-    box-shadow: 0 4px 16px rgba(13,43,110,.1);
+    background: linear-gradient(135deg, color.adjust(#0d2b6e, $lightness: 15%), $primary);
+    border-color: transparent;
+    color: $surface;
+    box-shadow: 0 4px 14px rgba($primary,.3);
+    transform: translateY(-1px);
+    .rp-pill-dot { background: rgba($surface,.55); }
+  }
+}
+
+// ── Stats row ─────────────────────────────────────────────
+.rp-stats-row {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r-md;
+  padding: 1rem 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  box-shadow: $sh-xs;
+  flex-wrap: wrap;
+}
+
+.rp-stat-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.rp-stat-num {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: $ink;
+  line-height: 1;
+  letter-spacing: -.03em;
+  &.--green { color: $success; }
+  &.--muted { color: $ink-ghost; }
+}
+
+.rp-stat-lbl {
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: $ink-ghost;
+}
+
+.rp-stat-sep {
+  width: 1px; height: 36px;
+  background: $border-soft;
+  flex-shrink: 0;
+}
+
+.rp-progress-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 100px;
+}
+
+.rp-progress-bar {
+  flex: 1; height: 6px;
+  background: $border-soft;
+  border-radius: $r-full;
+  overflow: hidden;
+}
+
+.rp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $primary-mid, $primary);
+  border-radius: $r-full;
+  transition: width .45s cubic-bezier(.4,0,.2,1);
+  min-width: 4px;
+}
+
+.rp-progress-pct {
+  font-size: .73rem;
+  font-weight: 700;
+  color: $primary;
+  white-space: nowrap;
+}
+
+.rp-actions {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.rp-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: .36rem .9rem;
+  border-radius: $r-sm;
+  font-size: .74rem;
+  font-weight: 600;
+  font-family: $font;
+  cursor: pointer;
+  transition: all .18s;
+  border: 1.5px solid;
+  i { font-size: .76rem; }
+
+  &.--on {
+    background: $success-bg;
+    border-color: rgba($success,.25);
+    color: $success;
+    &:hover { background: $success; color: $surface; border-color: $success; }
+  }
+  &.--off {
+    background: $bg;
+    border-color: $border;
+    color: $ink-ghost;
+    &:hover { background: $danger-soft; color: $danger; border-color: rgba($danger,.3); }
+  }
+}
+
+// ── Grid ─────────────────────────────────────────────────
+.rp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 9px;
+}
+
+// ── Card ─────────────────────────────────────────────────
+.rp-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: $surface;
+  border: 1.5px solid $border;
+  border-radius: $r-md;
+  padding: .9rem 1.1rem;
+  cursor: pointer;
+  transition: all .18s ease;
+  user-select: none;
+  animation: rpCardIn .28s ease both;
+
+  @for $i from 1 through 40 {
+    &:nth-child(#{$i}) { animation-delay: #{$i * 0.022}s; }
   }
 
-  .menu-card-left {
-    display: flex; align-items: center; gap: 12px;
-
-    .menu-card-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: $bg-light; border: 1.5px solid $border;
-      display: flex; align-items: center; justify-content: center;
-      color: $text-muted; font-size: 1rem; transition: all 0.2s; flex-shrink: 0;
-
-      &.active {
-        background:  $blue;
-        border-color: transparent; color: $white;
-        box-shadow: 0 3px 10px rgba(13,43,110,.3);
-      }
-    }
-
-    .menu-card-info {
-      display: flex; flex-direction: column; gap: 2px;
-      .menu-card-label { font-size: 0.875rem; font-weight: 600; color: $text-dark; }
-      .menu-card-link {
-        font-size: 0.72rem; color: $text-muted; font-family: $font;
-        background: $bg-light; padding: 1px 6px; border-radius: 4px; display: inline-block;
-      }
-    }
+  &:hover {
+    border-color: $primary-soft;
+    box-shadow: $sh-md;
+    transform: translateY(-2px);
   }
 
-  .toggle-switch {
-    width: 44px; height: 24px; border-radius: 24px;
-    background: $border; position: relative; transition: all 0.25s ease; flex-shrink: 0;
+  &.--on {
+    background: $surface;
+    border-color: rgba($primary,.3);
+    border-left: 3px solid $primary-mid;
+    box-shadow: 0 2px 10px rgba($primary,.1);
+  }
+}
 
-    .toggle-knob {
-      position: absolute; width: 18px; height: 18px; border-radius: 50%;
-      background: $white; top: 3px; left: 3px;
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
+// ── Icône ronde colorée ───────────────────────────────────
+.rp-card-icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  transition: all .2s;
+  flex-shrink: 0;
+  border: 1.5px solid transparent;
 
-    &.on {
-      background: linear-gradient(135deg, lighten(#0d2b6e, 15%), $blue);
-      box-shadow: 0 2px 8px rgba(13,43,110,.4);
-      .toggle-knob { transform: translateX(20px); }
+  // Couleurs cycliques via data-color
+  &[data-color="blue"]   { background: $primary-bg;   border-color: rgba($primary,.2);       color: $primary; }
+  &[data-color="purple"] { background: #f5f3ff;        border-color: rgba(124,58,237,.2);     color: #7c3aed; }
+  &[data-color="amber"]  { background: $warning-soft;  border-color: rgba($warning,.25);      color: $warning; }
+  &[data-color="teal"]   { background: #f0fdfa;        border-color: rgba(13,148,136,.2);     color: #0d9488; }
+  &[data-color="green"]  { background: $success-bg;    border-color: rgba($success,.2);       color: $success; }
+  &[data-color="red"]    { background: $danger-soft;   border-color: rgba($danger,.2);        color: $danger; }
+  &[data-color="pink"]   { background: #fdf2f8;        border-color: rgba(219,39,119,.2);     color: #db2777; }
+
+  // Actif : couleur renforcée (fond + bordure plus saturés) — visible sur fond bleu clair
+  &.--on                      { border-width: 2px; transform: scale(1.06); box-shadow: 0 4px 14px rgba(0,0,0,.13); }
+  &[data-color="blue"].--on   { background: $primary-soft;  border-color: $primary-mid;             color: $primary; }
+  &[data-color="purple"].--on { background: #ede9fe;         border-color: rgba(124,58,237,.55);     color: #6d28d9; }
+  &[data-color="amber"].--on  { background: #fde68a;         border-color: rgba($warning,.6);        color: color.adjust($warning, $lightness: -12%); }
+  &[data-color="teal"].--on   { background: #99f6e4;         border-color: rgba(13,148,136,.55);     color: #0f766e; }
+  &[data-color="green"].--on  { background: #bbf7d0;         border-color: rgba($success,.55);       color: color.adjust($success, $lightness: -10%); }
+  &[data-color="red"].--on    { background: #fecaca;         border-color: rgba($danger,.55);        color: color.adjust($danger, $lightness: -8%); }
+  &[data-color="pink"].--on   { background: #fbcfe8;         border-color: rgba(219,39,119,.55);     color: #be185d; }
+}
+
+// Initiale en fallback — typographie forte (style 3)
+.rp-icon-letter {
+  font-size: .9rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+
+// ── Card body ────────────────────────────────────────────
+.rp-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rp-card-name {
+  font-size: .84rem;
+  font-weight: 700;
+  color: $ink;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -.01em;
+}
+
+.rp-card-path {
+  font-size: .68rem;
+  color: $ink-ghost;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  i { font-size: .62rem; flex-shrink: 0; }
+}
+
+// ── Checkbox tick ─────────────────────────────────────────
+// Simple carré arrondi avec tick SVG — pas de slider
+.rp-checkbox {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid $border;
+  background: $surface;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .2s ease;
+
+  .rp-check-svg {
+    width: 12px; height: 10px;
+    color: $surface;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all .18s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  &.--on {
+    background: linear-gradient(135deg, $primary-mid, $primary);
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba($primary,.3);
+
+    .rp-check-svg {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 }
 
-// ─── Save Footer ─────────────────────────────────────────
-.save-footer {
-  background: $white; border-radius: $radius; border: 1px solid $border;
-  padding: 1.1rem 1.75rem; display: flex; align-items: center;
-  justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-
-  .save-footer-info {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 0.8rem; color: $text-muted;
-    i { color: $blue; font-size: 0.9rem; }
-  }
-
-  .btn-save {
-    display: inline-flex; align-items: center; gap: 8px;
-    background:  $blue;
-    border: none; border-radius: 10px; padding: 0.65rem 1.75rem;
-    font-size: 0.875rem; font-weight: 700; color: $white; cursor: pointer;
-    transition: all 0.25s ease; box-shadow: 0 3px 12px rgba(13,43,110,.35);
-    i { font-size: 0.9rem; }
-    &:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(13,43,110,.45); }
-    &:active { transform: translateY(0); }
-  }
+// ── Footer ───────────────────────────────────────────────
+.rp-footer {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r-md;
+  padding: .95rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: $sh-xs;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-// ─── Empty State ─────────────────────────────────────────
-.empty-state {
-  background: $white; border-radius: $radius; border: 1px solid $border;
-  padding: 4rem 2rem; text-align: center; box-shadow: $shadow;
-
-  .empty-state-icon {
-    position: relative; display: inline-flex; margin-bottom: 1.5rem;
-    i { font-size: 3.5rem; color: $border; animation: float 3s ease-in-out infinite; }
-    .empty-ping {
-      position: absolute; inset: -6px; border-radius: 50%;
-      border: 2px solid $blue-border; animation: ping 2s ease-in-out infinite;
-    }
-  }
-
-  h5 { font-size: 1rem; font-weight: 700; color: $text-dark; margin-bottom: 0.5rem; }
-  p  { font-size: 0.82rem; color: $text-muted; max-width: 340px; margin: 0 auto 1.5rem; line-height: 1.7; }
-  .empty-arrows { color: $blue; animation: bounceUp 1.5s ease-in-out infinite; font-size: 1.2rem; }
+.rp-footer-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .75rem;
+  color: $ink-ghost;
+  i { color: $primary-mid; font-size: .8rem; }
 }
 
-// ─── Animations ──────────────────────────────────────────
-@keyframes fadeInUp  { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes rowFadeIn { from { opacity: 0; transform: translateY(8px);  } to { opacity: 1; transform: translateY(0); } }
-@keyframes float     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes ping      { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.15); opacity: 0.2; } }
-@keyframes bounceUp  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.rp-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, $primary-mid, $primary);
+  border: none;
+  border-radius: $r-sm;
+  padding: .62rem 1.6rem;
+  font-size: .84rem;
+  font-weight: 700;
+  font-family: $font;
+  color: $surface;
+  cursor: pointer;
+  transition: all .2s ease;
+  box-shadow: 0 4px 14px rgba($primary,.32);
+  i { font-size: .84rem; }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 20px rgba($primary,.4);
+  }
+  &:active { transform: translateY(0); }
+}
+
+// ── Empty State ──────────────────────────────────────────
+.rp-empty {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r-lg;
+  padding: 4.5rem 2rem;
+  text-align: center;
+  box-shadow: $sh-xs;
+}
+
+.rp-empty-visual {
+  position: relative;
+  display: inline-flex;
+  margin-bottom: 1.5rem;
+}
+
+.rp-empty-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid $primary-soft;
+  animation: rpRing 3.2s ease-in-out infinite;
+  &.r1 { inset: -12px; animation-delay: 0s; }
+  &.r2 { inset: -23px; animation-delay: .55s; }
+}
+
+.rp-empty-ico {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: $primary-bg;
+  border: 1.5px solid $primary-soft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary-mid;
+  font-size: 1.75rem;
+  animation: rpFloat 3.5s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.rp-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $ink;
+  margin: 0 0 .5rem;
+  letter-spacing: -.01em;
+}
+
+.rp-empty-desc {
+  font-size: .78rem;
+  color: $ink-ghost;
+  max-width: 300px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.75;
+}
+
+.rp-empty-arrow {
+  color: $primary-mid;
+  font-size: 1.1rem;
+  animation: rpBounce 1.6s ease-in-out infinite;
+}
+
+// ── Animations ───────────────────────────────────────────
+@keyframes rpIn      { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes rpCardIn  { from { opacity:0; transform:translateY(5px);  } to { opacity:1; transform:translateY(0); } }
+@keyframes rpPulse   { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.35); opacity:.65; } }
+@keyframes rpFloat   { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+@keyframes rpRing    { 0%,100% { transform:scale(1); opacity:.4; } 50% { transform:scale(1.1); opacity:.1; } }
+@keyframes rpBounce  { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-7px); } }
