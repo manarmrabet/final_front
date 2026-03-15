@@ -1,164 +1,332 @@
-// ── Tokens ────────────────────────────────────────────────────
-$teal:      #28c8a0;
-$teal-dark: #22a988;
-$navy:      #1e2d6b;
-$muted:     #74788d;
-$border:    #ced4da;
-$error:     #f06548;
-$grad:      linear-gradient(135deg, #0fbfa8 0%, #405189 100%);
-
-// ── Wrapper ───────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════
+// LOCK SCREEN — style Velzon
+// ════════════════════════════════════════════════════════
+$blue        : #1d4ed8;
+$primary:       #1d4ed8;
+$primary-mid:   #3b82f6;
+$blue-light  : #eef2ff;
+$primary-light: #eff6ff;
+$blue-border : rgba(64,81,137,.2);
+$danger      : #ef4444;
+$warning     : #f7b84b;
+$success     : #0ab39c;
+$text-dark   : #495057;
+$text-title  : #343a40;
+$text-muted  : #878a99;
+$border      : #e9ebec;
+$bg          : #f3f3f9;
+$bg-soft     : #f8f8fb;
+$white       : #ffffff;
+$radius      : 10px;
+$font        : 'Poppins', sans-serif;
 .lock-wrapper {
-  display: flex;
-  min-height: 100vh;
-  background: $grad;
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
-}
 
-// ── Panneau gauche ────────────────────────────────────────────
-.lock-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 3rem;
-  position: relative;
-  overflow: hidden;
+  position: fixed;
+  inset: 0;
 
-  // Grille de points
-  background-image: radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px);
-  background-size: 28px 28px;
-
-  &::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: url('/assets/images/auth-bg.jpg') center / cover no-repeat, $grad;
-    opacity: .3; filter: blur(2px) brightness(.8); z-index: 0;
-  }
-
-  .lock-brand, .lock-quote { position: relative; z-index: 1; }
-}
-
-.lock-brand {
-  font-size: 1.75rem; font-weight: 700; color: #fff;
-  .brand-v { color: #fff; }
-  .brand-z { color: $teal; }
-}
-
-.lock-quote {
-  text-align: center; color: rgba(255,255,255,.9);
-  max-width: 380px; align-self: center; padding-bottom: 1rem;
-
-  .quote-mark { font-size: 2.8rem; color: $teal; line-height: 1; margin-bottom: .5rem; }
-  p { font-size: .93rem; font-style: italic; line-height: 1.65; }
-}
-
-.quote-dots {
-  display: flex; justify-content: center; gap: 8px; margin-top: 1.2rem;
-  .dot {
-    width: 20px; height: 4px; border-radius: 2px;
-    background: rgba(255,255,255,.3);
-    &.active { background: #fff; }
-  }
-}
-
-// ── Panneau droit ─────────────────────────────────────────────
-.lock-right {
-  width: min(480px, 46%);
-  min-width: 340px;
-  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2.5rem 3rem;
-  box-shadow: -8px 0 40px rgba(0,0,0,.12);
 
-  @media (max-width: 768px) {
-    width: 100%; padding: 2rem 1.5rem;
-  }
+  z-index: 2000;
+
+  font-family: $font;
 }
 
-// ── Carte ─────────────────────────────────────────────────────
-.lock-card { width: 100%; display: flex; flex-direction: column; align-items: center; }
+/* background blur */
 
-.lc-header { width: 100%; margin-bottom: 1.5rem; }
-.lc-title  { font-size: 1.3rem; font-weight: 700; color: $navy; margin: 0 0 .3rem; }
-.lc-sub    { font-size: .875rem; color: $muted; margin: 0; }
+.lock-wrapper::before {
 
-// ── Warning banner ────────────────────────────────────────────
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  background: rgba(255,255,255,0.2);
+
+  z-index: 1;
+}
+
+/* card */
+
+.lock-card {
+
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  max-width: 380px;
+
+  background: $white;
+
+  border-radius: $radius;
+
+  border: 1px solid $border;
+
+  padding: 30px 34px;
+
+  text-align: center;
+
+  box-shadow: 0 5px 30px rgba(0,0,0,.12);
+}
+
+/* header */
+
+.lc-header {
+  margin-bottom: 22px;
+}
+
+.lc-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text-title;
+  margin-bottom: 4px;
+}
+
+.lc-sub {
+  font-size: .78rem;
+  color: $text-muted;
+}
+
+/* warning */
+
 .lc-warn {
-  display: flex; align-items: flex-start; gap: .5rem;
-  width: 100%; background: #fffbeb; border: 1px solid #fde68a;
-  border-radius: 8px; padding: .7rem .9rem;
-  font-size: .8rem; color: #92400e; line-height: 1.5;
-  margin-bottom: 1.25rem;
-  svg { flex-shrink: 0; margin-top: 1px; }
+
+  display: flex;
+  gap: 8px;
+
+  background: rgba($warning,.12);
+
+  border: 1px solid rgba($warning,.25);
+
+  padding: 10px 12px;
+
+  border-radius: 7px;
+
+  font-size: .76rem;
+
+  color: darken($warning,15%);
+
+  margin-bottom: 18px;
+
+  text-align: left;
 }
 
-// ── Avatar ────────────────────────────────────────────────────
-.lc-avatar-wrap { margin: .5rem 0 .9rem; }
+/* avatar */
+
+.lc-avatar-wrap {
+  margin-bottom: 10px;
+}
+
 .lc-avatar {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: linear-gradient(135deg, #f7c250 0%, #f09343 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.55rem; font-weight: 700; color: #fff;
-  box-shadow: 0 4px 18px rgba(240,147,67,.3);
+
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  color: $white;
+
+  background: linear-gradient(135deg,$primary-mid,$primary);
+
+  box-shadow: 0 6px 16px rgba($primary,.35);
 }
 
-.lc-name { font-size: 1rem; font-weight: 600; color: $navy; margin: 0 0 1.6rem; }
+/* username */
 
-// ── Form ──────────────────────────────────────────────────────
-form { width: 100%; }
+.lc-name {
 
-.lc-field { margin-bottom: 1.1rem; }
+  font-size: .9rem;
+  font-weight: 600;
+
+  color: $text-title;
+
+  margin-bottom: 20px;
+}
+
+/* form */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lc-field {
+  text-align: left;
+}
+
 .lc-label {
-  display: block; font-size: .8rem; font-weight: 600;
-  color: #495057; margin-bottom: .4rem;
+
+  font-size: .78rem;
+  font-weight: 500;
+
+  color: $text-dark;
+
+  margin-bottom: 4px;
+
+  display: block;
 }
-.lc-input-wrap { position: relative; }
+
+/* input */
+
+.lc-input-wrap {
+  position: relative;
+}
+
 .lc-input {
-  width: 100%; box-sizing: border-box;
-  padding: .65rem 2.6rem .65rem .95rem;
-  border: 1px solid $border; border-radius: 6px;
-  font-size: .9rem; color: $navy; outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  &::placeholder { color: #adb5bd; }
-  &:focus { border-color: $teal; box-shadow: 0 0 0 3px rgba(40,200,160,.15); }
+
+  width: 100%;
+  height: 38px;
+
+  padding: 0 38px 0 12px;
+
+  border: 1px solid $border;
+
+  border-radius: 6px;
+
+  font-size: .83rem;
+
+  font-family: $font;
+
+  color: $text-dark;
+
+  background: $white;
+
+  transition: all .15s;
 }
+
+.lc-input:focus {
+
+  outline: none;
+
+  border-color: $primary;
+
+  box-shadow: 0 0 0 3px rgba($primary,.1);
+}
+
+/* eye icon */
+
 .lc-eye {
-  position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer;
-  color: $muted; display: flex; padding: 0;
-  &:hover { color: $navy; }
-}
-.lc-error { font-size: .79rem; color: $error; margin: .4rem 0 0; }
 
-// ── Bouton Unlock ─────────────────────────────────────────────
+  position: absolute;
+
+  right: 10px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  border: none;
+  background: none;
+
+  cursor: pointer;
+
+  color: $text-muted;
+}
+
+.lc-eye:hover {
+  color: $text-dark;
+}
+
+/* error */
+
+.lc-error {
+
+  font-size: .73rem;
+
+  color: $danger;
+
+  margin-top: 3px;
+}
+
+/* button */
+
 .lc-btn {
-  width: 100%; padding: .75rem; background: $teal; color: #fff;
-  border: none; border-radius: 6px; font-size: .95rem; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .2s, transform .1s;
-  box-shadow: 0 4px 14px rgba(40,200,160,.3);
-  &:hover:not(:disabled)  { background: $teal-dark; }
-  &:active:not(:disabled) { transform: scale(.98); }
-  &:disabled { opacity: .7; cursor: not-allowed; }
-}
-.lc-spinner {
-  width: 18px; height: 18px;
-  border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff;
-  border-radius: 50%; animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Footer ────────────────────────────────────────────────────
-.lc-footer {
-  margin-top: 1.4rem; font-size: .875rem; color: $muted; text-align: center;
+  height: 38px;
+
+  border-radius: 6px;
+
+  border: none;
+
+  background: $primary;
+
+  color: $white;
+
+  font-size: .82rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  transition: all .15s;
+
+  box-shadow: 0 3px 10px rgba($primary,.3);
 }
+
+.lc-btn:hover:not(:disabled) {
+  background: darken($primary,6%);
+}
+
+.lc-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* spinner */
+
+.lc-spinner {
+
+  width: 14px;
+  height: 14px;
+
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: $white;
+
+  border-radius: 50%;
+
+  animation: spin .6s linear infinite;
+}
+
+/* footer */
+
+.lc-footer {
+
+  margin-top: 16px;
+
+  font-size: .75rem;
+
+  color: $text-muted;
+}
+
 .lc-link {
-  background: none; border: none; cursor: pointer;
-  color: $teal; font-weight: 600; font-size: inherit;
-  text-decoration: underline; padding: 0;
-  &:hover { color: $teal-dark; }
+
+  border: none;
+  background: none;
+
+  color: $primary;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.lc-link:hover {
+  text-decoration: underline;
 }

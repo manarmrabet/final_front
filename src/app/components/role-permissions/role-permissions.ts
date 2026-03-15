@@ -1,3 +1,4 @@
+// role-permissions.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,19 +25,23 @@ export class RolePermissionsComponent implements OnInit {
   selectedMenuIds = signal<number[]>([]);
 
   ngOnInit(): void {
-    this.roleService.getRoles().subscribe((roles: Role[]) => this.roles.set(roles));
+    this.roleService.getRoles().subscribe(roles => this.roles.set(roles));
     this.mappingService.getAllMenus().subscribe({
-      next:  (menus: MenuItemDTO[]) => this.allMenus.set(menus),
-      error: (err: any) => console.error('Erreur menus:', err)
+      next:  menus => this.allMenus.set(menus),
+      error: err => console.error('Erreur menus:', err)
     });
   }
 
   onRoleChange(roleId: number | undefined): void {
-    if (!roleId) { this.selectedRoleId.set(null); return; }
+    if (!roleId) {
+      this.selectedRoleId.set(null);
+      this.selectedMenuIds.set([]);
+      return;
+    }
     this.selectedRoleId.set(roleId);
     this.mappingService.getRoleMenuIds(roleId).subscribe({
-      next:  (ids: number[]) => this.selectedMenuIds.set(ids),
-      error: (err: any) => console.error('Erreur IDs:', err)
+      next:  ids => this.selectedMenuIds.set(ids),
+      error: err => console.error('Erreur IDs:', err)
     });
   }
 
@@ -53,16 +58,23 @@ export class RolePermissionsComponent implements OnInit {
   save(): void {
     const roleId = this.selectedRoleId();
     if (!roleId) return;
-    this.mappingService.saveMapping(roleId, this.selectedMenuIds())
-      .subscribe(() => alert('Permissions mises à jour !'));
+
+    this.mappingService.saveMapping(roleId, this.selectedMenuIds()).subscribe({
+      next: () => {
+        alert(`✅ Permissions mises à jour pour le rôle sélectionné !
+
+Les utilisateurs de ce rôle verront les nouveaux menus 
+lors de leur prochaine connexion (ou re-login).`);
+      },
+      error: err => {
+        console.error(err);
+        alert('❌ Erreur lors de la sauvegarde');
+      }
+    });
   }
 
   selectAll(): void {
-    this.selectedMenuIds.set(
-      this.allMenus()
-        .map(m => m.menuItemId)
-        .filter((id): id is number => id !== undefined)
-    );
+    this.selectedMenuIds.set(this.allMenus().map(m => m.menuItemId!).filter(Boolean));
   }
 
   deselectAll(): void {

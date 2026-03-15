@@ -1,94 +1,77 @@
+<app-dashboard></app-dashboard>
+
+<app-lock-screen *ngIf="locked"></app-lock-screen>
 <div class="lock-wrapper">
 
-  <!-- ── Panneau gauche ── -->
-  <div class="lock-left" aria-hidden="true">
-    <div class="lock-brand">
-      <span class="brand-v">vel</span><span class="brand-z">ZON</span>
-    </div>
-    <div class="lock-quote">
-      <div class="quote-mark">❝</div>
-      <p>"The theme is really great with an amazing customer&nbsp;support."</p>
-      <div class="quote-dots">
-        <span class="dot"></span>
-        <span class="dot active"></span>
-        <span class="dot"></span>
+  <!-- Carte centrée au milieu -->
+  <div class="lock-card">
+
+    <header class="lc-header">
+      <h1 class="lc-title">Lock Screen</h1>
+      <p class="lc-sub">Enter your password to unlock the screen!</p>
+    </header>
+
+    <!-- Avertissement token expirant -->
+    @if (isTokenExpiring()) {
+      <div class="lc-warn" role="alert">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Votre session expire bientôt. Saisissez votre mot de passe pour la prolonger.
       </div>
+    }
+
+    <!-- Avatar -->
+    <div class="lc-avatar-wrap">
+      <div class="lc-avatar">{{ userInitials }}</div>
     </div>
-  </div>
 
-  <!-- ── Panneau droit ── -->
-  <div class="lock-right">
-    <div class="lock-card">
+    <p class="lc-name">{{ userName }}</p>
 
-      <header class="lc-header">
-        <h1 class="lc-title">Lock Screen</h1>
-        <p class="lc-sub">Enter your password to unlock the screen!</p>
-      </header>
-
-      <!-- Avertissement token expirant -->
-      @if (isTokenExpiring()) {
-        <div class="lc-warn" role="alert">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          Votre session expire bientôt. Saisissez votre mot de passe pour la prolonger.
+    <!-- Formulaire -->
+    <form [formGroup]="form" (ngSubmit)="onUnlock()" novalidate>
+      <div class="lc-field">
+        <label class="lc-label" for="lockPwd">Password</label>
+        <div class="lc-input-wrap">
+          <input id="lockPwd" class="lc-input"
+                 [type]="showPassword() ? 'text' : 'password'"
+                 formControlName="password"
+                 placeholder="Enter password"
+                 autocomplete="current-password"/>
+          <button type="button" class="lc-eye" (click)="togglePassword()"
+                  [attr.aria-label]="showPassword() ? 'Hide' : 'Show'">
+            @if (!showPassword()) {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            } @else {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            }
+          </button>
         </div>
-      }
-
-      <!-- Avatar initiales -->
-      <div class="lc-avatar-wrap">
-        <div class="lc-avatar">{{ userInitials }}</div>
+        @if (errorMessage()) {
+          <p class="lc-error" role="alert">{{ errorMessage() }}</p>
+        }
       </div>
-      <p class="lc-name">{{ userName }}</p>
 
-      <!-- Formulaire -->
-      <form [formGroup]="form" (ngSubmit)="onUnlock()" novalidate>
+      <button type="submit" class="lc-btn" [disabled]="form.invalid || loading()">
+        @if (!loading()) { Unlock }
+        @else { <span class="lc-spinner"></span> }
+      </button>
+    </form>
 
-        <div class="lc-field">
-          <label class="lc-label" for="lockPwd">Password</label>
-          <div class="lc-input-wrap">
-            <input id="lockPwd" class="lc-input"
-                   [type]="showPassword() ? 'text' : 'password'"
-                   formControlName="password"
-                   placeholder="Enter password"
-                   autocomplete="current-password"/>
-            <button type="button" class="lc-eye" (click)="togglePassword()"
-                    [attr.aria-label]="showPassword() ? 'Hide' : 'Show'">
-              @if (!showPassword()) {
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              } @else {
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                  <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
-              }
-            </button>
-          </div>
-          @if (errorMessage()) {
-            <p class="lc-error" role="alert">{{ errorMessage() }}</p>
-          }
-        </div>
+    <p class="lc-footer">
+      Not you?&nbsp;
+      <button type="button" class="lc-link" (click)="goToLogin()">return Signin</button>
+    </p>
 
-        <button type="submit" class="lc-btn" [disabled]="form.invalid || loading()">
-          @if (!loading()) { Unlock }
-          @else { <span class="lc-spinner"></span> }
-        </button>
-
-      </form>
-
-      <p class="lc-footer">
-        Not you?&nbsp;
-        <button type="button" class="lc-link" (click)="goToLogin()">return Signin</button>
-      </p>
-
-    </div>
   </div>
 </div>
