@@ -1,0 +1,156 @@
+.access-wrapper {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+
+  /* 🔵 Background effects */
+  .bg-effects {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    .blur-circle {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.4;
+    }
+
+    .c1 {
+      background: #3b82f6;
+      top: -80px;
+      left: -80px;
+    }
+
+    .c2 {
+      background: #22c55e;
+      bottom: -80px;
+      right: -80px;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 0);
+      background-size: 30px 30px;
+    }
+  }
+
+  /* 📦 Card */
+  .access-card {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+
+    padding: 40px 30px;
+    border-radius: 20px;
+
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+
+    text-align: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+
+    animation: fadeUp 0.7s ease;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 15px;
+
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+  }
+
+  /* Code */
+  .code {
+    font-size: 90px;
+    font-weight: 900;
+    margin: 10px 0;
+
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 25px;
+  }
+
+  /* Info box */
+  .info-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+
+    background: #f1f5f9;
+
+    .icon {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 13px;
+      color: #475569;
+      margin: 0;
+    }
+  }
+
+  /* Button */
+  .btn-main {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+
+    font-weight: 600;
+    color: white;
+
+    background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(59,130,246,0.4);
+    }
+  }
+}
+
+/* Animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

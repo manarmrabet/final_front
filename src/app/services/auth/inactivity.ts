@@ -6,7 +6,7 @@ export class InactivityService implements OnDestroy {
   private readonly router = inject(Router);
   private readonly zone   = inject(NgZone);
 
-  private readonly TIMEOUT_MS = 20000; // 30 minutes
+  private readonly TIMEOUT_MS = 20000000; // 30 minutes
   private timer?: ReturnType<typeof setTimeout>;
   private readonly EVENTS  = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
   private readonly handler = () => this.reset();

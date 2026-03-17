@@ -2,8 +2,9 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService }       from '../../../services/auth/auth';
+import { AuthService } from '../../../services/auth/auth';
 import { InactivityService } from '../../../services/auth/inactivity';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-signin',
@@ -40,6 +41,7 @@ export class SigninComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.invalid) return;
+
     this.loading.set(true);
     this.errorMsg.set('');
 
@@ -52,13 +54,25 @@ export class SigninComponent implements OnInit {
         this.inactivity.start((url) => this.auth.lockSession(url));
         this.router.navigate(['/app/dashboard']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.errorMsg.set(
-          err?.status === 401 || err?.status === 403
-            ? 'Identifiants incorrects.'
-            : 'Erreur serveur, réessayez.'
-        );
+
+        // --- CORRECTION ICI ---
+        // On récupère le message envoyé par le backend (AuthController)
+        // Si err.error est une chaîne (ResponseEntity.body("...")), on l'affiche.
+        // Sinon, on cherche une propriété .message ou on met un message par défaut.
+
+        let message = 'Une erreur est survenue. Veuillez réessayer.';
+
+        if (err.status === 401 || err.status === 403) {
+            // Le backend renvoie soit une String brute, soit un objet avec un champ message
+            message = (typeof err.error === 'string') ? err.error : (err.error?.message || 'Identifiants incorrects.');
+        } else if (err.status === 0) {
+            message = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+        }
+
+        this.errorMsg.set(message);
+        // -----------------------
       },
     });
   }
