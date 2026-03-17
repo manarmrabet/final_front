@@ -1,4 +1,3 @@
-// role-permissions.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +6,7 @@ import { MenuItemDTO } from '../../models/menu-item';
 import { AdminService } from '../../services/admin/admin';
 import { RoleMappingService } from '../../services/role-mapping/role-mapping';
 import { LucideAngularModule } from 'lucide-angular';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-role-permissions',
@@ -24,12 +24,48 @@ export class RolePermissionsComponent implements OnInit {
   selectedRoleId  = signal<number | null>(null);
   selectedMenuIds = signal<number[]>([]);
 
+  // Map roleId → liste des menus assignés (pour la vue liste)
+  roleMenusMap    = signal<Map<number, MenuItemDTO[]>>(new Map());
+
   ngOnInit(): void {
-    this.roleService.getRoles().subscribe(roles => this.roles.set(roles));
+    this.roleService.getRoles().subscribe(roles => {
+      this.roles.set(roles);
+      this.loadAllRoleMenus(roles);
+    });
+
     this.mappingService.getAllMenus().subscribe({
       next:  menus => this.allMenus.set(menus),
-      error: err => console.error('Erreur menus:', err)
+      error: err   => console.error('Erreur menus:', err)
     });
+  }
+
+  // Charge les menus de chaque rôle pour la vue cards
+  private loadAllRoleMenus(roles: Role[]): void {
+    const allMenus = this.allMenus();
+
+    roles.forEach(role => {
+      if (!role.roleId) return;
+      this.mappingService.getRoleMenuIds(role.roleId).subscribe({
+        next: ids => {
+          const menus = this.allMenus().filter(m => m.menuItemId && ids.includes(m.menuItemId));
+          const map   = new Map(this.roleMenusMap());
+          map.set(role.roleId!, menus);
+          this.roleMenusMap.set(map);
+        },
+        error: () => {}
+      });
+    });
+  }
+
+  // Retourne les menus assignés à un rôle
+  getMenusForRole(roleId: number | undefined): MenuItemDTO[] {
+    if (!roleId) return [];
+    return this.roleMenusMap().get(roleId) ?? [];
+  }
+
+  // Retourne le nombre de menus assignés à un rôle
+  getMenuCount(roleId: number | undefined): number {
+    return this.getMenusForRole(roleId).length;
   }
 
   onRoleChange(roleId: number | undefined): void {
@@ -58,13 +94,10 @@ export class RolePermissionsComponent implements OnInit {
   save(): void {
     const roleId = this.selectedRoleId();
     if (!roleId) return;
-
     this.mappingService.saveMapping(roleId, this.selectedMenuIds()).subscribe({
       next: () => {
-        alert(`✅ Permissions mises à jour pour le rôle sélectionné !
-
-Les utilisateurs de ce rôle verront les nouveaux menus 
-lors de leur prochaine connexion (ou re-login).`);
+        this.loadAllRoleMenus(this.roles());
+        alert(`✅ Permissions mises à jour !`);
       },
       error: err => {
         console.error(err);

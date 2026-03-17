@@ -72,28 +72,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private startPolling(): void {
-    this.stopPolling();
+  this.stopPolling();
 
-    this.pollingSub = interval(this.POLLING_INTERVAL_MS).pipe(
-      switchMap(() => this.adminService.getAuthorizedMenus())
-    ).subscribe({
-      next: (items) => {
-        // On ne met à jour que si les IDs changent (évite flicker inutile)
-        const currentIds = this.menuItems().map(m => m.menuItemId).sort((a,b)=>a!-b!);
-        const newIds     = items.map(m => m.menuItemId).sort((a,b)=>a!-b!);
+  this.pollingSub = interval(this.POLLING_INTERVAL_MS).pipe(
+    switchMap(() => this.adminService.getAuthorizedMenus())
+  ).subscribe({
+    next: (items) => {
+      // On compare TOUT l'objet pour détecter un changement d'icône ou de texte
+      const currentData = JSON.stringify(this.menuItems());
+      const newData = JSON.stringify(items);
 
-        if (JSON.stringify(currentIds) !== JSON.stringify(newIds)) {
-          console.log('[Sidebar Polling] Menus modifiés → mise à jour');
-          this.menuItems.set(items || []);
-          this.autoExpandActiveGroup();
-        }
-      },
-      error: (err) => {
-        console.warn('[Polling] Erreur silencieuse (ignorée)', err);
-        // On ne vide pas les menus en cas d'erreur polling → on garde l’ancien état
+      if (currentData !== newData) {
+        console.log('[Sidebar Polling] Changement détecté (Icône/Label) → Mise à jour');
+        this.menuItems.set(items || []);
+        this.autoExpandActiveGroup();
       }
-    });
-  }
+    },
+    error: (err) => console.warn('[Polling] Erreur', err)
+  });
+}
 
   private stopPolling(): void {
     this.pollingSub?.unsubscribe();

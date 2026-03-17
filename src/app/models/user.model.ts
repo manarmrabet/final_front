@@ -21,6 +21,8 @@ export interface UserDTO {
   isActive?: number;
   authorities: string[];
   token?: string;
+  credentialsSent?: boolean;
+  mustChangePassword?: boolean;
 }
 
 

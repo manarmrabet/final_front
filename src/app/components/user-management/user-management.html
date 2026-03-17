@@ -1,13 +1,10 @@
 <div class="container-fluid py-4">
-
-  <!-- Card principale -->
   <div class="page-wrap">
 
-    <!-- Header -->
-      <div class="card-header">
+    <div class="card-header">
       <div class="header-left">
         <div class="header-icon">
-        <lucide-icon name="Users" class="w-8 h-8 text-blue-500"></lucide-icon>
+          <lucide-icon name="Users" class="w-8 h-8 text-blue-500"></lucide-icon>
         </div>
         <div>
           <h5 class="page-card-title">Gestion des utilisateurs</h5>
@@ -20,7 +17,6 @@
       </button>
     </div>
 
-    <!-- Toolbar -->
     <div class="list-toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -31,7 +27,6 @@
       <span class="count-badge">{{ filteredUsers().length }} résultat(s)</span>
     </div>
 
-    <!-- Table -->
     <div class="table-responsive">
       <table class="velzon-table">
         <thead>
@@ -70,10 +65,29 @@
                     </span>
                   </div>
                 </td>
+
                 <td>
                   <div class="act-btns">
                     <button class="btn-edit-v" (click)="openModal(user)">Éditer</button>
-                    <button class="btn-del-v"  (click)="openDeleteModal(user)">Supprimer</button>
+
+                    <button class="btn-mail-v"
+                      (click)="sendCredentials(user)"
+                      [disabled]="sendingMailId() === (user.id ?? user.Id)"
+                      [class.sent]="user.credentialsSent"
+                      [title]="user.credentialsSent ? 'Identifiants déjà envoyés' : 'Envoyer les identifiants'">
+                      @if (sendingMailId() === (user.id ?? user.Id)) {
+                        <span class="spinner-sm"></span>
+                      } @else {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,12 2,6"/>
+                        </svg>
+                      }
+                      Mail
+                    </button>
+
+                    <button class="btn-del-v" (click)="openDeleteModal(user)">Supprimer</button>
                   </div>
                 </td>
               </tr>
@@ -87,12 +101,10 @@
   </div>
 </div>
 
-<!-- ══════════ MODAL CRÉATION / ÉDITION ══════════ -->
 @if (showModal()) {
   <div class="modal-overlay" (click)="closeModal()"></div>
   <div class="modal-velzon" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
     <div class="modal-v-header">
       <div class="modal-v-icon" [class.create]="!isEditMode()" [class.edit]="isEditMode()">
         @if (isEditMode()) {
@@ -120,9 +132,7 @@
     </div>
     <div class="modal-v-sep"></div>
 
-    <!-- Corps -->
     <div class="modal-v-body">
-
       <p class="v-section">Informations de base</p>
 
       <div class="vz-field">
@@ -145,13 +155,11 @@
       <div class="vz-row">
         <div class="vz-field">
           <label class="vz-label">Prénom</label>
-          <input class="vz-input" type="text" [(ngModel)]="newUser().firstName" placeholder="Prénom"
-                 [class.invalid]="newUser().firstName && !isNameValid(newUser().firstName)" />
+          <input class="vz-input" type="text" [(ngModel)]="newUser().firstName" placeholder="Prénom" />
         </div>
         <div class="vz-field">
           <label class="vz-label">Nom</label>
-          <input class="vz-input" type="text" [(ngModel)]="newUser().lastName" placeholder="Nom"
-                 [class.invalid]="newUser().lastName && !isNameValid(newUser().lastName)" />
+          <input class="vz-input" type="text" [(ngModel)]="newUser().lastName" placeholder="Nom" />
         </div>
       </div>
 
@@ -161,7 +169,7 @@
         <label class="vz-label">Site d'affectation</label>
         <select class="vz-select" [(ngModel)]="newUser().siteName">
           <option value="">Sélectionnez un site</option>
-          @for (site of sites(); track site.siteName) {
+          @for (site of sites(); track site.idSite) {
             <option [value]="site.siteName">{{ site.siteName }}</option>
           }
         </select>
@@ -201,16 +209,11 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="modal-v-footer">
       <button class="btn-v-cancel" (click)="closeModal()">Annuler</button>
       <button class="btn-v-submit"
         (click)="saveUser()"
-        [disabled]="!newUser().userName || !newUser().roleName
-          || !isEmailValid(newUser().email)
-          || !isNameValid(newUser().firstName)
-          || !isNameValid(newUser().lastName)
-          || isLoading()">
+        [disabled]="!newUser().userName || !newUser().roleName || !isEmailValid(newUser().email) || isLoading()">
         @if (isLoading()) {
           <span class="spinner-sm"></span> Traitement...
         } @else {
@@ -221,23 +224,18 @@
   </div>
 }
 
-<!-- ══════════ MODAL SUPPRESSION ══════════ -->
 @if (showDeleteModal()) {
   <div class="modal-overlay" (click)="cancelDelete()"></div>
   <div class="modal-velzon sm" (click)="$event.stopPropagation()">
-
     <div class="modal-v-header">
       <div class="modal-v-icon danger">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
         </svg>
       </div>
       <div class="modal-v-titles">
-        <h5>Supprimer un utilisateur</h5>
-        <p>Cette action affecte les données du compte</p>
+        <h5>Supprimer l'utilisateur</h5>
+        <p>Action irréversible sur le compte</p>
       </div>
       <button class="btn-modal-close" (click)="cancelDelete()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -249,58 +247,32 @@
 
     <div class="modal-v-body">
       <div class="del-target">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#878a99" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
         <strong>{{ userToDelete()?.firstName }} {{ userToDelete()?.lastName }}</strong>
       </div>
 
-      <p class="v-section">Type de suppression</p>
+      <p class="v-section">Options de suppression</p>
       <div class="del-choices">
         <div class="del-choice" [class.active]="!deleteForce()" (click)="deleteForce.set(false)">
           <div class="del-radio" [class.on]="!deleteForce()"></div>
           <div>
-            <div class="del-choice-title">Suppression normale</div>
-            <div class="del-choice-desc">Le compte est supprimé, l'historique d'audit est conservé.</div>
+            <div class="del-choice-title">Suppression standard</div>
+            <div class="del-choice-desc">Supprime l'accès mais garde l'historique d'audit.</div>
           </div>
         </div>
         <div class="del-choice force-choice" [class.active]="deleteForce()" (click)="deleteForce.set(true)">
           <div class="del-radio" [class.on]="deleteForce()" [class.force]="deleteForce()"></div>
           <div>
-            <div class="del-choice-title">Suppression forcée</div>
-            <div class="del-choice-desc">Compte ET historique d'audit effacés définitivement.</div>
+            <div class="del-choice-title">Suppression définitive</div>
+            <div class="del-choice-desc">Efface absolument toutes les traces en base.</div>
           </div>
         </div>
       </div>
-      @if (deleteForce()) {
-        <div class="warn-strip">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          Cette action est <strong>&nbsp;irréversible</strong>. Toutes les traces seront effacées.
-        </div>
-      }
     </div>
 
     <div class="modal-v-footer">
       <button class="btn-v-cancel" (click)="cancelDelete()">Annuler</button>
-      <button class="btn-v-submit" [class.warning]="!deleteForce()" [class.danger]="deleteForce()"
-              (click)="confirmDelete()">
-        @if (deleteForce()) {
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
-            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Supprimer définitivement
-        } @else {
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          </svg>
-          Supprimer
-        }
+      <button class="btn-v-submit" [class.danger]="deleteForce()" [class.warning]="!deleteForce()" (click)="confirmDelete()">
+        Confirmer
       </button>
     </div>
   </div>

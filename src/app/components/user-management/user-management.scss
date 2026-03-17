@@ -7,8 +7,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 $blue        : #1d4ed8;
-$primary:       #1d4ed8;
-$primary-mid:   #3b82f6;
+$primary     : #1d4ed8;
+$primary-mid : #3b82f6;
 $blue-light  : #eef2ff;
 $primary-light: #eff6ff;
 $blue-border : rgba(64,81,137,.2);
@@ -27,337 +27,837 @@ $font        : 'Poppins', sans-serif;
 
 // ── Globals ───────────────────────────────────────────────
 .container-fluid {
-  background: $bg; min-height: 100vh; font-family: $font;
+  background: $bg;
+  min-height: 100vh;
+  font-family: $font;
 }
-*, *::before, *::after { font-family: $font; }
 
- 
+*, *::before, *::after {
+  font-family: $font;
+}
 
 // ── Card principale ───────────────────────────────────────
 .page-wrap {
-  background: $white; border-radius: $radius;
-  border: none; box-shadow: 0 1px 2px rgba(56,65,74,.15);
+  background: $white;
+  border-radius: $radius;
+  border: none;
+  box-shadow: 0 1px 2px rgba(56,65,74,.15);
 }
 
 // ── Header ────────────────────────────────────────────────
 .card-header {
-    background: $white;
-    border-bottom: 1px solid $border;
-    padding: 1.35rem 1.75rem;
+  background: $white;
+  border-bottom: 1px solid $border;
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .header-left {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
 
-    .header-left {
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: $primary-light;
       display: flex;
       align-items: center;
-      gap: 12px;
-
-      .header-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: $primary-light;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: $primary;
-        font-size: 1.1rem;
-      }
-
-      
-      .page-card-title { font-size: 1rem; font-weight: 600; color: $text-title; margin: 0; font-family: $font; }
-
-      .page-card-sub   { font-size: .75rem; color: $text-muted; margin: 2px 0 0; font-family: $font; }
+      justify-content: center;
+      color: $primary;
+      font-size: 1.1rem;
     }
 
-    .btn-add {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: linear-gradient(135deg, $primary-mid, $primary);
-      color: $white;
-      border: none;
-      border-radius: 9px;
-      padding: 0.55rem 1.2rem;
-      font-size: 0.83rem;
+    .page-card-title {
+      font-size: 1rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      box-shadow: 0 2px 10px rgba($primary, 0.3);
+      color: $text-title;
+      margin: 0;
+    }
 
-      i { font-size: 0.9rem; }
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba($primary, 0.4);
-      }
-    
+    .page-card-sub {
+      font-size: .75rem;
+      color: $text-muted;
+      margin: 2px 0 0;
     }
   }
+
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, $primary-mid, $primary);
+    color: $white;
+    border: none;
+    border-radius: 9px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba($primary, 0.3);
+
+    i {
+      font-size: 0.9rem;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba($primary, 0.4);
+    }
+  }
+}
 
 // ── Search toolbar ────────────────────────────────────────
 .list-toolbar {
-  padding: 14px 24px; display: flex; align-items: center;
-  justify-content: space-between; border-bottom: 1px solid $border; background: $white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $border;
+  background: $white;
 }
+
 .search-box {
-  position: relative; display: flex; align-items: center;
-  svg { position: absolute; left: 11px; color: $text-muted; width: 14px; pointer-events: none; }
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    left: 11px;
+    color: $text-muted;
+    width: 14px;
+    pointer-events: none;
+  }
+
   input {
-    height: 36px; padding: 0 14px 0 34px; width: 230px;
-    border: 1px solid $border; border-radius: 6px;
-    font-size: .82rem; font-family: $font; color: $text-dark;
-    background: $bg-soft; transition: all .18s;
-    &::placeholder { color: $text-muted; }
-    &:focus { outline: none; border-color: $blue; background: $white; box-shadow: 0 0 0 3px rgba(64,81,137,.1); }
+    height: 36px;
+    padding: 0 14px 0 34px;
+    width: 230px;
+    border: 1px solid $border;
+    border-radius: 6px;
+    font-size: .82rem;
+    font-family: $font;
+    color: $text-dark;
+    background: $bg-soft;
+    transition: all .18s;
+
+    &::placeholder {
+      color: $text-muted;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $blue;
+      background: $white;
+      box-shadow: 0 0 0 3px rgba(64,81,137,.1);
+    }
   }
 }
+
 .count-badge {
-  padding: 3px 12px; border-radius: 20px; background: $blue-light;
-  color: $blue; font-size: .73rem; font-weight: 600; border: 1px solid $blue-border;
-  font-family: $font;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: $blue-light;
+  color: $blue;
+  font-size: .73rem;
+  font-weight: 600;
+  border: 1px solid $blue-border;
 }
 
 // ── Table ─────────────────────────────────────────────────
 .velzon-table {
-  width: 100%; border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 
-  thead { background: $bg-soft; }
+  thead {
+    background: $bg-soft;
+  }
+
   th {
-    padding: 12px 24px; font-size: .72rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .5px; color: $text-muted;
-    border-bottom: 1px solid $border; font-family: $font; white-space: nowrap;
+    padding: 12px 24px;
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: $text-muted;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
   }
+
   tbody tr {
-    border-bottom: 1px solid $border; transition: background .12s;
-    &:hover { background: $bg-soft; }
-    &:last-child { border-bottom: none; }
+    border-bottom: 1px solid $border;
+    transition: background .12s;
+
+    &:hover {
+      background: $bg-soft;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
-  td { padding: 14px 24px; font-size: .85rem; color: $text-dark; vertical-align: middle; font-family: $font; }
+
+  td {
+    padding: 14px 24px;
+    font-size: .85rem;
+    color: $text-dark;
+    vertical-align: middle;
+  }
 }
 
-// Cellule numéro — bleu bold comme dans l'image
-.cell-num { font-weight: 700; color: $blue; font-size: .88rem; }
+// Cellule numéro
+.cell-num {
+  font-weight: 700;
+  color: $blue;
+  font-size: .88rem;
+}
 
 // Cellule utilisateur
-.cell-user-name  { font-weight: 600; color: $text-title; font-size: .86rem; }
-.cell-user-email { font-size: .74rem; color: $text-muted; margin-top: 2px; }
+.cell-user-name {
+  font-weight: 600;
+  color: $text-title;
+  font-size: .86rem;
+}
 
-// Badge rôle — même style que badge icône dans menu
+.cell-user-email {
+  font-size: .74rem;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+// Badge rôle
 .badge-role {
-  display: inline-block; padding: 3px 10px; border-radius: 20px;
-  background: $blue-light; color: $blue;
-  font-size: .72rem; font-weight: 600; font-family: $font;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: $blue-light;
+  color: $blue;
+  font-size: .72rem;
+  font-weight: 600;
 }
 
 // ── Switch ────────────────────────────────────────────────
-.sw-wrap { display: flex; align-items: center; gap: 8px; }
+.sw-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sw {
-  display: inline-flex; align-items: center; cursor: pointer;
-  input { display: none; }
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+
+  input {
+    display: none;
+  }
 }
+
 .sw-track {
-  width: 40px; height: 22px; border-radius: 11px;
-  background: $border; position: relative; transition: background .22s;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: $border;
+  position: relative;
+  transition: background .22s;
 }
-.sw input:checked + .sw-track { background: $blue; }
+
+.sw input:checked + .sw-track {
+  background: $blue;
+}
+
 .sw-knob {
-  position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
-  border-radius: 50%; background: $white; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: $white;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
   transition: transform .22s cubic-bezier(.34,1.56,.64,1);
 }
-.sw input:checked + .sw-track .sw-knob { transform: translateX(18px); }
-.sw-label { font-size: .75rem; font-weight: 500; color: $text-muted; font-family: $font; &.on { color: $blue; } }
 
-// ── Boutons action — IDENTIQUES à l'image (outline arrondi)
-.act-btns { display: flex; gap: 8px; }
-.btn-edit-v {
-  padding: 5px 18px; border: 1px solid $primary-mid; border-radius: 20px;
-  background: $white; color: $primary-mid; font-size: .79rem; font-weight: 500;
-  font-family: $font; cursor: pointer; transition: all .15s;
-  &:hover { background: $primary-mid; color: $white; }
-}
-.btn-del-v {
-  padding: 5px 18px; border: 1px solid $danger; border-radius: 20px;
-  background: $white; color: $danger; font-size: .79rem; font-weight: 500;
-  font-family: $font; cursor: pointer; transition: all .15s;
-  &:hover { background: $danger; color: $white; }
+.sw input:checked + .sw-track .sw-knob {
+  transform: translateX(18px);
 }
 
-.empty-row { text-align: center; color: $text-muted; padding: 52px !important; font-size: .88rem; }
-.skeleton-line {
-  height: 13px; border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%; animation: shimmer 1.2s infinite;
-}
-@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.sw-label {
+  font-size: .75rem;
+  font-weight: 500;
+  color: $text-muted;
 
-// ════════════════════════════════════════════════════════
-//  MODAL — style Velzon (header blanc, icône colorée)
-// ════════════════════════════════════════════════════════
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(37,38,79,.45);
-  z-index: 1040; animation: fadeIn .15s ease;
+  &.on {
+    color: $blue;
+  }
 }
-.modal-velzon {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 500px; max-height: 90vh; background: $white; border-radius: 12px;
-  box-shadow: 0 5px 40px rgba(0,0,0,.15); z-index: 1050;
-  display: flex; flex-direction: column; animation: popIn .22s ease;
+
+// ── Boutons action ────────────────────────────────────────
+.act-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-edit-v,
+.btn-del-v,
+.btn-mail-v {
+  padding: 5px 18px;
+  border-radius: 20px;
+  font-size: .79rem;
+  font-weight: 500;
   font-family: $font;
-  &.sm { width: 430px; }
+  cursor: pointer;
+  transition: all .15s;
 }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-@keyframes popIn  { from { opacity:0; transform:translate(-50%,-48%) scale(.97); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }
 
-// Header modal — style Velzon : fond blanc + icône colorée dans coin
-.modal-v-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 20px 24px 0; flex-shrink: 0;
+.btn-edit-v {
+  border: 1px solid $primary-mid;
+  background: $white;
+  color: $primary-mid;
+
+  &:hover {
+    background: $primary-mid;
+    color: $white;
+  }
 }
+
+.btn-del-v {
+  border: 1px solid $danger;
+  background: $white;
+  color: $danger;
+
+  &:hover {
+    background: $danger;
+    color: $white;
+  }
+}
+
+.btn-mail-v {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid $primary-mid;
+  background: $white;
+  color: $primary-mid;
+
+  &:hover:not(:disabled) {
+    background: $primary-mid;
+    color: $white;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // État "déjà envoyé" (renvoi possible)
+  &.sent {
+    border-color: $success;
+    color: $success;
+    background: rgba($success, 0.08);
+
+    &:hover:not(:disabled) {
+      background: rgba($success, 0.18);
+      color: darken($success, 10%);
+    }
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+// ── Divers ────────────────────────────────────────────────
+.empty-row {
+  text-align: center;
+  color: $text-muted;
+  padding: 52px !important;
+  font-size: .88rem;
+}
+
+.skeleton-line {
+  height: 13px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(37,38,79,.45);
+  z-index: 1040;
+  animation: fadeIn .15s ease;
+}
+
+.modal-velzon {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  max-height: 90vh;
+  background: $white;
+  border-radius: 12px;
+  box-shadow: 0 5px 40px rgba(0,0,0,.15);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  animation: popIn .22s ease;
+  font-family: $font;
+
+  &.sm {
+    width: 430px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translate(-50%,-48%) scale(.97); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+}
+
+// Header modal
+.modal-v-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+}
+
 .modal-v-icon {
-  width: 52px; height: 52px; border-radius: 12px; margin-bottom: 12px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
   &.create { background: rgba(64,81,137,.12); color: $blue; }
   &.edit   { background: rgba(247,184,75,.15); color: $warning; }
   &.danger { background: rgba(240,101,72,.12); color: $danger; }
 }
+
 .modal-v-titles {
-  flex: 1; padding-left: 14px;
-  h5 { margin: 0 0 3px; font-size: .97rem; font-weight: 700; color: $text-title; }
-  p  { margin: 0; font-size: .77rem; color: $text-muted; }
+  flex: 1;
+  padding-left: 14px;
+
+  h5 {
+    margin: 0 0 3px;
+    font-size: .97rem;
+    font-weight: 700;
+    color: $text-title;
+  }
+
+  p {
+    margin: 0;
+    font-size: .77rem;
+    color: $text-muted;
+  }
 }
+
 .btn-modal-close {
-  width: 28px; height: 28px; background: $bg-soft; border: none;
-  border-radius: 7px; color: $text-muted; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  transition: all .15s; margin-left: 8px;
-  &:hover { background: $border; color: $text-dark; }
+  width: 28px;
+  height: 28px;
+  background: $bg-soft;
+  border: none;
+  border-radius: 7px;
+  color: $text-muted;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all .15s;
+  margin-left: 8px;
+
+  &:hover {
+    background: $border;
+    color: $text-dark;
+  }
 }
 
-// Séparateur sous le header
-.modal-v-sep { height: 1px; background: $border; margin: 16px 0 0; }
+.modal-v-sep {
+  height: 1px;
+  background: $border;
+  margin: 16px 0 0;
+}
 
-// Corps modal
-.modal-v-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+.modal-v-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
 
-// Label section
 .v-section {
-  font-size: .68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .8px; color: $text-muted; margin: 0 0 14px;
-  display: flex; align-items: center; gap: 8px;
-  &::after { content: ''; flex: 1; height: 1px; background: $border; }
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: $text-muted;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
 }
 
-// Champs — style Velzon (label au-dessus, border classique)
-.vz-field { margin-bottom: 14px; }
+.vz-field {
+  margin-bottom: 14px;
+}
+
 .vz-label {
-  display: block; font-size: .79rem; font-weight: 500;
-  color: $text-dark; margin-bottom: 5px;
+  display: block;
+  font-size: .79rem;
+  font-weight: 500;
+  color: $text-dark;
+  margin-bottom: 5px;
 }
-.vz-input, .vz-select {
-  width: 100%; height: 38px; padding: 0 12px;
-  border: 1px solid $border; border-radius: 6px;
-  font-size: .84rem; font-family: $font; color: $text-dark;
-  background: $white; box-sizing: border-box; transition: all .15s;
-  &:focus { outline: none; border-color: $blue; box-shadow: 0 0 0 3px rgba(64,81,137,.1); }
-  &:disabled { background: $bg-soft; color: $text-muted; cursor: not-allowed; }
-  &.invalid { border-color: $danger; }
+
+.vz-input,
+.vz-select {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: .84rem;
+  font-family: $font;
+  color: $text-dark;
+  background: $white;
+  box-sizing: border-box;
+  transition: all .15s;
+
+  &:focus {
+    outline: none;
+    border-color: $blue;
+    box-shadow: 0 0 0 3px rgba(64,81,137,.1);
+  }
+
+  &:disabled {
+    background: $bg-soft;
+    color: $text-muted;
+    cursor: not-allowed;
+  }
+
+  &.invalid {
+    border-color: $danger;
+  }
 }
-.vz-select { appearance: auto; }
-.vz-hint { font-size: .73rem; color: $danger; margin-top: 3px; }
 
-// 2 colonnes
-.vz-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vz-select {
+  appearance: auto;
+}
 
-// Toggle statut
+.vz-hint {
+  font-size: .73rem;
+  color: $danger;
+  margin-top: 3px;
+}
+
+.vz-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .vz-status-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 14px; background: $bg-soft; border-radius: 8px;
-  border: 1px solid $border; margin-bottom: 14px;
-  .vz-label { margin: 0; flex: 1; font-size: .81rem; }
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: $bg-soft;
+  border-radius: 8px;
+  border: 1px solid $border;
+  margin-bottom: 14px;
+
+  .vz-label {
+    margin: 0;
+    flex: 1;
+    font-size: .81rem;
+  }
 }
 
-// Cartes rôle
-.vz-roles { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.vz-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
 .vz-role-card {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 14px; border: 1.5px solid $border; border-radius: 8px;
-  cursor: pointer; transition: all .15s; font-family: $font;
-  &:hover { border-color: $blue-border; background: $blue-light; }
-  &.active { border-color: $blue; background: $blue-light; }
-}
-.vz-role-name { font-size: .84rem; font-weight: 600; color: $text-title; }
-.vz-role-desc { font-size: .74rem; color: $text-muted; margin-top: 2px; }
-.vz-check {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid $border; flex-shrink: 0; transition: all .15s;
-  display: flex; align-items: center; justify-content: center;
-  &.on { border-color: $blue; background: $blue; color: $white; }
-  svg { display: none; .on & { display: block; } }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+
+  &:hover {
+    border-color: $blue-border;
+    background: $blue-light;
+  }
+
+  &.active {
+    border-color: $blue;
+    background: $blue-light;
+  }
 }
 
-// Footer modal
+.vz-role-name {
+  font-size: .84rem;
+  font-weight: 600;
+  color: $text-title;
+}
+
+.vz-role-desc {
+  font-size: .74rem;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+.vz-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid $border;
+  flex-shrink: 0;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.on {
+    border-color: $blue;
+    background: $blue;
+    color: $white;
+  }
+
+  svg {
+    display: none;
+    .on & {
+      display: block;
+    }
+  }
+}
+
 .modal-v-footer {
-  padding: 16px 24px; border-top: 1px solid $border;
-  display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0;
-  background: $bg-soft; border-radius: 0 0 12px 12px;
+  padding: 16px 24px;
+  border-top: 1px solid $border;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+  background: $bg-soft;
+  border-radius: 0 0 12px 12px;
 }
+
 .btn-v-cancel {
-  padding: 8px 20px; border: 1px solid $border; background: $white;
-  border-radius: 6px; font-size: .83rem; color: $text-dark;
-  font-weight: 500; font-family: $font; cursor: pointer; transition: background .15s;
-  &:hover { background: $bg; }
+  padding: 8px 20px;
+  border: 1px solid $border;
+  background: $white;
+  border-radius: 6px;
+  font-size: .83rem;
+  color: $text-dark;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover {
+    background: $bg;
+  }
 }
+
 .btn-v-submit {
-  padding: 8px 24px; background: $blue; color: $white;
-  border: none; border-radius: 6px; font-size: .83rem; font-weight: 600;
-  font-family: $font; cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 7px;
+  padding: 8px 24px;
+  background: $blue;
+  color: $white;
+  border: none;
+  border-radius: 6px;
+  font-size: .83rem;
+  font-weight: 600;
+  font-family: $font;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
   box-shadow: 0 3px 10px rgba(64,81,137,.3);
-  &:hover { background: darken(#405189, 6%); }
-  &:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
-  &.danger  { background: $danger;  box-shadow: 0 3px 10px rgba(240,101,72,.3); &:hover { background: darken(#f06548, 6%); } }
-  &.warning { background: $warning; color: $text-title; box-shadow: 0 3px 10px rgba(247,184,75,.3); &:hover { background: darken(#f7b84b, 6%); } }
+
+  &:hover {
+    background: darken(#405189, 6%);
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  &.danger {
+    background: $danger;
+    box-shadow: 0 3px 10px rgba(240,101,72,.3);
+
+    &:hover {
+      background: darken(#f06548, 6%);
+    }
+  }
+
+  &.warning {
+    background: $warning;
+    color: $text-title;
+    box-shadow: 0 3px 10px rgba(247,184,75,.3);
+
+    &:hover {
+      background: darken(#f7b84b, 6%);
+    }
+  }
 }
+
 .spinner-sm {
-  width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.3);
-  border-top-color: $white; border-radius: 50%; animation: spin .6s linear infinite;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 // ── Delete modal ──────────────────────────────────────────
 .del-target {
-  display: flex; align-items: center; gap: 10px;
-  padding: 11px 15px; background: $bg-soft; border-radius: 8px;
-  border: 1px solid $border; margin-bottom: 18px;
-  font-size: .85rem; color: $text-dark; font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 15px;
+  background: $bg-soft;
+  border-radius: 8px;
+  border: 1px solid $border;
+  margin-bottom: 18px;
+  font-size: .85rem;
+  color: $text-dark;
+  font-weight: 500;
 }
-.del-choices { display: flex; flex-direction: column; gap: 8px; }
+
+.del-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .del-choice {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 14px; border: 1.5px solid $border; border-radius: 8px;
-  cursor: pointer; transition: all .15s;
-  &:hover { border-color: $blue-border; background: $blue-light; }
-  &.active { border-color: $blue; background: $blue-light; }
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+
+  &:hover {
+    border-color: $blue-border;
+    background: $blue-light;
+  }
+
+  &.active {
+    border-color: $blue;
+    background: $blue-light;
+  }
+
   &.force-choice {
-    &:hover { background: rgba(240,101,72,.05); border-color: rgba(240,101,72,.3); }
-    &.active { border-color: $danger; background: rgba(240,101,72,.06); }
+    &:hover {
+      background: rgba(240,101,72,.05);
+      border-color: rgba(240,101,72,.3);
+    }
+
+    &.active {
+      border-color: $danger;
+      background: rgba(240,101,72,.06);
+    }
   }
 }
+
 .del-radio {
-  width: 16px; height: 16px; border-radius: 50%; border: 2px solid $border;
-  margin-top: 1px; flex-shrink: 0; transition: all .15s;
-  &.on       { border-color: $blue;   background: $blue;   box-shadow: inset 0 0 0 3px $white; }
-  &.on.force { border-color: $danger; background: $danger; box-shadow: inset 0 0 0 3px $white; }
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid $border;
+  margin-top: 1px;
+  flex-shrink: 0;
+  transition: all .15s;
+
+  &.on {
+    border-color: $blue;
+    background: $blue;
+    box-shadow: inset 0 0 0 3px $white;
+  }
+
+  &.on.force {
+    border-color: $danger;
+    background: $danger;
+    box-shadow: inset 0 0 0 3px $white;
+  }
 }
-.del-choice-title { font-size: .84rem; font-weight: 600; color: $text-title; }
-.del-choice-desc  { font-size: .75rem; color: $text-muted; margin-top: 2px; }
+
+.del-choice-title {
+  font-size: .84rem;
+  font-weight: 600;
+  color: $text-title;
+}
+
+.del-choice-desc {
+  font-size: .75rem;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
 .warn-strip {
-  display: flex; align-items: center; gap: 8px; margin-top: 12px;
-  padding: 10px 13px; background: rgba(240,101,72,.08);
-  border: 1px solid rgba(240,101,72,.2); border-radius: 7px;
-  font-size: .8rem; color: darken(#f06548, 10%); font-family: $font;
-  svg { flex-shrink: 0; }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 13px;
+  background: rgba(240,101,72,.08);
+  border: 1px solid rgba(240,101,72,.2);
+  border-radius: 7px;
+  font-size: .8rem;
+  color: darken(#f06548, 10%);
+  svg {
+    flex-shrink: 0;
+  }
 }

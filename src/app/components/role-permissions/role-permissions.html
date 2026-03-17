@@ -1,129 +1,128 @@
 <div class="container-fluid py-4">
   <div class="page-wrapper">
 
+    <!-- Header -->
     <div class="card-header">
       <div class="header-left">
         <div class="header-icon">
-          <lucide-angular name="ShieldCheck" size="32" class="text-blue-500"></lucide-angular>
+          <lucide-angular name="ShieldCheck" size="22"></lucide-angular>
         </div>
         <div>
-          <h5 class="page-card-title">Configuration des Accès</h5>
-          <span class="page-card-sub">Gérez les permissions de chaque rôle</span>
+          <h5 class="page-card-title">Rôles & Permissions</h5>
+          <span class="page-card-sub">Cliquez sur un rôle pour configurer ses accès</span>
         </div>
+      </div>
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        {{ roles().length }} rôles configurés
       </div>
     </div>
 
-    <!-- Role Selector Card -->
-    <div class="role-selector-card">
-      <div class="role-selector-label">
-        <i class="feather icon-users"></i>
-        Sélectionner un rôle
-      </div>
-      <div class="role-pills">
-        @for (role of roles(); track role.roleId) {
-          <button class="role-pill"
-            [class.active]="selectedRoleId() === role.roleId"
-            (click)="onRoleChange(role.roleId)">
-            <span class="role-pill-dot"></span>
-            {{ role.roleName }}
-          </button>
-        }
-      </div>
-    </div>
+    <!-- Roles Grid -->
+    <div class="roles-grid">
+      @for (role of roles(); track role.roleId; let idx = $index) {
+        <div class="role-card"
+          [attr.data-idx]="idx % 6"
+          [class.selected]="selectedRoleId() === role.roleId"
+          (click)="onRoleChange(role.roleId)">
 
-    <!-- Content -->
-    @if (selectedRoleId()) {
-
-      <!-- Stats Bar -->
-      <div class="stats-bar">
-        <div class="stat-item">
-          <span class="stat-value">{{ allMenus().length }}</span>
-          <span class="stat-label">Total menus</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value active">{{ selectedMenuIds().length }}</span>
-          <span class="stat-label">Activés</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value muted">{{ allMenus().length - selectedMenuIds().length }}</span>
-          <span class="stat-label">Désactivés</span>
-        </div>
-
-        <div class="stats-bar-actions">
-          <button class="btn-select-all" (click)="selectAll()">
-            <i class="feather icon-check-square"></i>
-            Tout activer
-          </button>
-          <button class="btn-deselect-all" (click)="deselectAll()">
-            <i class="feather icon-square"></i>
-            Tout désactiver
-          </button>
-        </div>
-      </div>
-
-      <!-- Menus Grid -->
-      <div class="menus-grid">
-        @for (menu of allMenus(); track menu.menuItemId) {
-          <div class="menu-card"
-            [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)"
-            (click)="toggleMenu(menu.menuItemId)">
-
-            <div class="menu-card-left">
-              <div class="menu-card-icon"
-                [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
-                <!-- Icône Lucide -->
-                <lucide-angular
-                  [name]="menu.icon || 'menu'"
-                  size="24"
-                  [class.text-active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
-                </lucide-angular>
-              </div>
-              <div class="menu-card-info">
-                <span class="menu-card-label">{{ menu.label }}</span>
-                <span class="menu-card-link">{{ menu.link }}</span>
-              </div>
-            </div>
-
-            <div class="menu-card-right">
-              <div class="toggle-switch"
-                [class.on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
-                <div class="toggle-knob"></div>
-              </div>
-            </div>
-
+          <div class="rc-avatar" [attr.data-idx]="idx % 6">
+            {{ role.roleName?.charAt(0)?.toUpperCase() }}
           </div>
-        }
-      </div>
 
-      <!-- Save Footer -->
-      <div class="save-footer">
-        <div class="save-footer-info">
-          <i class="feather icon-info"></i>
-          <span>Les modifications seront appliquées immédiatement après sauvegarde</span>
+          <div class="rc-info">
+            <h6 class="rc-name">{{ role.roleName }}</h6>
+            <span class="rc-desc">{{ role.description || 'Rôle système' }}</span>
+          </div>
+
+          <div class="rc-arrow">
+            <lucide-angular name="chevron-right" size="16"></lucide-angular>
+          </div>
+
         </div>
-        <button class="btn-save" (click)="save()">
-          <i class="feather icon-save"></i>
-          Enregistrer les permissions
-        </button>
-      </div>
+      }
+    </div>
 
-    } @else {
+    <!-- Config Panel -->
+    @if (selectedRoleId()) {
+      <div class="config-panel">
 
-      <!-- Empty State -->
-      <div class="empty-state">
-        <div class="empty-state-icon">
-          <i class="feather icon-shield"></i>
-          <div class="empty-ping"></div>
+        <div class="config-panel-head">
+          <div class="config-panel-title">
+            <lucide-angular name="sliders" size="16"></lucide-angular>
+            Permissions —
+            <strong>{{ roles()[roles().findIndex(r => r.roleId === selectedRoleId())]?.roleName }}</strong>
+          </div>
+          <button class="config-panel-close" (click)="$event.stopPropagation(); onRoleChange(undefined)">
+            <lucide-angular name="x" size="15"></lucide-angular>
+          </button>
         </div>
-        <h5>Aucun rôle sélectionné</h5>
-        <p>Choisissez un rôle ci-dessus pour configurer ses permissions d'accès à la navigation</p>
-        <div class="empty-arrows">
-          <i class="feather icon-arrow-up"></i>
-        </div>
-      </div>
 
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="stat-value">{{ allMenus().length }}</span>
+            <span class="stat-label">Total menus</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value active">{{ selectedMenuIds().length }}</span>
+            <span class="stat-label">Activés</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value muted">{{ allMenus().length - selectedMenuIds().length }}</span>
+            <span class="stat-label">Désactivés</span>
+          </div>
+          <div class="stats-bar-actions">
+            <button class="btn-select-all" (click)="selectAll()">
+              <i class="feather icon-check-square"></i> Tout activer
+            </button>
+            <button class="btn-deselect-all" (click)="deselectAll()">
+              <i class="feather icon-square"></i> Tout désactiver
+            </button>
+          </div>
+        </div>
+
+        <div class="menus-grid">
+          @for (menu of allMenus(); track menu.menuItemId) {
+            <div class="menu-card"
+              [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)"
+              (click)="toggleMenu(menu.menuItemId)">
+
+              <div class="menu-card-left">
+                <div class="menu-card-icon"
+                  [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
+                  <lucide-angular [name]="menu.icon || 'menu'" size="18"></lucide-angular>
+                </div>
+                <div class="menu-card-info">
+                  <span class="menu-card-label">{{ menu.label }}</span>
+                  <span class="menu-card-link">{{ menu.link }}</span>
+                </div>
+              </div>
+
+              <div class="menu-card-right">
+                <div class="toggle-switch"
+                  [class.on]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <div class="save-footer">
+          <div class="save-footer-info">
+            <i class="feather icon-info"></i>
+            <span>Les modifications seront appliquées immédiatement après sauvegarde</span>
+          </div>
+          <button class="btn-save" (click)="save()">
+            <i class="feather icon-save"></i>
+            Enregistrer les permissions
+          </button>
+        </div>
+
+      </div>
     }
 
   </div>

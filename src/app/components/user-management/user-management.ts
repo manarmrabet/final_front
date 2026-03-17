@@ -1,10 +1,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AdminService } from '../../services/admin/admin';
 import { DataStoreService } from '../../services/dataStore/data-store';
 import { UserDTO, Role, Site } from '../../models/user.model';
+
+// Correction Erreur Locale "fr" (Image 3)
+registerLocaleData(localeFr);
 
 @Component({
   selector: 'app-user-management',
@@ -15,7 +19,7 @@ import { UserDTO, Role, Site } from '../../models/user.model';
 })
 export class UserManagementComponent implements OnInit {
   private adminService = inject(AdminService);
-  private dataStore    = inject(DataStoreService);  // ← service partagé
+  private dataStore    = inject(DataStoreService);
 
   users           = signal<UserDTO[]>([]);
   roles           = signal<Role[]>([]);
@@ -29,6 +33,7 @@ export class UserManagementComponent implements OnInit {
   deleteForce     = signal(false);
   userToDelete    = signal<UserDTO | null>(null);
   newUser         = signal<UserDTO>(this.initUser());
+  sendingMailId   = signal<number | null>(null);
 
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
@@ -41,18 +46,21 @@ export class UserManagementComponent implements OnInit {
     );
   });
 
-  ngOnInit(): void { this.loadInitialData(); }
+  ngOnInit(): void {
+    this.loadInitialData();
+  }
 
   loadInitialData(): void {
     this.isPageLoading.set(true);
 
-    // Charger depuis le DataStore si déjà chargé, sinon déclencher loadAll
-    if (this.dataStore.users.length > 0) {
-      this.users.set(this.dataStore.users);
-      this.isPageLoading.set(false);
-    }
+    // setTimeout pour éviter ExpressionChangedAfterItHasBeenCheckedError (Image 3)
+    setTimeout(() => {
+      if (this.dataStore.users.length > 0) {
+        this.users.set(this.dataStore.users);
+        this.isPageLoading.set(false);
+      }
+    });
 
-    // S'abonner aux changements du store → mise à jour locale auto
     this.dataStore.users$.subscribe(u => {
       this.users.set(u);
       this.isPageLoading.set(false);
@@ -60,25 +68,32 @@ export class UserManagementComponent implements OnInit {
     this.dataStore.roles$.subscribe(r => this.roles.set(r));
     this.dataStore.sites$.subscribe(s => this.sites.set(s));
 
-    // Charger tout si pas encore fait
-    if (!this.dataStore.users.length) this.dataStore.loadAll();
-    else {
+    if (!this.dataStore.users.length) {
+      this.dataStore.loadAll();
+    } else {
       this.dataStore.refreshRoles();
       this.dataStore.refreshSites();
     }
   }
 
-  refreshUsers(): void {
-    // Rafraîchit le store → tous les composants abonnés reçoivent les nouvelles données
-    this.dataStore.refreshUsers();
-  }
-
   initUser(): UserDTO {
-    return { userName:'', email:'', firstName:'', lastName:'', roleName:'', siteName:'', isActive:1, authorities:[] };
+    return {
+      userName: '',
+      email: '',
+      firstName: '',
+      lastName: '',
+      roleName: '',
+      siteName: '',
+      isActive: 1,
+      authorities: [],
+      mustChangePassword: true, // Correction TS2353 (Image 4)
+      credentialsSent: false
+    };
   }
 
-  isEmailValid(email = ''): boolean { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
-  isNameValid(name  = ''): boolean  { return /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ\s\-]+$/.test(name); }
+  private getUserId(user: UserDTO | null): number | undefined {
+    return user?.id ?? (user as any)?.Id;
+  }
 
   openModal(user?: UserDTO): void {
     this.isEditMode.set(!!user);
@@ -86,67 +101,95 @@ export class UserManagementComponent implements OnInit {
     this.showModal.set(true);
   }
 
-  closeModal(): void { this.showModal.set(false); this.newUser.set(this.initUser()); this.isLoading.set(false); }
+  closeModal(): void {
+    this.showModal.set(false);
+    this.newUser.set(this.initUser());
+    this.isLoading.set(false);
+  }
 
   saveUser(): void {
     const user = this.newUser();
-    if (!this.isEmailValid(user.email))                                        { alert('E-mail invalide.');               return; }
-    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName)) { alert('Nom/prénom invalide.');           return; }
-    if (!user.userName || !user.roleName)                                      { alert('Username et rôle obligatoires.'); return; }
+    if (!this.isEmailValid(user.email)) { alert('E-mail invalide.'); return; }
+    if (!this.isNameValid(user.firstName) || !this.isNameValid(user.lastName)) { alert('Nom/prénom invalide.'); return; }
 
-    const id = user.id ?? (user as any).userId;
-    if (this.isEditMode() && !id) { alert("Impossible d'identifier l'utilisateur."); return; }
+    const id = this.getUserId(user);
+    if (this.isEditMode() && !id) {
+      alert("Impossible d'identifier l'utilisateur.");
+      return;
+    }
 
     this.isLoading.set(true);
     const obs = this.isEditMode()
-      ? this.adminService.updateUser(id, user)
+      ? this.adminService.updateUser(id!, user)
       : this.adminService.createUser(user);
 
     obs.subscribe({
       next: (saved) => {
-        if (this.isEditMode()) {
-          this.dataStore.updateUserLocally(user); // mise à jour optimiste immédiate
-        } else {
-          this.dataStore.addUserLocally(saved);   // ajout optimiste immédiat
-        }
-        this.dataStore.refreshUsers();            // sync avec le backend
+        this.isEditMode() ? this.dataStore.updateUserLocally(user) : this.dataStore.addUserLocally(saved);
+        this.dataStore.refreshUsers();
         this.closeModal();
       },
-      error: err => { this.isLoading.set(false); alert(err.error?.message ?? `Erreur (${err.status})`); }
+      error: err => {
+        this.isLoading.set(false);
+        alert(err.error?.message ?? `Erreur (${err.status})`);
+      }
     });
   }
 
   toggleStatus(user: UserDTO): void {
-    const id = user.id ?? (user as any).userId;
+    const id = this.getUserId(user);
     if (!id) return;
     const updated = { ...user, isActive: user.isActive === 1 ? 0 : 1 };
     this.adminService.updateUser(id, updated).subscribe({
-      next: () => {
-        this.dataStore.updateUserLocally(updated); // dashboard stats se mettent à jour immédiatement
-      },
+      next: () => this.dataStore.updateUserLocally(updated),
       error: err => console.error('Erreur toggle statut:', err)
     });
   }
 
-  openDeleteModal(user: UserDTO): void { this.userToDelete.set(user); this.deleteForce.set(false); this.showDeleteModal.set(true); }
-  cancelDelete(): void                  { this.showDeleteModal.set(false); this.userToDelete.set(null); this.deleteForce.set(false); }
-
-  confirmDelete(): void {
-    const user = this.userToDelete();
-    const id   = user?.id ?? (user as any)?.userId;
-    if (!user || !id) return;
-    const del$ = this.deleteForce()
-      ? this.adminService.forceDeleteUser(id)
-      : this.adminService.deleteUser(id);
-    del$.subscribe({
+  sendCredentials(user: UserDTO): void {
+    const id = this.getUserId(user);
+    if (!id) return;
+    this.sendingMailId.set(id);
+    this.adminService.sendCredentials(id).subscribe({
       next: () => {
-        this.dataStore.removeUserLocally(id); // suppression optimiste immédiate
-        this.dataStore.refreshUsers();         // sync backend
-        this.cancelDelete();
+        this.dataStore.updateUserLocally({ ...user, credentialsSent: true });
+        this.sendingMailId.set(null);
+        alert(`Email envoyé à ${user.email}`);
       },
-      error: err => console.error('Erreur suppression:', err)
+      error: () => this.sendingMailId.set(null)
     });
   }
 
-  updateSearch(e: Event): void { this.searchTerm.set((e.target as HTMLInputElement).value); }
+  openDeleteModal(user: UserDTO): void {
+    this.userToDelete.set(user);
+    this.deleteForce.set(false);
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal.set(false);
+    this.userToDelete.set(null);
+  }
+
+  confirmDelete(): void {
+    const user = this.userToDelete();
+    const id = this.getUserId(user!);
+    if (!user || !id) return;
+
+    const del$ = this.deleteForce() ? this.adminService.forceDeleteUser(id) : this.adminService.deleteUser(id);
+    del$.subscribe({
+      next: () => {
+        this.dataStore.removeUserLocally(id);
+        this.dataStore.refreshUsers();
+        this.cancelDelete();
+      }
+    });
+  }
+
+  updateSearch(e: Event): void {
+    this.searchTerm.set((e.target as HTMLInputElement).value);
+  }
+
+  isEmailValid(email = ''): boolean { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email); }
+  isNameValid(name = ''): boolean { return /^[a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ\s\-]+$/.test(name); }
 }
