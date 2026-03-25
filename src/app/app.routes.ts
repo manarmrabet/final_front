@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth-guard';
 import { lockGuard } from './guards/lock-guard';
+import { TransferManagementComponent } from './components/transfer/transfer';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -52,6 +53,8 @@ export const routes: Routes = [
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/audit/audit-list/audit-list').then(m => m.AuditListComponent)
       },
+     { path: 'transfers',         component: TransferManagementComponent, canActivate: [authGuard, lockGuard],
+         data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE_MAGASIN', 'ROLE_MAGASINIER', 'ROLE_CONSULTATION'] } },
       {
         path: 'card-management',
         canActivate: [authGuard, lockGuard],

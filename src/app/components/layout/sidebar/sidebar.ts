@@ -4,8 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth';
 import { AdminService } from '../../../services/admin/admin';
 import { MenuItemDTO } from '../../../models/menu-item';
-import { filter, Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { filter, Subscription } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
@@ -16,6 +15,7 @@ import { LucideAngularModule } from 'lucide-angular';
   styleUrls: ['./sidebar.scss']
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+
   private auth         = inject(AuthService);
   private adminService = inject(AdminService);
   private router       = inject(Router);
@@ -26,10 +26,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isLoading  = signal<boolean>(true);
 
   private authSub?: Subscription;
-  private pollingSub?: Subscription;
-
-  // ── Ajuste selon tes besoins ────────────────────────────────────────
-  private readonly POLLING_INTERVAL_MS = 1000; // 30 secondes
+  private routerSub?: Subscription;
 
   rootMenus = computed(() => this.menuItems().filter(m => !m.parentId));
 
@@ -38,70 +35,42 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Suivi connexion / déconnexion
+
+    // Charger les menus quand l'utilisateur se connecte
     this.authSub = this.auth.currentUser$.subscribe(user => {
       if (user) {
         this.loadMenus();
-        this.startPolling();
       } else {
-        this.stopPolling();
         this.menuItems.set([]);
-        this.isLoading.set(false);
         this.expanded.set(null);
+        this.isLoading.set(false);
       }
     });
 
-    // Mise à jour URL active
-    this.router.events.pipe(
+    // Mise à jour de l'URL active
+    this.routerSub = this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
     ).subscribe((e: NavigationEnd) => {
       this.activeUrl.set(e.urlAfterRedirects);
       this.autoExpandActiveGroup();
     });
 
-    // Chargement initial si déjà connecté
+    // Si l'utilisateur est déjà connecté (refresh page)
     if (this.auth.currentUserValue) {
       this.loadMenus();
-      this.startPolling();
     }
   }
 
   ngOnDestroy(): void {
     this.authSub?.unsubscribe();
-    this.stopPolling();
-  }
-
-  private startPolling(): void {
-  this.stopPolling();
-
-  this.pollingSub = interval(this.POLLING_INTERVAL_MS).pipe(
-    switchMap(() => this.adminService.getAuthorizedMenus())
-  ).subscribe({
-    next: (items) => {
-      // On compare TOUT l'objet pour détecter un changement d'icône ou de texte
-      const currentData = JSON.stringify(this.menuItems());
-      const newData = JSON.stringify(items);
-
-      if (currentData !== newData) {
-        console.log('[Sidebar Polling] Changement détecté (Icône/Label) → Mise à jour');
-        this.menuItems.set(items || []);
-        this.autoExpandActiveGroup();
-      }
-    },
-    error: (err) => console.warn('[Polling] Erreur', err)
-  });
-}
-
-  private stopPolling(): void {
-    this.pollingSub?.unsubscribe();
-    this.pollingSub = undefined;
+    this.routerSub?.unsubscribe();
   }
 
   loadMenus(): void {
     this.isLoading.set(true);
+
     this.adminService.getAuthorizedMenus().subscribe({
       next: items => {
-        console.log('Menus chargés (initial ou polling) :', items);
         this.menuItems.set(items || []);
         this.isLoading.set(false);
         this.autoExpandActiveGroup();
@@ -118,6 +87,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const activeChild = this.menuItems().find(m =>
       m.link && this.isActive(m.link) && m.parentId != null
     );
+
     if (activeChild?.parentId) {
       const parent = this.menuItems().find(p => p.menuItemId === activeChild.parentId);
       if (parent?.label) this.expanded.set(parent.label);
@@ -149,10 +119,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   navigate(link: string): void {
     if (!link) return;
+
     const trimmed = link.trim();
+
     const url = trimmed.startsWith('/app')
       ? trimmed
       : '/app' + (trimmed.startsWith('/') ? trimmed : '/' + trimmed);
+
     this.router.navigateByUrl(url);
   }
 }
