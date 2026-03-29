@@ -54,7 +54,7 @@ export class TransferService {
 
   createTransfer(request: TransferRequest): Observable<TransferResponse> {
     return this.http.post<ApiResponse<TransferResponse>>(
-      `${this.api}/transfers`, request
+      `${this.api}/api/transfers`, request
     ).pipe(
       map(r => r.data),
       tap(() => this.refreshDashboard())
@@ -63,7 +63,7 @@ export class TransferService {
 
   createBatch(requests: TransferRequest[]): Observable<TransferResponse[]> {
     return this.http.post<ApiResponse<TransferResponse[]>>(
-      `${this.api}/transfers/batch`, requests
+      `${this.api}/api/transfers/batch`, requests
     ).pipe(
       map(r => r.data),
       tap(() => this.refreshDashboard())
@@ -74,7 +74,7 @@ export class TransferService {
   getAll(page = 0, size = 20): Observable<PagedResponse<TransferResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<ApiResponse<PagedResponse<TransferResponse>>>(
-      `${this.api}/transfers`, { params }
+      `${this.api}/api/transfers`, { params }
     ).pipe(map(r => r.data));
   }
 
@@ -90,26 +90,26 @@ export class TransferService {
     if (params.to)       p = p.set('to',       params.to);
 
     return this.http.get<ApiResponse<PagedResponse<TransferResponse>>>(
-      `${this.api}/transfers/search`, { params: p }
+      `${this.api}/api/transfers/search`, { params: p }
     ).pipe(map(r => r.data));
   }
 
   getById(id: number): Observable<TransferResponse> {
     return this.http.get<ApiResponse<TransferResponse>>(
-      `${this.api}/transfers/${id}`
+      `${this.api}/api/transfers/${id}`
     ).pipe(map(r => r.data));
   }
 
   validate(id: number): Observable<TransferResponse> {
     return this.http.put<ApiResponse<TransferResponse>>(
-      `${this.api}/transfers/${id}/validate`, {}
+      `${this.api}/api/transfers/${id}/validate`, {}
     ).pipe(map(r => r.data), tap(() => this.refreshDashboard()));
   }
 
   cancel(id: number, reason = ''): Observable<TransferResponse> {
     const params = new HttpParams().set('reason', reason);
     return this.http.put<ApiResponse<TransferResponse>>(
-      `${this.api}/transfers/${id}/cancel`, null, { params }
+      `${this.api}/api/transfers/${id}/cancel`, null, { params }
     ).pipe(map(r => r.data), tap(() => this.refreshDashboard()));
   }
 
@@ -119,7 +119,7 @@ export class TransferService {
 
   getDashboard(): Observable<TransferDashboard> {
     return this.http.get<ApiResponse<TransferDashboard>>(
-      `${this.api}/transfers/dashboard`
+      `${this.api}/api/transfers/dashboard`
     ).pipe(
       map(r => r.data),
       tap(d => this.dashboardSubject.next(d))
@@ -138,7 +138,7 @@ export class TransferService {
   getArticleByCode(code: string): Observable<ErpArticle> {
     if (!this.articleCache.has(code)) {
       const req$ = this.http.get<ApiResponse<ErpArticle>>(
-        `${this.api}/erp/articles/${code}`
+        `${this.api}/api/erp/articles/${code}`
       ).pipe(
         map(r => r.data),
         shareReplay(1),
@@ -154,20 +154,20 @@ export class TransferService {
 
   searchArticles(query: string): Observable<ErpArticle[]> {
     return this.http.get<ApiResponse<ErpArticle[]>>(
-      `${this.api}/erp/articles/search`,
+      `${this.api}/api/erp/articles/search`,
       { params: new HttpParams().set('q', query) }
     ).pipe(map(r => r.data));
   }
 
   getStockByItem(itemCode: string): Observable<ErpStock[]> {
     return this.http.get<ApiResponse<ErpStock[]>>(
-      `${this.api}/erp/stock/item/${itemCode}`
+      `${this.api}/api/erp/stock/item/${itemCode}`
     ).pipe(map(r => r.data));
   }
 
   getStockByLocation(location: string): Observable<ErpStock[]> {
     return this.http.get<ApiResponse<ErpStock[]>>(
-      `${this.api}/erp/stock/location/${location}`
+      `${this.api}/api/erp/stock/location/${location}`
     ).pipe(map(r => r.data));
   }
 }

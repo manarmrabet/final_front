@@ -1,394 +1,398 @@
 <!-- src/app/components/transfer-management/transfer-management.html -->
 
-<div class="transfer-page">
+<div class="tm-page">
 
-  <!-- ═══ HEADER ════════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <div class="header-left">
-      <h2 class="page-title">
-        <i data-feather="shuffle" class="header-icon"></i>
-        Transferts Internes
-      </h2>
-      <p class="page-subtitle">
-        Gestion des mouvements de stock entre emplacements
-      </p>
+  <!-- HEADER -->
+  <div class="tm-header">
+    <div class="tm-header__left">
+      <div class="tm-header__icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"></polyline>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          <polyline points="7 23 3 19 7 15"></polyline>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="tm-header__title">Transferts Internes</h1>
+        <p class="tm-header__sub">Suivi des mouvements effectués depuis l'application mobile</p>
+      </div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-outline-secondary btn-sm" (click)="loadDashboard(); loadTransfers()">
-        <i data-feather="refresh-cw"></i> Actualiser
-      </button>
-      <button class="btn btn-primary btn-sm" (click)="showCreateForm = !showCreateForm">
-        <i data-feather="plus"></i> Nouveau transfert
+    <div class="tm-header__actions">
+      <button class="tm-btn tm-btn--ghost" (click)="loadDashboard(); loadTransfers()">
+        Actualiser
       </button>
     </div>
   </div>
 
-  <!-- ═══ DASHBOARD CARDS ══════════════════════════════════════════════════ -->
-  <div class="dashboard-cards" *ngIf="dashboard">
-    <div class="stat-card stat-card--blue">
-      <div class="stat-icon"><i data-feather="clock"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">{{ pendingCount }}</span>
-        <span class="stat-label">En attente</span>
+  <!-- DASHBOARD -->
+  <div class="tm-stats" *ngIf="dashboard">
+    <div class="tm-stat tm-stat--blue">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
       </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ pendingCount }}</span>
+        <span class="tm-stat__lbl">En attente</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--blue"></div>
     </div>
-    <div class="stat-card stat-card--green">
-      <div class="stat-icon"><i data-feather="check-circle"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">{{ doneCount }}</span>
-        <span class="stat-label">Effectués</span>
+
+    <div class="tm-stat tm-stat--emerald">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
       </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ doneCount }}</span>
+        <span class="tm-stat__lbl">Effectués</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--emerald"></div>
     </div>
-    <div class="stat-card stat-card--orange">
-      <div class="stat-icon"><i data-feather="sun"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">{{ dashboard.totalToday }}</span>
-        <span class="stat-label">Aujourd'hui</span>
+
+    <div class="tm-stat tm-stat--amber">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+        </svg>
       </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ dashboard.totalToday }}</span>
+        <span class="tm-stat__lbl">Aujourd'hui</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--amber"></div>
     </div>
-    <div class="stat-card stat-card--purple">
-      <div class="stat-icon"><i data-feather="calendar"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">{{ dashboard.totalThisWeek }}</span>
-        <span class="stat-label">Cette semaine</span>
+
+    <div class="tm-stat tm-stat--violet">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
       </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ dashboard.totalThisWeek }}</span>
+        <span class="tm-stat__lbl">Cette semaine</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--violet"></div>
     </div>
-    <div class="stat-card stat-card--red" *ngIf="errorCount > 0">
-      <div class="stat-icon"><i data-feather="alert-triangle"></i></div>
-      <div class="stat-content">
-        <span class="stat-value">{{ errorCount }}</span>
-        <span class="stat-label">Erreurs</span>
+
+    <div class="tm-stat tm-stat--teal">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
       </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ dashboard.totalThisMonth }}</span>
+        <span class="tm-stat__lbl">Ce mois</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--teal"></div>
+    </div>
+
+    <div class="tm-stat tm-stat--rose" *ngIf="errorCount > 0">
+      <div class="tm-stat__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div class="tm-stat__body">
+        <span class="tm-stat__val">{{ errorCount }}</span>
+        <span class="tm-stat__lbl">Erreurs</span>
+      </div>
+      <div class="tm-stat__bar tm-stat__bar--rose"></div>
     </div>
   </div>
 
-  <!-- ═══ TOP ARTICLES ══════════════════════════════════════════════════════ -->
-  <div class="top-items-card" *ngIf="dashboard?.topItems?.length">
-    <h6 class="section-title">Articles les plus mouvementés (7 jours)</h6>
-    <div class="top-items-list">
-      <div class="top-item" *ngFor="let item of dashboard!.topItems; let i = index">
-        <span class="rank">{{ i + 1 }}</span>
-        <div class="item-info">
-          <span class="item-code">{{ item.itemCode }}</span>
-          <span class="item-label">{{ item.itemLabel }}</span>
-        </div>
-        <span class="item-count">{{ item.count }} mvt</span>
+  <!-- INSIGHTS -->
+  <div class="tm-insights" *ngIf="dashboard?.topItems?.length || dashboard?.topOperators?.length || dashboard?.topSourceLocations?.length">
+    <div class="tm-card" *ngIf="dashboard?.topItems?.length">
+      <div class="tm-card__head">
+        <span class="tm-card__title">Articles mouvementés — 7 jours</span>
       </div>
-    </div>
-  </div>
-
-  <!-- ═══ FORMULAIRE CRÉATION ══════════════════════════════════════════════ -->
-  <div class="create-form-card" *ngIf="showCreateForm" [formGroup]="createForm">
-    <div class="form-card-header">
-      <h5><i data-feather="plus-circle"></i> Nouveau transfert interne</h5>
-      <button class="btn-close-form" (click)="showCreateForm = false">
-        <i data-feather="x"></i>
-      </button>
-    </div>
-
-    <div class="form-grid">
-      <!-- Recherche article -->
-      <div class="form-group form-group--full">
-        <label>Article ERP *</label>
-        <input type="text" class="form-control"
-               placeholder="Rechercher par code ou désignation..."
-               (input)="onArticleSearchInput($any($event.target).value)"
-               [value]="selectedArticle?.itemCode ?? ''" />
-        <!-- Dropdown résultats -->
-        <div class="article-dropdown" *ngIf="articleSearchResults.length">
-          <div class="article-option"
-               *ngFor="let art of articleSearchResults"
-               (click)="selectArticle(art)">
-            <span class="art-code">{{ art.itemCode }}</span>
-            <span class="art-label">{{ art.designation }}</span>
-            <span class="art-unit">{{ art.storageUnit }}</span>
+      <div class="tm-top-list">
+        <div class="tm-top-row" *ngFor="let item of dashboard!.topItems; let i = index">
+          <span class="tm-top-rank" [class.tm-top-rank--gold]="i===0" [class.tm-top-rank--silver]="i===1" [class.tm-top-rank--bronze]="i===2">{{ i + 1 }}</span>
+          <div class="tm-top-info">
+            <span class="tm-top-code">{{ item.itemCode }}</span>
+            <span class="tm-top-label">{{ item.itemLabel }}</span>
           </div>
+          <span class="tm-top-pill">{{ item.count }} mvt</span>
         </div>
-        <!-- Article sélectionné -->
-        <div class="selected-article" *ngIf="selectedArticle">
-          <i data-feather="package" class="text-success"></i>
-          <strong>{{ selectedArticle.itemCode }}</strong> — {{ selectedArticle.designation }}
-          <span class="unit-badge">{{ selectedArticle.storageUnit }}</span>
-        </div>
-      </div>
-
-      <!-- Stock disponible par emplacement -->
-      <div class="stock-map form-group--full" *ngIf="articleStocks.length">
-        <label>Stock disponible par emplacement :</label>
-        <div class="stock-locations">
-          <div class="stock-location-chip"
-               *ngFor="let s of articleStocks"
-               (click)="createForm.patchValue({ sourceLocation: s.location })">
-            <span class="loc-code">{{ s.location }}</span>
-            <span class="loc-qty">{{ s.quantityAvailable }}</span>
-            <span class="loc-lot" *ngIf="s.lotNumber">LOT: {{ s.lotNumber }}</span>
-          </div>
-        </div>
-        <small class="text-muted">Cliquez sur un emplacement pour le sélectionner comme source</small>
-      </div>
-
-      <div class="form-group">
-        <label>Emplacement source *</label>
-        <input type="text" class="form-control" formControlName="sourceLocation"
-               placeholder="Ex: ZONE-RECEPTION" />
-      </div>
-
-      <div class="form-group">
-        <label>Emplacement destination *</label>
-        <input type="text" class="form-control" formControlName="destLocation"
-               placeholder="Ex: MAG-A / ALLÉE-B3" />
-      </div>
-
-      <div class="form-group">
-        <label>Quantité *</label>
-        <input type="number" class="form-control" formControlName="quantity" min="1" />
-      </div>
-
-      <div class="form-group">
-        <label>Numéro de lot</label>
-        <input type="text" class="form-control" formControlName="lotNumber"
-               placeholder="Optionnel" />
-      </div>
-
-      <div class="form-group">
-        <label>Type de transfert</label>
-        <select class="form-select" formControlName="transferType">
-          <option value="INTERNAL_RELOCATION">Déplacement interne</option>
-          <option value="PUTAWAY">Mise en stock (Putaway)</option>
-          <option value="REPLENISHMENT">Réapprovisionnement</option>
-        </select>
-      </div>
-
-      <div class="form-group form-group--full">
-        <label>Notes</label>
-        <textarea class="form-control" formControlName="notes" rows="2"
-                  placeholder="Commentaire optionnel..."></textarea>
       </div>
     </div>
 
-    <div class="alert alert-danger" *ngIf="createError">{{ createError }}</div>
+    <div class="tm-card" *ngIf="dashboard?.topOperators?.length">
+      <div class="tm-card__head">
+        <span class="tm-card__title">Opérateurs actifs — 7 jours</span>
+      </div>
+      <div class="tm-top-list">
+        <div class="tm-top-row" *ngFor="let op of dashboard!.topOperators; let i = index">
+          <span class="tm-top-rank" [class.tm-top-rank--gold]="i===0" [class.tm-top-rank--silver]="i===1" [class.tm-top-rank--bronze]="i===2">{{ i + 1 }}</span>
+          <div class="tm-top-info">
+            <span class="tm-top-code">{{ op.operatorName }}</span>
+          </div>
+          <span class="tm-top-pill">{{ op.count }} mvt</span>
+        </div>
+      </div>
+    </div>
 
-    <div class="form-actions">
-      <button class="btn btn-secondary" (click)="showCreateForm = false; createError = null">
-        Annuler
-      </button>
-      <button class="btn btn-primary" (click)="submitCreate()"
-              [disabled]="createForm.invalid || createLoading || !selectedArticle">
-        <span *ngIf="createLoading" class="spinner-border spinner-border-sm me-2"></span>
-        <i data-feather="check" *ngIf="!createLoading"></i>
-        Enregistrer le transfert
-      </button>
+    <div class="tm-card" *ngIf="dashboard?.topSourceLocations?.length">
+      <div class="tm-card__head">
+        <span class="tm-card__title">Emplacements sources — 7 jours</span>
+      </div>
+      <div class="tm-top-list">
+        <div class="tm-top-row" *ngFor="let loc of dashboard!.topSourceLocations; let i = index">
+          <span class="tm-top-rank" [class.tm-top-rank--gold]="i===0" [class.tm-top-rank--silver]="i===1" [class.tm-top-rank--bronze]="i===2">{{ i + 1 }}</span>
+          <div class="tm-top-info">
+            <span class="tm-top-code">{{ loc.location }}</span>
+          </div>
+          <span class="tm-top-pill">{{ loc.count }} mvt</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ═══ FILTRES ══════════════════════════════════════════════════════════ -->
-  <div class="filters-card" [formGroup]="filterForm">
-    <div class="filters-row">
-      <div class="filter-group">
-        <label>Statut</label>
-        <select class="form-select form-select-sm" formControlName="status">
-          <option [ngValue]="null">Tous</option>
+  <!-- FILTRES -->
+  <div class="tm-card tm-filters" [formGroup]="filterForm">
+    <div class="tm-filters__row">
+      <div class="tm-filter-field">
+        <label class="tm-label">Statut</label>
+        <select class="tm-select tm-select--sm" formControlName="status">
+          <option [ngValue]="null">Tous les statuts</option>
           <option value="PENDING">En attente</option>
           <option value="DONE">Effectués</option>
           <option value="ERROR">Erreurs</option>
           <option value="CANCELLED">Annulés</option>
         </select>
       </div>
-      <div class="filter-group">
-        <label>Code article</label>
-        <input type="text" class="form-control form-control-sm"
-               formControlName="itemCode" placeholder="Ex: ART-001" />
+      <div class="tm-filter-field">
+        <label class="tm-label">Code article</label>
+        <input type="text" class="tm-input tm-input--sm" formControlName="itemCode" placeholder="Ex: 6RA973332A" />
       </div>
-      <div class="filter-group">
-        <label>Emplacement</label>
-        <input type="text" class="form-control form-control-sm"
-               formControlName="location" placeholder="Source ou destination" />
+      <div class="tm-filter-field">
+        <label class="tm-label">Emplacement</label>
+        <input type="text" class="tm-input tm-input--sm" formControlName="location" placeholder="Source ou destination" />
       </div>
-      <div class="filter-group">
-        <label>Du</label>
-        <input type="date" class="form-control form-control-sm" formControlName="from" />
+      <div class="tm-filter-field">
+        <label class="tm-label">Du</label>
+        <input type="date" class="tm-input tm-input--sm" formControlName="from" />
       </div>
-      <div class="filter-group">
-        <label>Au</label>
-        <input type="date" class="form-control form-control-sm" formControlName="to" />
+      <div class="tm-filter-field">
+        <label class="tm-label">Au</label>
+        <input type="date" class="tm-input tm-input--sm" formControlName="to" />
       </div>
-      <button class="btn btn-outline-secondary btn-sm filter-reset" (click)="resetFilters()">
-        <i data-feather="x"></i> Réinitialiser
+      <button class="tm-btn tm-btn--ghost tm-btn--sm" (click)="resetFilters()">
+        Réinitialiser
       </button>
     </div>
   </div>
 
-  <!-- ═══ TABLEAU TRANSFERTS ════════════════════════════════════════════════ -->
-  <div class="table-card">
-    <div class="table-loading" *ngIf="transfersLoading">
-      <div class="spinner-border text-primary"></div>
-      <span>Chargement...</span>
+  <!-- TABLEAU -->
+  <div class="tm-card tm-table-card">
+
+    <div class="tm-state" *ngIf="transfersLoading">
+      <div class="tm-loader"><div class="tm-loader__ring"></div></div>
+      <span>Chargement des transferts…</span>
     </div>
 
-    <div class="table-empty" *ngIf="!transfersLoading && !transfersPage?.content?.length">
-      <i data-feather="inbox" class="empty-icon"></i>
+    <div class="tm-state" *ngIf="!transfersLoading && loadError">
+      <p>Erreur de chargement</p>
+      <small>{{ loadError }}</small>
+      <button class="tm-btn tm-btn--ghost tm-btn--sm" (click)="loadTransfers()">Réessayer</button>
+    </div>
+
+    <div class="tm-state" *ngIf="!transfersLoading && !loadError && !transfersPage?.content?.length">
       <p>Aucun transfert trouvé</p>
+      <small>Effectuez un transfert depuis l'application mobile</small>
     </div>
 
-    <table class="transfers-table"
-           *ngIf="!transfersLoading && transfersPage?.content?.length">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Article</th>
-          <th>Trajet</th>
-          <th>Quantité</th>
-          <th>Lot</th>
-          <th>Type</th>
-          <th>Opérateur</th>
-          <th>Date</th>
-          <th>Statut</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of transfersPage!.content; trackBy: trackById"
-            [class.row--pending]="t.status === 'PENDING'"
-            [class.row--error]="t.status === 'ERROR'">
-          <td class="id-cell">{{ t.id }}</td>
-          <td>
-            <div class="article-cell">
-              <strong>{{ t.erpItemCode }}</strong>
-              <small>{{ t.erpItemLabel }}</small>
-            </div>
-          </td>
-          <td>
-            <div class="route-cell">
-              <span class="loc-badge loc-source">{{ t.sourceLocation }}</span>
-              <i data-feather="arrow-right" class="arrow-icon"></i>
-              <span class="loc-badge loc-dest">{{ t.destLocation }}</span>
-            </div>
-          </td>
-          <td><strong>{{ t.quantity }}</strong> {{ t.unit }}</td>
-          <td>{{ t.lotNumber ?? '—' }}</td>
-          <td><span class="type-badge">{{ getTypeLabel(t.transferType) }}</span></td>
-          <td>{{ t.operatorName ?? '—' }}</td>
-          <td>{{ t.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>
-            <span class="status-badge status-badge--{{ getStatusColor(t.status) }}">
-              {{ getStatusLabel(t.status) }}
-            </span>
-          </td>
-          <td>
-            <button class="btn-action btn-action--view"
-                    (click)="openDetail(t)" title="Détail">
-              <i data-feather="eye"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="tm-table-wrap" *ngIf="!transfersLoading && !loadError && transfersPage?.content?.length">
+      <table class="tm-table">
+        <thead>
+          <tr>
+            <th>Article (Code + Nom)</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th class="tm-th--center">Qté</th>
+            <th>Lot</th>
+            <th>Type</th>
+            <th>Opérateur</th>
+            <th>Date</th>
+            <th class="tm-th--center">Statut</th>
+            <th class="tm-th--center">Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of transfersPage!.content; trackBy: trackById"
+              [class.tm-row--pending]="t.status === 'PENDING'"
+              [class.tm-row--error]="t.status === 'ERROR'">
+
+            <!-- Article -->
+            <td>
+              <div class="tm-art-cell">
+                <span class="tm-art-code">{{ t.erpItemCode }}</span>
+                <span class="tm-art-label" [title]="t.erpItemLabel">{{ t.erpItemLabel }}</span>
+              </div>
+            </td>
+
+            <!-- Source -->
+            <td>
+              <ng-container *ngIf="getLocationParts(t.sourceLocation) as src">
+                <span class="tm-loc tm-loc--src">
+                  <strong>{{ src.warehouse }}</strong> / {{ src.emplacement }}
+                </span>
+              </ng-container>
+            </td>
+
+            <!-- Destination -->
+            <td>
+              <ng-container *ngIf="getLocationParts(t.destLocation) as dst">
+                <span class="tm-loc tm-loc--dst">
+                  <strong>{{ dst.warehouse }}</strong> / {{ dst.emplacement }}
+                </span>
+              </ng-container>
+            </td>
+
+            <!-- Quantité -->
+            <td class="tm-td--center">
+              <span class="tm-qty">{{ t.quantity }}</span>
+              <span class="tm-unit">{{ t.unit }}</span>
+            </td>
+
+            <!-- Lot -->
+            <td>
+              <span *ngIf="t.lotNumber" class="tm-lot-badge">{{ t.lotNumber }}</span>
+              <span *ngIf="!t.lotNumber" class="tm-td--muted">—</span>
+            </td>
+
+            <!-- Type -->
+            <td>
+              <span class="tm-type-pill">{{ getTypeLabel(t.transferType) }}</span>
+            </td>
+
+            <td class="tm-td--muted">{{ t.operatorName ?? '—' }}</td>
+            <td class="tm-td--date">{{ t.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+
+            <td class="tm-td--center">
+              <span class="tm-status" [ngClass]="'tm-status--' + getStatusColor(t.status)">
+                <span class="tm-status__dot"></span>
+                {{ getStatusLabel(t.status) }}
+              </span>
+            </td>
+
+            <td class="tm-td--center">
+              <button class="tm-action-btn" (click)="openDetail(t)" title="Voir détail">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Pagination -->
-    <div class="pagination-bar" *ngIf="transfersPage && transfersPage.totalPages > 1">
-      <button class="btn btn-sm btn-outline-secondary"
-              [disabled]="currentPage === 0"
-              (click)="goToPage(currentPage - 1)">
-        <i data-feather="chevron-left"></i>
+    <div class="tm-pagination" *ngIf="transfersPage && transfersPage.totalPages > 1">
+      <button class="tm-page-btn" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
+        ←
       </button>
-      <button *ngFor="let p of pages"
-              class="btn btn-sm"
-              [class.btn-primary]="p === currentPage"
-              [class.btn-outline-secondary]="p !== currentPage"
-              (click)="goToPage(p)">
-        {{ p + 1 }}
+      <ng-container *ngFor="let p of pages">
+        <button class="tm-page-btn" [class.tm-page-btn--active]="p === currentPage" (click)="goToPage(p)">
+          {{ p + 1 }}
+        </button>
+      </ng-container>
+      <button class="tm-page-btn" [disabled]="currentPage === (transfersPage.totalPages - 1)" (click)="goToPage(currentPage + 1)">
+        →
       </button>
-      <button class="btn btn-sm btn-outline-secondary"
-              [disabled]="currentPage === (transfersPage.totalPages - 1)"
-              (click)="goToPage(currentPage + 1)">
-        <i data-feather="chevron-right"></i>
-      </button>
-      <span class="pagination-info">
-        {{ transfersPage.totalElements }} transfert(s) au total
+      <span class="tm-pagination__info">
+        {{ transfersPage.totalElements }} transfert(s) · Page {{ currentPage + 1 }}/{{ transfersPage.totalPages }}
       </span>
     </div>
   </div>
 
-  <!-- ═══ MODAL DÉTAIL / ACTIONS ══════════════════════════════════════════ -->
-  <div class="modal-overlay" *ngIf="selectedTransfer" (click)="closeDetail()">
-    <div class="modal-panel" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h5>Transfert #{{ selectedTransfer.id }}</h5>
-        <span class="status-badge status-badge--{{ getStatusColor(selectedTransfer.status) }} ms-2">
-          {{ getStatusLabel(selectedTransfer.status) }}
-        </span>
-        <button class="btn-close ms-auto" (click)="closeDetail()"></button>
+  <!-- MODAL DÉTAIL -->
+  <div class="tm-overlay" *ngIf="selectedTransfer" (click)="closeDetail()">
+    <div class="tm-modal" (click)="$event.stopPropagation()">
+      <div class="tm-modal__header">
+        <div class="tm-modal__title-group">
+          <span class="tm-modal__id">Transfert #{{ selectedTransfer.id }}</span>
+          <span class="tm-status" [ngClass]="'tm-status--' + getStatusColor(selectedTransfer.status)">
+            <span class="tm-status__dot"></span>
+            {{ getStatusLabel(selectedTransfer.status) }}
+          </span>
+        </div>
+        <button class="tm-icon-btn" (click)="closeDetail()">✕</button>
       </div>
 
-      <div class="modal-body">
-        <div class="detail-grid">
-          <div class="detail-item">
-            <label>Article</label>
-            <span><strong>{{ selectedTransfer.erpItemCode }}</strong> — {{ selectedTransfer.erpItemLabel }}</span>
+      <div class="tm-modal__body">
+        <div class="tm-detail-grid">
+          <div class="tm-detail-item tm-detail-item--full">
+            <span class="tm-detail-label">Article</span>
+            <span class="tm-detail-value">
+              <strong style="color:var(--c-blue)">{{ selectedTransfer.erpItemCode }}</strong> — {{ selectedTransfer.erpItemLabel }}
+            </span>
           </div>
-          <div class="detail-item">
-            <label>Lot</label>
-            <span>{{ selectedTransfer.lotNumber ?? '—' }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Lot</span>
+            <span class="tm-detail-value">{{ selectedTransfer.lotNumber || '—' }}</span>
           </div>
-          <div class="detail-item">
-            <label>Source</label>
-            <span class="loc-badge loc-source">{{ selectedTransfer.sourceLocation }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Quantité</span>
+            <span class="tm-detail-value">{{ selectedTransfer.quantity }} {{ selectedTransfer.unit || 'u' }}</span>
           </div>
-          <div class="detail-item">
-            <label>Destination</label>
-            <span class="loc-badge loc-dest">{{ selectedTransfer.destLocation }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Source</span>
+            <ng-container *ngIf="getLocationParts(selectedTransfer.sourceLocation) as src">
+              <span class="tm-detail-value"><strong>{{ src.warehouse }}</strong> / {{ src.emplacement }}</span>
+            </ng-container>
           </div>
-          <div class="detail-item">
-            <label>Quantité</label>
-            <span><strong>{{ selectedTransfer.quantity }}</strong> {{ selectedTransfer.unit }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Destination</span>
+            <ng-container *ngIf="getLocationParts(selectedTransfer.destLocation) as dst">
+              <span class="tm-detail-value"><strong>{{ dst.warehouse }}</strong> / {{ dst.emplacement }}</span>
+            </ng-container>
           </div>
-          <div class="detail-item">
-            <label>Type</label>
-            <span>{{ getTypeLabel(selectedTransfer.transferType) }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Type</span>
+            <span class="tm-type-pill">{{ getTypeLabel(selectedTransfer.transferType) }}</span>
           </div>
-          <div class="detail-item">
-            <label>Opérateur</label>
-            <span>{{ selectedTransfer.operatorName ?? '—' }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Opérateur</span>
+            <span class="tm-detail-value">{{ selectedTransfer.operatorName ?? '—' }}</span>
           </div>
-          <div class="detail-item">
-            <label>Validé par</label>
-            <span>{{ selectedTransfer.validatedByName ?? '—' }}</span>
-          </div>
-          <div class="detail-item">
-            <label>Créé le</label>
-            <span>{{ selectedTransfer.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-          </div>
-          <div class="detail-item" *ngIf="selectedTransfer.completedAt">
-            <label>Effectué le</label>
-            <span>{{ selectedTransfer.completedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-          </div>
-          <div class="detail-item form-group--full" *ngIf="selectedTransfer.notes">
-            <label>Notes</label>
-            <span>{{ selectedTransfer.notes }}</span>
-          </div>
-          <div class="detail-item form-group--full" *ngIf="selectedTransfer.errorMessage">
-            <label>Message d'erreur</label>
-            <span class="text-danger">{{ selectedTransfer.errorMessage }}</span>
+
+          <div class="tm-detail-item">
+            <span class="tm-detail-label">Créé le</span>
+            <span class="tm-detail-value">{{ selectedTransfer.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
         </div>
-
-        <div class="alert alert-danger mt-3" *ngIf="actionError">{{ actionError }}</div>
       </div>
 
-      <!-- Actions superviseur -->
-      <div class="modal-footer" *ngIf="selectedTransfer.status === 'PENDING'">
-        <button class="btn btn-success"
-                (click)="validateTransfer()"
-                [disabled]="actionLoading">
-          <span *ngIf="actionLoading" class="spinner-border spinner-border-sm me-2"></span>
-          <i data-feather="check" *ngIf="!actionLoading"></i>
-          Valider le transfert
-        </button>
-        <button class="btn btn-danger"
-                (click)="cancelTransfer('Annulé par superviseur')"
-                [disabled]="actionLoading">
-          <i data-feather="x"></i> Annuler
-        </button>
+      <div class="tm-modal__footer" style="justify-content:flex-end">
+        <button class="tm-btn tm-btn--ghost" (click)="closeDetail()">Fermer</button>
       </div>
     </div>
   </div>
