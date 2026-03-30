@@ -2,21 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuditFilter, AuditLog } from '../../models/audit-log';
-import{PageResponse, ApiResponse}from '../../models/shared';
+import { PageResponse, ApiResponse } from '../../models/shared';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuditService {
   private http = inject(HttpClient);
 
-  // ✅ URL harmonisée avec votre controller actuel
+  // URL harmonisée avec votre controller actuel
   private readonly API = `${environment.baseUrl}/api/audit`;
 
   getLogs(filters: AuditFilter): Observable<ApiResponse<PageResponse<AuditLog>>> {
     let params = new HttpParams()
       .set('page', filters.page ?? 0)
       .set('size', filters.size ?? 20)
-      // ✅ C'est ce paramètre qui va générer le "ORDER BY" dynamiquement dans Spring
       .set('sort', 'createdAt,desc');
 
     if (filters.eventType && (filters.eventType as any) !== '') {
@@ -36,12 +35,24 @@ export class AuditService {
     const params = new HttpParams()
       .set('page', page)
       .set('size', size)
-      .set('sort', 'createdAt,desc'); // ✅ Ajout du tri ici aussi
+      .set('sort', 'createdAt,desc');
 
     return this.http.get<ApiResponse<PageResponse<AuditLog>>>(`${this.API}/user/${userId}`, { params });
   }
 
   getConnections(userId: number): Observable<ApiResponse<AuditLog[]>> {
     return this.http.get<ApiResponse<AuditLog[]>>(`${this.API}/user/${userId}/connections`);
+  }
+
+  /** Lister les fichiers CSV */
+  getArchives(): Observable<ApiResponse<string[]>> {
+    return this.http.get<ApiResponse<string[]>>(`${this.API}/archives`);
+  }
+
+  /** Télécharger un fichier via Blob pour inclure le Token JWT */
+  downloadArchive(filename: string): Observable<Blob> {
+    return this.http.get(`${this.API}/archives/download/${filename}`, {
+      responseType: 'blob'
+    });
   }
 }

@@ -60,7 +60,7 @@ $font        : 'Poppins', sans-serif;
         font-size: 1.1rem;
       }
 
-      
+
       .page-card-title { font-size: 1rem; font-weight: 600; color: $text-title; margin: 0; font-family: $font; }
 
       .page-card-sub   { font-size: .75rem; color: $text-muted; margin: 2px 0 0; font-family: $font; }
@@ -300,3 +300,4 @@ $font        : 'Poppins', sans-serif;
   font-family: $font; cursor: pointer; font-weight: 500;
   &:hover { background: $bg; }
 }
+
