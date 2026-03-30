@@ -44,19 +44,29 @@ export class AdminService {
     );
   }
 
-  // ── NOUVEAU ────────────────────────────────────────────────────────────────
   sendCredentials(id: number): Observable<void> {
     return this.http.post<ApiResponse<void>>(
       `${this.adminUsersUrl}/${id}/send-credentials`, {}
     ).pipe(map(res => res.data));
   }
-  // ──────────────────────────────────────────────────────────────────────────
 
   getRoles(): Observable<Role[]> {
     return this.http.get<ApiResponse<Role[]>>(this.adminRolesUrl).pipe(
       map(res => res.data)
     );
   }
+
+  // === Méthode ajoutée pour créer un rôle ===
+  createRole(role: { roleName: string; description?: string | null }): Observable<Role> {
+    return this.http.post<ApiResponse<Role>>(this.adminRolesUrl, role).pipe(
+      map(res => res.data)
+    );
+  }
+  deleteRole(id: number): Observable<void> {
+  return this.http.delete<ApiResponse<void>>(`${this.adminRolesUrl}/${id}`).pipe(
+    map(res => res.data)
+  );
+}
 
   getSites(): Observable<Site[]> {
     return this.http.get<ApiResponse<Site[]>>(this.adminSitesUrl).pipe(

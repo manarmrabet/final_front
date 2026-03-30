@@ -12,9 +12,17 @@
           <span class="page-card-sub">Cliquez sur un rôle pour configurer ses accès</span>
         </div>
       </div>
-      <div class="header-badge">
-        <span class="badge-dot"></span>
-        {{ roles().length }} rôles configurés
+
+      <div class="header-right">
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          {{ roles().length }} rôles configurés
+        </div>
+
+        <button class="btn-new-role" (click)="openCreateRoleModal()">
+          <lucide-angular name="plus" size="18"></lucide-angular>
+          <span>Nouveau rôle</span>
+        </button>
       </div>
     </div>
 
@@ -35,8 +43,14 @@
             <span class="rc-desc">{{ role.description || 'Rôle système' }}</span>
           </div>
 
-          <div class="rc-arrow">
-            <lucide-angular name="chevron-right" size="16"></lucide-angular>
+          <div class="rc-actions">
+            <button class="btn-delete-role" 
+                    (click)="$event.stopPropagation(); openDeleteModal(role)">
+              <lucide-angular name="trash-2" size="16"></lucide-angular>
+            </button>
+            <div class="rc-arrow">
+              <lucide-angular name="chevron-right" size="16"></lucide-angular>
+            </div>
           </div>
 
         </div>
@@ -51,9 +65,9 @@
           <div class="config-panel-title">
             <lucide-angular name="sliders" size="16"></lucide-angular>
             Permissions —
-            <strong>{{ roles()[roles().findIndex(r => r.roleId === selectedRoleId())]?.roleName }}</strong>
+            <strong>{{ getSelectedRoleName() }}</strong>
           </div>
-          <button class="config-panel-close" (click)="$event.stopPropagation(); onRoleChange(undefined)">
+          <button class="config-panel-close" (click)="onRoleChange(undefined)">
             <lucide-angular name="x" size="15"></lucide-angular>
           </button>
         </div>
@@ -127,3 +141,88 @@
 
   </div>
 </div>
+
+<!-- Create Role Modal -->
+@if (showCreateModal()) {
+  <div class="modal-overlay" (click)="closeCreateRoleModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <lucide-angular name="shield-plus" size="20"></lucide-angular>
+          Créer un nouveau rôle
+        </div>
+        <button class="modal-close" (click)="closeCreateRoleModal()">
+          <lucide-angular name="x" size="20"></lucide-angular>
+        </button>
+      </div>
+
+      <form class="modal-form" (ngSubmit)="createRole()">
+        <div class="form-group">
+          <label for="roleName">Nom du rôle</label>
+          <input 
+            type="text" 
+            id="roleName"
+            [(ngModel)]="newRoleName"
+            name="roleName"
+            placeholder="Ex: Manager Commercial"
+            required
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="roleDescription">Description</label>
+          <textarea 
+            id="roleDescription"
+            [(ngModel)]="newRoleDescription"
+            name="roleDescription"
+            rows="3"
+            placeholder="Description du rôle (optionnel)"
+            class="form-textarea"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeCreateRoleModal()">
+            Annuler
+          </button>
+          <button type="submit" class="btn-create" [disabled]="!newRoleName()?.trim()">
+            <lucide-angular name="plus" size="18"></lucide-angular>
+            Créer le rôle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header danger-header">
+        <div class="modal-title">
+          <lucide-angular name="alert-triangle" size="22"></lucide-angular>
+          Supprimer le rôle
+        </div>
+        <button class="modal-close" (click)="closeDeleteModal()">
+          <lucide-angular name="x" size="20"></lucide-angular>
+        </button>
+      </div>
+
+      <div class="modal-body">
+  <p>Êtes-vous sûr de vouloir supprimer le rôle <strong>"{{ roleToDelete()?.roleName }}"</strong> ?</p>
+  <p class="warning-text">Cette action est irréversible. Toutes les permissions associées seront supprimées.</p>
+</div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeDeleteModal()">
+          Annuler
+        </button>
+        <button type="button" class="btn-delete" (click)="confirmDeleteRole()">
+          <lucide-angular name="trash-2" size="18"></lucide-angular>
+          Oui, supprimer le rôle
+        </button>
+      </div>
+    </div>
+  </div>
+}
