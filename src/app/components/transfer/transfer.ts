@@ -1,6 +1,6 @@
 // src/app/components/transfer-management/transfer-management.ts
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
@@ -26,8 +26,8 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
   private readonly api      = environment.baseUrl;
 
   // Dashboard
-  dashboard:       TransferDashboard | null = null;
-  dashboardLoading = false;
+  dashboard:        TransferDashboard | null = null;
+  dashboardLoading  = false;
 
   // Liste transferts
   transfersPage:    PagedResponse<TransferResponse> | null = null;
@@ -38,7 +38,8 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
 
   // Filtres
   filterForm!: FormGroup;
-  private readonly filterTrigger$ = new Subject<string>();
+  private filtersReady = false;
+  private readonly filterTrigger$ = new Subject<void>();
 
   // Modal détail
   selectedTransfer: TransferResponse | null = null;
@@ -65,8 +66,9 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly transferService: TransferService,
-    private readonly fb: FormBuilder,
-    private readonly http: HttpClient
+    private readonly fb:  FormBuilder,
+    private readonly http: HttpClient,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -74,6 +76,9 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
     this.setupFilterDebounce();
     this.loadDashboard();
     this.loadTransfers();
+
+    // Active les valueChanges seulement après le premier chargement
+    setTimeout(() => { this.filtersReady = true; }, 200);
   }
 
   ngOnDestroy(): void {
@@ -90,13 +95,17 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
       to:       ['']
     });
 
-    this.filterForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(v =>
-      this.filterTrigger$.next(JSON.stringify(v))
-    );
+    this.filterForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (!this.filtersReady) return;
+        this.filterTrigger$.next();
+      });
   }
 
   private setupFilterDebounce(): void {
-    this.filterTrigger$.pipe(debounceTime(500), takeUntil(this.destroy$))
+    this.filterTrigger$
+      .pipe(debounceTime(600), takeUntil(this.destroy$))
       .subscribe(() => {
         this.currentPage = 0;
         this.loadTransfers();
@@ -105,51 +114,105 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
 
   loadDashboard(): void {
     this.dashboardLoading = true;
-    this.transferService.getDashboard().pipe(takeUntil(this.destroy$)).subscribe({
-      next:  d  => { this.dashboard = d; this.dashboardLoading = false; },
-      error: () => { this.dashboardLoading = false; }
-    });
+    this.transferService.getDashboard()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: d => {
+          this.dashboard        = d;
+          this.dashboardLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          console.error('Dashboard error:', err);
+          this.dashboardLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
-  get pendingCount(): number { return this.dashboard?.countByStatus?.['PENDING'] ?? 0; }
-  get doneCount(): number { return this.dashboard?.countByStatus?.['DONE'] ?? 0; }
-  get errorCount(): number { return this.dashboard?.countByStatus?.['ERROR'] ?? 0; }
+  get pendingCount():   number { return this.dashboard?.countByStatus?.['PENDING']   ?? 0; }
+  get doneCount():      number { return this.dashboard?.countByStatus?.['DONE']      ?? 0; }
+  get errorCount():     number { return this.dashboard?.countByStatus?.['ERROR']     ?? 0; }
   get cancelledCount(): number { return this.dashboard?.countByStatus?.['CANCELLED'] ?? 0; }
 
   loadTransfers(): void {
     this.transfersLoading = true;
-    this.loadError = null;
+    this.loadError        = null;
+    this.cdr.detectChanges();
 
     const f = this.filterForm.value;
+
     let params = new HttpParams()
       .set('page', String(this.currentPage))
       .set('size', String(this.pageSize));
 
-    if (f.status)           params = params.set('status', f.status);
+    if (f.status)           params = params.set('status',   f.status);
     if (f.itemCode?.trim()) params = params.set('itemCode', f.itemCode.trim());
     if (f.location?.trim()) params = params.set('location', f.location.trim());
-    if (f.from)             params = params.set('from', f.from + 'T00:00:00');
-    if (f.to)               params = params.set('to', f.to + 'T23:59:59');
+    if (f.from)             params = params.set('from',     f.from + 'T00:00:00');
+    if (f.to)               params = params.set('to',       f.to   + 'T23:59:59');
 
-    this.http.get<ApiResponse<PagedResponse<TransferResponse>>>(
-      `${this.api}/api/transfers/search`, { params }
-    ).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (raw: any) => {
-        this.transfersLoading = false;
-        if (raw?.data?.content !== undefined) {
-          this.transfersPage = raw.data;
-        } else if (Array.isArray(raw?.content)) {
-          this.transfersPage = raw;
-        } else {
-          this.loadError = 'Format de réponse inattendu';
-          this.transfersPage = null;
+    this.http
+      .get<any>(`${this.api}/api/transfers/search`, { params })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (raw: any) => {
+          this.transfersLoading = false;
+          this.transfersPage    = this.parsePagedResponse(raw);
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          this.transfersLoading = false;
+          this.loadError = err?.error?.message
+            ?? err?.error?.error
+            ?? err?.message
+            ?? 'Erreur réseau';
+          console.error('loadTransfers error:', err);
+          this.cdr.detectChanges();
         }
-      },
-      error: err => {
-        this.transfersLoading = false;
-        this.loadError = err?.error?.message ?? err?.message ?? 'Erreur réseau';
-      }
-    });
+      });
+  }
+
+  private parsePagedResponse(raw: any): PagedResponse<TransferResponse> | null {
+
+    // Cas 1 : { success, data: { content, totalPages, ... } }
+    if (raw?.data?.content !== undefined) {
+      return raw.data as PagedResponse<TransferResponse>;
+    }
+
+    // Cas 2 : { content, totalElements, totalPages, ... }
+    if (Array.isArray(raw?.content) && raw?.totalElements !== undefined) {
+      return {
+        content:       raw.content,
+        page:          raw.page          ?? raw.pageable?.pageNumber ?? 0,
+        size:          raw.size          ?? raw.pageable?.pageSize   ?? this.pageSize,
+        totalElements: raw.totalElements ?? raw.content.length,
+        totalPages:    raw.totalPages    ?? 1,
+        first:         raw.first         ?? true,
+        last:          raw.last          ?? true,
+      };
+    }
+
+    // Cas 3 : { success, data: [...] }
+    if (Array.isArray(raw?.data)) {
+      const list = raw.data as TransferResponse[];
+      return {
+        content: list, page: 0, size: list.length,
+        totalElements: list.length, totalPages: 1, first: true, last: true
+      };
+    }
+
+    // Cas 4 : tableau direct
+    if (Array.isArray(raw)) {
+      return {
+        content: raw, page: 0, size: raw.length,
+        totalElements: raw.length, totalPages: 1, first: true, last: true
+      };
+    }
+
+    console.warn('parsePagedResponse : format inconnu', raw);
+    this.loadError = 'Format de réponse inattendu';
+    return null;
   }
 
   goToPage(page: number): void {
@@ -158,28 +221,28 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    this.filterForm.patchValue({ status: null, itemCode: '', location: '', from: '', to: '' });
-    this.currentPage = 0;
+    this.filtersReady = false;
+    this.filterForm.patchValue(
+      { status: null, itemCode: '', location: '', from: '', to: '' },
+      { emitEvent: false }
+    );
+    this.currentPage  = 0;
+    this.filtersReady = true;
+    this.loadTransfers();
   }
 
-  openDetail(transfer: TransferResponse): void {
-    this.selectedTransfer = transfer;
-  }
-
-  closeDetail(): void {
-    this.selectedTransfer = null;
-  }
+  openDetail(transfer: TransferResponse): void  { this.selectedTransfer = transfer; }
+  closeDetail(): void                            { this.selectedTransfer = null;    }
 
   getStatusLabel(s: TransferStatus): string { return this.statusLabels[s] ?? s; }
   getStatusColor(s: TransferStatus): string { return this.statusColors[s] ?? 'secondary'; }
-  getTypeLabel(t: string): string { return this.transferTypeLabels[t] ?? t; }
+  getTypeLabel(t: string): string           { return this.transferTypeLabels[t] ?? t; }
 
-  // Helpers pour afficher Entrepôt / Emplacement
   getLocationParts(location: string): { warehouse: string; emplacement: string } {
-    if (!location) return { warehouse: '', emplacement: '' };
+    if (!location) return { warehouse: '—', emplacement: '—' };
     const parts = location.split('/');
     return {
-      warehouse: parts[0]?.trim() || location,
+      warehouse:   parts[0]?.trim() || location,
       emplacement: parts.length > 1 ? parts.slice(1).join('/').trim() : location
     };
   }

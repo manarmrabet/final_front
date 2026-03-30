@@ -1,0 +1,353 @@
+<div class="page-content">
+  <div class="container-fluid">
+
+    <!-- ── Titre ─────────────────────────────────────────────────────── -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h4 class="mb-1">Consultation Stock ERP</h4>
+        <p class="page-subtitle mb-0">Visualisation en temps réel de l'état des stocks</p>
+      </div>
+      <a [routerLink]="['/app/stock/dashboard']" class="btn-dashboard">
+        <i class="mdi mdi-view-dashboard-outline"></i>Dashboard
+      </a>
+    </div>
+
+    <!-- ── Carte recherche ────────────────────────────────────────────── -->
+    <div class="search-card mb-4">
+
+      <!-- Toggle Article / Lot -->
+      <div class="mode-toggle mb-4">
+        <button class="btn"
+                [class.btn-primary]="searchMode==='article'"
+                [class.btn-outline-secondary]="searchMode!=='article'"
+                (click)="switchMode('article')">
+          <i class="mdi mdi-barcode"></i>Article
+        </button>
+        <button class="btn"
+                [class.btn-primary]="searchMode==='lot'"
+                [class.btn-outline-secondary]="searchMode!=='lot'"
+                (click)="switchMode('lot')">
+          <i class="mdi mdi-layers-triple-outline"></i>Numéro de Lot
+        </button>
+      </div>
+
+      <!-- Barre de recherche + Réinitialiser -->
+      <div class="row g-3 align-items-center">
+        <div class="col-lg-10">
+          <div class="search-bar">
+            <i class="mdi mdi-magnify search-icon"></i>
+            <input class="search-input"
+                   type="text"
+                   [placeholder]="searchMode === 'article'
+                     ? 'Saisissez un code article...'
+                     : 'Saisissez un numéro de lot...'"
+                   [(ngModel)]="searchQuery"
+                   (keyup.enter)="onSearch()"
+                   [disabled]="loading" />
+            <button class="btn-search"
+                    (click)="onSearch()"
+                    [disabled]="loading || !searchQuery">
+              <i class="mdi mdi-magnify" *ngIf="!loading"></i>
+              <span *ngIf="!loading">Rechercher</span>
+              <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+            </button>
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <!-- Bouton Réinitialiser stylisé -->
+          <button class="btn-reset" (click)="reset()">
+            <i class="mdi mdi-refresh"></i>Réinitialiser
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Erreur ─────────────────────────────────────────────────────── -->
+    <div *ngIf="error" class="alert-error">
+      <i class="mdi mdi-alert-circle-outline"></i>{{ error }}
+    </div>
+
+    <!-- ── Loader ─────────────────────────────────────────────────────── -->
+    <div *ngIf="loading" class="loader-center">
+      <div class="spinner-grow text-primary" role="status"></div>
+      <p>Récupération des données SQL Server...</p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- RÉSULTAT ARTICLE                                                 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="article && !loading">
+
+      <!-- Header article -->
+      <div class="result-card accent-teal mb-4">
+        <div class="result-card__body">
+          <div class="d-flex align-items-start gap-3 flex-wrap">
+
+            <div class="result-icon icon-teal">
+              <i class="mdi mdi-package-variant-closed"></i>
+            </div>
+
+            <div class="flex-grow-1">
+              <h5 class="article-title">{{ article.designation }}</h5>
+              <div class="d-flex flex-wrap gap-2 mb-0">
+                <span class="info-pill pill-blue">
+                  <i class="mdi mdi-barcode"></i>{{ article.itemCode }}
+                </span>
+                <span class="info-pill pill-gray">
+                  <i class="mdi mdi-folder-outline"></i>{{ article.itemCategory || 'N/A' }}
+                </span>
+              </div>
+
+              <!-- KPIs inline -->
+              <div class="kpi-row">
+                <div class="kpi-block">
+                  <span class="kpi-lbl">Quantité totale</span>
+                  <span class="kpi-val val-teal">{{ article.totalQtyOnHand | number:'1.0-2' }}</span>
+                  <span class="kpi-unit">{{ article.unit }}</span>
+                </div>
+                <div class="kpi-block">
+                  <span class="kpi-lbl">Nombre de lots</span>
+                  <span class="kpi-val val-blue">{{ article.lots.length }}</span>
+                  <span class="kpi-unit">lots</span>
+                </div>
+                <div class="kpi-block">
+                  <span class="kpi-lbl">Entrepôt principal</span>
+                  <span class="kpi-val val-dark" style="font-size:1.1rem">{{ article.mainWarehouse || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filter-bar mb-3">
+        <div class="filter-group">
+          <button class="filter-btn"
+                  [class.active-all]="lotFilter==='ALL'"
+                  (click)="lotFilter='ALL'">
+            Tous ({{ article.lots.length }})
+          </button>
+          <button class="filter-btn"
+                  [class.active-avail]="lotFilter==='AVAILABLE'"
+                  (click)="lotFilter='AVAILABLE'">
+            Disponibles ({{ countLots('AVAILABLE') }})
+          </button>
+          <button class="filter-btn"
+                  [class.active-blocked]="lotFilter==='BLOCKED'"
+                  (click)="lotFilter='BLOCKED'">
+            Bloqués ({{ countLots('BLOCKED') }})
+          </button>
+        </div>
+
+        <div class="filter-select">
+          <i class="mdi mdi-filter-variant"></i>
+          <select [(ngModel)]="warehouseFilter">
+            <option value="">Tous les entrepôts</option>
+            <option *ngFor="let w of warehouses" [value]="w">{{ w }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table lots -->
+      <div class="data-card">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Entrepôt &amp; Emplacement</th>
+                <th>N° Lot</th>
+                <th class="text-end">Quantités</th>
+                <th class="text-center">État</th>
+                <th>Date d'entrée</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let lot of filteredLots">
+                <td>
+                  <div class="fw-bold">{{ lot.warehouseCode }}</div>
+                  <div class="text-muted small font-monospace">{{ lot.location || 'N/A' }}</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark fw-medium px-3">
+                    <i class="mdi mdi-barcode me-1 text-muted"></i>{{ lot.lotNumber }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="fw-bold text-success">
+                    {{ lot.quantityAvailable | number:'1.0-2' }}
+                    <span class="fw-normal text-muted small">dispo</span>
+                  </div>
+                  <div class="small text-danger" *ngIf="lot.quantityBlocked > 0">
+                    {{ lot.quantityBlocked | number:'1.0-2' }} bloqué
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge-modern" [ngClass]="getModernStatusClass(lot.status)">
+                    {{ getStatusLabel(lot.status) }}
+                  </span>
+                </td>
+                <td class="text-muted small">{{ lot.entryDate }}</td>
+              </tr>
+              <tr *ngIf="!filteredLots.length">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <i class="mdi mdi-inbox-outline empty-icon"></i>
+                    <p>Aucune ligne correspondante</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- RÉSULTAT LOT                                                     -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <ng-container *ngIf="lotLines.length && !loading">
+
+      <!-- Header lot -->
+      <div class="result-card accent-purple mb-4">
+        <div class="result-card__body d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="result-icon icon-purple">
+              <i class="mdi mdi-layers-triple-outline"></i>
+            </div>
+            <div>
+              <p class="kpi-lbl mb-1">Numéro de lot</p>
+              <div class="lot-number">{{ lotLines[0].lotNumber }}</div>
+              <div class="text-muted small mt-1">{{ lotLines.length }} article(s) associé(s)</div>
+            </div>
+          </div>
+          <div class="text-end d-none d-md-block">
+            <p class="kpi-lbl mb-1">Quantité totale</p>
+            <div class="lot-total">{{ totalLotQty() | number:'1.0-2' }}</div>
+            <div class="text-muted small">unités</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table articles du lot -->
+      <div class="data-card">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Article</th>
+                <th>Description</th>
+                <th>Localisation</th>
+                <th class="text-end">Quantité</th>
+                <th class="text-center">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of lotLines">
+                <td class="fw-bold text-primary" style="font-size:.9rem">{{ line.itemCode }}</td>
+                <td>
+                  <div class="fw-medium">{{ line.designation }}</div>
+                  <div class="small text-muted">{{ line.category }}</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark fw-normal px-3">{{ line.warehouseCode }}</span>
+                  <div class="small text-muted mt-1">{{ line.location }}</div>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold" style="font-size:.95rem">
+                    {{ line.quantityAvailable | number:'1.0-2' }}
+                  </span>
+                  <span class="text-muted small ms-1">{{ line.unit }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge-modern" [ngClass]="getModernStatusClass(line.status)">
+                    {{ getStatusLabel(line.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ── État vide ──────────────────────────────────────────────────── -->
+    <div *ngIf="!loading && !article && !lotLines.length && !error">
+      <div class="empty-state">
+        <i class="mdi mdi-package-variant-closed empty-icon"></i>
+        <p>{{ searchMode === 'article'
+             ? 'Saisissez un code article pour consulter son stock'
+             : 'Saisissez un numéro de lot pour voir ses articles' }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="page-content">
+    <div class="search-card mb-4">
+        </div>
+
+    <div class="data-card" *ngIf="!article && !lotLines.length">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Inventaire Global ERP</h5>
+            <span class="badge bg-primary">{{ totalElements }} articles au total</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th>Lot</th>
+                        <th>Emplacement</th>
+                        <th class="text-end">Stock</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of globalStock">
+                        <td>
+                            <strong>{{item.itemCode}}</strong><br>
+                            <small class="text-muted">{{item.designation}}</small>
+                        </td>
+                        <td><span class="badge bg-light text-dark">{{item.lotNumber}}</span></td>
+                        <td>{{item.warehouseCode}} / {{item.location}}</td>
+                        <td class="text-end fw-bold text-primary">
+                            {{item.quantityAvailable}} {{item.unit}}
+                        </td>
+                        <td>{{item.entryDate}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-items-center bg-white">
+            <div class="text-muted small">
+                Page {{ currentPage + 1 }} sur {{ totalPages }}
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary btn-sm"
+                        [disabled]="currentPage === 0"
+                        (click)="changePage(-1)">
+                    Précédent
+                </button>
+                <button class="btn btn-outline-secondary btn-sm"
+                        [disabled]="currentPage >= totalPages - 1"
+                        (click)="changePage(1)">
+                    Suivant
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="article">
+        </div>
+
+    <div *ngIf="lotLines.length > 0">
+        </div>
+</div>

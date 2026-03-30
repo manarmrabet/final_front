@@ -1,8 +1,13 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection,importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners,LOCALE_ID, provideZonelessChangeDetection,importProvidersFrom } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './interceptors/jwt-interceptor';
+// Locale française — corrige NG0701 "Missing locale data for fr"
+// DatePipe avec | date:'HH:mm:ss' nécessite que la locale soit enregistrée
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+registerLocaleData(localeFr);
 import { LucideAngularModule,Book,
   Home,
   LayoutDashboard,
@@ -65,6 +70,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([tokenExpirationInterceptor])
     ),
+
+    { provide: LOCALE_ID, useValue: 'fr' },
+
     importProvidersFrom(
       LucideAngularModule.pick({ Package, Users,LayoutDashboard,ShieldCheck,Book,Menu,
   Home,

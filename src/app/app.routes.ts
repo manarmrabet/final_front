@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth-guard';
 import { lockGuard } from './guards/lock-guard';
 import { TransferManagementComponent } from './components/transfer/transfer';
-
+import { StockConsultationComponent } from './components/stock-consultation/stock-consultation';
+import { StockDashboardComponent } from './components/stock-dashboard/stock-dashboard';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
@@ -59,6 +60,16 @@ export const routes: Routes = [
         path: 'card-management',
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/card-management/card-management').then(m => m.CardManagementComponent)
+      },
+      // ── Stock ERP — AVANT le wildcard ** ──────────────────────────
+      {
+        path: 'stock',
+        canActivate: [authGuard, lockGuard],
+        children: [
+          { path: '',             redirectTo: 'dashboard', pathMatch: 'full' },
+          { path: 'dashboard',    component: StockDashboardComponent,    title: 'Dashboard Stock' },
+          { path: 'consultation', component: StockConsultationComponent, title: 'Consultation Stock' },
+        ]
       },
 
       {

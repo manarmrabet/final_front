@@ -1,0 +1,501 @@
+$primary:    #2563EB;
+$teal:       #0D9488;
+$purple:     #7C3AED;
+$success:    #059669;
+$danger:     #DC2626;
+$body-bg:    #F1F5F9;
+$card-bg:    #FFFFFF;
+$border:     #E2E8F0;
+$text-main:  #0F172A;
+$text-muted: #64748B;
+$radius:     14px;
+$shadow:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+$shadow-md:  0 4px 16px rgba(0,0,0,.08);
+$trans:      all 0.2s ease-in-out;
+
+:host { display: block; background: $body-bg; min-height: 100vh; }
+
+.page-content {
+  background: $body-bg;
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+// ── Titre ──────────────────────────────────────────────────────────────────
+h4 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  color: $text-main;
+}
+
+.page-subtitle {
+  font-size: .875rem;
+  color: $text-muted;
+}
+
+// ── Bouton Dashboard ───────────────────────────────────────────────────────
+.btn-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $card-bg;
+  color: $primary;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: .85rem;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: $trans;
+
+  i { font-size: .95rem; line-height: 1; }
+
+  &:hover {
+    background: #EFF6FF;
+    border-color: $primary;
+    color: $primary;
+    box-shadow: 0 2px 8px rgba($primary,.15);
+  }
+}
+
+// ── Carte recherche ────────────────────────────────────────────────────────
+.search-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid $border;
+  box-shadow: $shadow;
+  padding: 1.75rem;
+}
+
+// Toggle Article / Lot
+.mode-toggle {
+  display: inline-flex;
+  background: #F1F5F9;
+  border-radius: 12px;
+  padding: 5px;
+  gap: 3px;
+
+  .btn {
+    border: none !important;
+    border-radius: 9px !important;
+    padding: 8px 22px !important;
+    font-size: .9rem !important;       // plus grand
+    font-weight: 700 !important;
+    transition: $trans;
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    i { font-size: .95rem; line-height: 1; }
+
+    &.btn-primary {
+      background: $primary !important;
+      color: #fff !important;
+      box-shadow: 0 2px 10px rgba($primary,.3) !important;
+    }
+
+    &.btn-outline-secondary {
+      background: transparent !important;
+      color: $text-muted !important;
+      &:hover { background: #E2E8F0 !important; color: $text-main !important; }
+    }
+  }
+}
+
+// Barre de recherche
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #F8FAFC;
+  border: 2px solid $border;
+  border-radius: 12px;
+  padding: 6px 6px 6px 16px;
+  gap: 8px;
+  transition: border-color .2s;
+
+  &:focus-within {
+    border-color: $primary;
+    background: $card-bg;
+    box-shadow: 0 0 0 4px rgba($primary,.08);
+  }
+
+  .search-icon {
+    color: #94A3B8;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .search-input {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 1rem;                   // plus grand
+    font-weight: 500;
+    color: $text-main;
+    padding: 6px 0;
+
+    &::placeholder { color: #94A3B8; font-weight: 400; }
+    &:focus { outline: none; }
+  }
+
+  .btn-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 10px 24px;
+    font-size: .92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: $trans;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    i { font-size: .95rem; line-height: 1; }
+
+    &:hover:not(:disabled) {
+      background: #1D4ED8;
+      box-shadow: 0 4px 12px rgba($primary,.3);
+    }
+    &:disabled { opacity: .6; cursor: not-allowed; }
+  }
+}
+
+// Bouton Réinitialiser — style soigné
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  color: $text-muted;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: $trans;
+  width: 100%;
+  white-space: nowrap;
+
+  i { font-size: .9rem; line-height: 1; }
+
+  &:hover {
+    background: #F1F5F9;
+    border-color: #94A3B8;
+    color: $text-main;
+  }
+}
+
+// ── Cards résultat ─────────────────────────────────────────────────────────
+.result-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid $border;
+  box-shadow: $shadow;
+  overflow: hidden;
+  position: relative;
+
+  // Barre accent top
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  &.accent-teal::before   { background: linear-gradient(90deg, $teal, #14B8A6); }
+  &.accent-purple::before { background: linear-gradient(90deg, $purple, #A855F7); }
+
+  .result-card__body {
+    padding: 1.5rem;
+    padding-top: 1.75rem;             // compenser la barre top
+  }
+}
+
+// Icône dans la card
+.result-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+
+  i { font-size: 1.5rem; line-height: 1; }
+
+  &.icon-teal   { background: #F0FDFA; color: $teal;   }
+  &.icon-purple { background: #F5F3FF; color: $purple; }
+}
+
+// Désignation article
+.article-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: $text-main;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+// Badges info article
+.info-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: .82rem;
+  font-weight: 600;
+
+  i { font-size: .8rem; line-height: 1; }
+
+  &.pill-blue   { background: #EFF6FF; color: $primary; }
+  &.pill-gray   { background: #F1F5F9; color: $text-muted; }
+  &.pill-teal   { background: #F0FDFA; color: $teal; }
+}
+
+// KPI dans la card article
+.kpi-row {
+  display: flex;
+  gap: 1.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid #F1F5F9;
+  flex-wrap: wrap;
+}
+
+.kpi-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .kpi-lbl {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 700;
+    color: #94A3B8;
+  }
+
+  .kpi-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.5px;
+
+    &.val-teal   { color: $teal;   }
+    &.val-blue   { color: $primary; }
+    &.val-dark   { color: $text-main; }
+  }
+
+  .kpi-unit {
+    font-size: .75rem;
+    color: #94A3B8;
+    font-weight: 500;
+  }
+}
+
+// ── Filtres ────────────────────────────────────────────────────────────────
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.filter-group {
+  display: inline-flex;
+  background: $card-bg;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  padding: 4px;
+  gap: 3px;
+
+  .filter-btn {
+    border: none;
+    border-radius: 7px;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: $trans;
+    background: transparent;
+    color: $text-muted;
+
+    &:hover { background: #F1F5F9; color: $text-main; }
+    &.active-all     { background: $text-main; color: #fff; }
+    &.active-avail   { background: $success;   color: #fff; }
+    &.active-blocked { background: $danger;    color: #fff; }
+  }
+}
+
+.filter-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i { color: $text-muted; font-size: .95rem; }
+
+  select {
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 500;
+    color: $text-main;
+    background: $card-bg;
+    padding: 7px 28px 7px 10px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2364748B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary,.1);
+    }
+  }
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+.data-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid $border;
+  box-shadow: $shadow;
+  overflow: hidden;
+}
+
+.table {
+  margin: 0;
+  font-size: .875rem;                 // plus grand
+
+  thead th {
+    background: #F8FAFC;
+    border-bottom: 1px solid $border;
+    color: $text-muted;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 700;
+    padding: 12px 18px;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: .875rem;               // plus grand
+    color: $text-main;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #F8FAFC; }
+  tbody tr { cursor: default; }
+}
+
+// ── Badges statut ──────────────────────────────────────────────────────────
+.badge-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+}
+
+.status-available { background: #ECFDF5; color: #065F46; }
+.status-blocked   { background: #FEF2F2; color: #991B1B; }
+.status-warning   { background: #FFFBEB; color: #92400E; }
+
+// Badges Bootstrap
+.badge {
+  font-size: .78rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 4px 9px !important;
+}
+
+// ── Lot header ─────────────────────────────────────────────────────────────
+.lot-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: $purple;
+}
+
+.lot-total {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: $text-main;
+  line-height: 1;
+}
+
+// ── État vide ──────────────────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: $text-muted;
+
+  .empty-icon {
+    font-size: 3.5rem;
+    opacity: .2;
+    display: block;
+    margin-bottom: .75rem;
+    line-height: 1;
+  }
+
+  p {
+    font-size: .95rem;
+    margin: 0;
+    color: $text-muted;
+  }
+}
+
+// ── Alertes & Loader ───────────────────────────────────────────────────────
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FEF2F2;
+  color: #991B1B;
+  border-radius: $radius;
+  padding: .875rem 1.25rem;
+  font-size: .875rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+
+  i { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+}
+
+.loader-center {
+  text-align: center;
+  padding: 4rem 1rem;
+
+  .spinner-grow { width: 2.25rem; height: 2.25rem; }
+
+  p {
+    margin: .875rem 0 0;
+    font-size: .875rem;
+    color: $text-muted;
+    font-weight: 500;
+  }
+}

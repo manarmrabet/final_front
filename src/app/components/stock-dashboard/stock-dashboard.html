@@ -1,0 +1,212 @@
+<div class="dashboard-wrapper fade-in">
+  <div class="container-fluid px-0">
+
+    <!-- HEADER ──────────────────────────────────────────────────────────
+         CORRECTION : structure sémantique __left / __right
+         Les deux groupes restent sur la même ligne grâce au flex du .db-header
+         Les icônes ont un font-size explicite dans le SCSS → s'affichent
+    ──────────────────────────────────────────────────────────────────── -->
+    <div class="db-header mb-4">
+
+      <div class="db-header__left">
+        <div class="db-header__icon">
+          <i class="mdi mdi-chart-box-outline"></i>
+        </div>
+        <div>
+          <h1 class="db-header__title">Tableau de Bord Inventaire</h1>
+          <p class="db-header__sub">COFAT — Suivi temps réel des stocks ERP</p>
+        </div>
+      </div>
+
+      <div class="db-header__right">
+        <div class="live-wrap" *ngIf="lastRefresh">
+          <div class="live-badge">
+            <span class="live-dot"></span>SQL Server Live
+          </div>
+          <span class="live-time">Relevé : {{ lastRefresh | date:'HH:mm:ss' }}</span>
+        </div>
+        <button class="btn-refresh" (click)="loadDashboard()" [disabled]="loading">
+          <i class="mdi" [ngClass]="loading ? 'mdi-loading mdi-spin' : 'mdi-sync'"></i>
+          {{ loading ? 'Sync...' : 'Actualiser' }}
+        </button>
+      </div>
+
+    </div>
+
+    <!-- CTA BANNER ──────────────────────────────────────────────────────
+         CORRECTION : même structure __left pour garder icône + texte alignés
+    ──────────────────────────────────────────────────────────────────── -->
+    <div class="cta-banner mb-4">
+
+      <div class="cta-banner__left">
+        <div class="cta-icon">
+          <i class="mdi mdi-magnify-scan"></i>
+        </div>
+        <div>
+          <h3>Analyse détaillée par article ou par lot</h3>
+          <p>Emplacements précis, quantités disponibles, statut de chaque ligne.</p>
+        </div>
+      </div>
+
+      <a [routerLink]="['/app/stock/consultation']" class="btn-cta">
+        Consulter <i class="mdi mdi-arrow-right"></i>
+      </a>
+
+    </div>
+
+    <!-- LOADER ──────────────────────────────────────────────────────── -->
+    <div *ngIf="loading" class="loader-overlay">
+      <div class="spinner-ring"></div>
+      <p>Récupération des stocks...</p>
+    </div>
+
+    <!-- ERREUR ──────────────────────────────────────────────────────── -->
+    <div *ngIf="error"
+         class="alert alert-danger d-flex align-items-center gap-2 rounded-3 border-0 mb-4">
+      <i class="mdi mdi-alert-circle fs-5"></i>{{ error }}
+    </div>
+
+    <ng-container *ngIf="!loading && dashboard">
+
+      <!-- KPI CARDS ─────────────────────────────────────────────────── -->
+      <div class="kpi-grid mb-4">
+
+        <div class="kpi-card kpi-delay-0 fade-in" style="--kpi-accent:#0D9488">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="kpi-icon" style="background:#F0FDFA;color:#0D9488">
+              <i class="mdi mdi-package-variant"></i>
+            </div>
+            <span class="erp-tag">ERP</span>
+          </div>
+          <p class="kpi-label">Quantité totale</p>
+          <div class="d-flex align-items-baseline gap-1">
+            <span class="kpi-value">{{ kpiCards[0]?.value | number:'1.0-0' }} </span>
+            <span class="kpi-unit">unités</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-delay-1 fade-in" style="--kpi-accent:#2563EB">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="kpi-icon" style="background:#EFF6FF;color:#2563EB">
+              <i class="mdi mdi-barcode"></i>
+            </div>
+            <span class="erp-tag">ERP</span>
+          </div>
+          <p class="kpi-label">Articles en stock</p>
+          <div class="d-flex align-items-baseline gap-1">
+            <span class="kpi-value">{{ kpiCards[1]?.value | number:'1.0-0' }} </span>
+            <span class="kpi-unit">références</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-delay-2 fade-in" style="--kpi-accent:#7C3AED">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="kpi-icon" style="background:#F5F3FF;color:#7C3AED">
+              <i class="mdi mdi-warehouse"></i>
+            </div>
+            <span class="erp-tag">ERP</span>
+          </div>
+          <p class="kpi-label">Entrepôts actifs</p>
+          <div class="d-flex align-items-baseline gap-1">
+            <span class="kpi-value">{{ kpiCards[2]?.value | number:'1.0-0' }} </span>
+            <span class="kpi-unit">sites</span>
+          </div>
+        </div>
+
+        <div class="kpi-card kpi-delay-3 fade-in" style="--kpi-accent:#D97706">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="kpi-icon" style="background:#FFFBEB;color:#D97706">
+              <i class="mdi mdi-map-marker"></i>
+            </div>
+            <span class="erp-tag">ERP</span>
+          </div>
+          <p class="kpi-label">Emplacements</p>
+          <div class="d-flex align-items-baseline gap-1">
+            <span class="kpi-value">{{ kpiCards[3]?.value | number:'1.0-0' }} </span>
+            <span class="kpi-unit">occupés</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GRAPHIQUES ligne 1 ─────────────────────────────────────────── -->
+      <div class="row g-3 mb-3">
+        <div class="col-xl-8">
+          <div class="chart-card h-100">
+            <div class="chart-card__header d-flex align-items-center justify-content-between">
+              <h3><span class="chart-dot" style="background:#0D9488"> </span>Répartition par Entrepôt</h3>
+              <span class="chart-badge badge-teal">Quantités </span>
+            </div>
+            <div class="chart-card__body">
+              <div class="chart-container"><canvas id="warehouseChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4">
+          <div class="chart-card h-100">
+            <div class="chart-card__header d-flex align-items-center justify-content-between">
+              <h3><span class="chart-dot" style="background:#7C3AED"> </span>Segments</h3>
+              <span class="chart-badge badge-purple">SF · PF · PR</span>
+            </div>
+            <div class="chart-card__body d-flex align-items-center justify-content-center">
+              <div class="chart-container-donut"><canvas id="categoryChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAPHIQUES ligne 2 ─────────────────────────────────────────── -->
+      <div class="row g-3">
+        <div class="col-xl-7">
+          <div class="chart-card h-100">
+            <div class="chart-card__header d-flex align-items-center justify-content-between">
+              <h3><span class="chart-dot" style="background:#2563EB"> </span>Occupation Zones</h3>
+              <span class="chart-badge badge-blue">Top 10</span>
+            </div>
+            <div class="chart-card__body">
+              <div class="chart-container"><canvas id="locationChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-5">
+          <div class="chart-card h-100">
+            <div class="chart-card__header d-flex align-items-center justify-content-between">
+              <h3><span class="chart-dot" style="background:#D97706"></span>Top 10 Valorisation</h3>
+              <span class="chart-badge badge-amber">Stock Réel</span>
+            </div>
+            <div class="table-scroll">
+              <table class="top-table">
+                <thead>
+                  <tr>
+                    <th>Rang</th><th>Article</th><th class="text-end">Quantité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of dashboard.topItems; let i = index"
+                      (click)="goToArticle(item.itemCode)">
+                    <td>
+                      <span class="rank-badge"
+                            [class.rank-1]="i===0" [class.rank-2]="i===1"
+                            [class.rank-3]="i===2" [class.rank-n]="i>2">
+                        {{ i + 1 }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="item-code">{{ item.itemCode }}</div>
+                      <div class="item-name text-truncate">{{ item.designation || '—' }}</div>
+                    </td>
+                    <td class="text-end">
+                      <span class="qty-value">{{ item.totalQty | number:'1.0-0' }}</span>
+                      <div class="unit-text">{{ item.unit }}</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

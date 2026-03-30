@@ -1,0 +1,331 @@
+
+$primary:  #2563EB;
+$teal:     #0D9488;
+$purple:   #7C3AED;
+$amber:    #D97706;
+$success:  #059669;
+$body-bg:  #F8FAFC;
+$card-bg:  #FFFFFF;
+$radius:   12px;
+$shadow:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+$trans:    all 0.2s ease-in-out;
+
+:host { display: block; background: $body-bg; min-height: 100vh; }
+
+.dashboard-wrapper {
+  padding: 1.25rem;
+  @media (max-width: 768px) { padding: .75rem; }
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────
+// CORRECTION : flex-row + align-items-center pour que tout reste sur 1 ligne
+.db-header {
+  background: $card-bg;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: .875rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+
+  // Groupe gauche : icône + texte côte à côte
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-shrink: 0;
+  }
+
+  // CORRECTION ICÔNE : taille de police explicite pour que MDI s'affiche
+  // Sans font-size explicite sur le <i>, l'icône hérite d'une taille
+  // incompatible avec le conteneur → carré vide
+  &__icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;               // empêche l'écrasement en flex
+    background: linear-gradient(135deg, $primary, #1D4ED8);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+
+    i {
+      font-size: 1.5rem;           // taille MDI explicite
+      line-height: 1;
+      font-style: normal;          // évite l'italique natif du <i>
+    }
+  }
+
+  &__title { font-size: 1.4rem; font-weight: 800; margin: 0; color: #0F172A; line-height: 1.2; }
+  &__sub   { font-size: .72rem; color: #64748B; margin: 0; line-height: 1.3; }
+
+  // Groupe droit : badge live + bouton
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .live-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .live-badge {
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+    color: $success;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .67rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: $success;
+      border-radius: 50%;
+      animation: livePulse 1.8s infinite;
+    }
+  }
+
+  .live-time {
+    font-size: .68rem;
+    color: #94A3B8;
+  }
+
+  .btn-refresh {
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $trans;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+
+    i {
+      font-size: .9rem;
+      line-height: 1;
+    }
+
+    &:hover:not(:disabled) { background: #1D4ED8; }
+    &:disabled { opacity: .6; cursor: not-allowed; }
+  }
+}
+
+// ── CTA Banner ─────────────────────────────────────────────────────────────
+.cta-banner {
+  background: linear-gradient(135deg, $primary 0%, #1E40AF 100%);
+  border-radius: $radius;
+  padding: .875rem 1.25rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+
+  // CORRECTION ICÔNE CTA : même fix que le header
+  .cta-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    background: rgba(255,255,255,.18);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1rem;
+      line-height: 1;
+      color: #fff;
+    }
+  }
+
+  h5 { font-size: .90rem; font-weight: 800; margin: 0; color: #fff; }
+  p  { font-size: .80rem; color: rgba(255,255,255,.75); margin: 0; }
+
+  .btn-cta {
+    background: #fff;
+    color: $primary;
+    font-weight: 700;
+    font-size: .78rem;
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    transition: $trans;
+
+    i { font-size: .85rem; line-height: 1; }
+
+    &:hover { background: #EFF6FF; }
+  }
+}
+
+// ── KPI Grid ───────────────────────────────────────────────────────────────
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+
+  @media (max-width: 1199px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 575px)  { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid rgba(0,0,0,.05);
+  box-shadow: $shadow;
+  padding: .9rem 1rem;
+  transition: $trans;
+  position: relative;
+  overflow: hidden;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+
+  &::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--kpi-accent, $primary);
+    border-radius: 0 0 $radius $radius;
+  }
+
+  // CORRECTION ICÔNE KPI : font-size explicite
+  .kpi-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+
+    i { font-size: 1.05rem; line-height: 1; }
+  }
+
+  .erp-tag   { font-size: .6rem; color: #CBD5E1; font-weight: 700; letter-spacing: .04em; }
+  .kpi-label { font-size: .67rem; text-transform: uppercase; letter-spacing: .05em; color: #64748B; font-weight: 600; margin: .4rem 0 .2rem; }
+  .kpi-value { font-size: 1.55rem; font-weight: 800; color: #0F172A; letter-spacing: -.5px; line-height: 1; }
+  .kpi-unit  { font-size: .68rem; color: #94A3B8; font-weight: 500; }
+}
+
+// ── Chart Cards ────────────────────────────────────────────────────────────
+.chart-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid rgba(0,0,0,.05);
+  box-shadow: $shadow;
+  overflow: hidden;
+  transition: $trans;
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+
+  .chart-card__header {
+    padding: .7rem 1rem;
+    border-bottom: 1px solid #F1F5F9;
+
+    h6 {
+      font-size: .8rem; font-weight: 700; margin: 0;
+      display: flex; align-items: center; gap: 6px; color: #0F172A;
+    }
+    .chart-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .chart-badge {
+      font-size: .62rem; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+      &.badge-teal   { background: #F0FDFA; color: $teal;    }
+      &.badge-purple { background: #F5F3FF; color: $purple;  }
+      &.badge-blue   { background: #EFF6FF; color: $primary; }
+      &.badge-amber  { background: #FFFBEB; color: $amber;   }
+    }
+  }
+
+  .chart-card__body { padding: .85rem 1rem; }
+  .chart-container       { position: relative; height: 220px; }
+  .chart-container-donut { position: relative; height: 200px; width: 100%; }
+}
+
+// ── Table Top 10 ───────────────────────────────────────────────────────────
+.table-scroll { max-height: 310px; overflow-y: auto; }
+
+.top-table {
+  width: 100%;
+
+  th {
+    padding: .45rem 1rem;
+    font-size: .63rem; text-transform: uppercase; letter-spacing: .05em;
+    color: #94A3B8; font-weight: 700;
+    border-bottom: 1px solid #F1F5F9;
+    background: #FAFAFA;
+    position: sticky; top: 0;
+  }
+
+  td {
+    padding: .5rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #F8FAFC;
+    font-size: .78rem;
+  }
+
+  tr:hover td { background: #F8FAFC; cursor: pointer; }
+  tr:last-child td { border-bottom: none; }
+
+  .rank-badge {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 800;
+    &.rank-1 { background: #FEF3C7; color: #B45309; }
+    &.rank-2 { background: #F1F5F9; color: #475569; }
+    &.rank-3 { background: #FEE2E2; color: #B91C1C; }
+    &.rank-n { background: #F8FAFC; color: #94A3B8; }
+  }
+
+  .item-code { font-weight: 700; color: $primary; font-size: .78rem; }
+  .item-name { font-size: .67rem; color: #94A3B8; max-width: 140px; }
+  .qty-value { font-weight: 800; color: $teal; font-size: .85rem; }
+  .unit-text { font-size: .6rem; color: #CBD5E1; }
+}
+
+// ── Loader ─────────────────────────────────────────────────────────────────
+.loader-overlay {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 3rem;
+
+  .spinner-ring {
+    width: 32px; height: 32px;
+    border: 3px solid #E2E8F0; border-top-color: $primary;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+
+  p { font-size: .75rem; color: #64748B; margin: .75rem 0 0; }
+}
+
+// ── Animations ─────────────────────────────────────────────────────────────
+@keyframes spin      { to { transform: rotate(360deg); } }
+@keyframes livePulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.3);opacity:.5} }
+@keyframes fadeInUp  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.fade-in { animation: fadeInUp .4s ease-out both; }
+@for $i from 0 through 3 { .kpi-delay-#{$i} { animation-delay: #{$i * 0.08}s; } }
