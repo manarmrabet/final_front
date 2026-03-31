@@ -80,7 +80,7 @@ h4 {
     border: none !important;
     border-radius: 9px !important;
     padding: 8px 22px !important;
-    font-size: .9rem !important;       // plus grand
+    font-size: .9rem !important;
     font-weight: 700 !important;
     transition: $trans;
     line-height: 1.4;
@@ -133,7 +133,7 @@ h4 {
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
-    font-size: 1rem;                   // plus grand
+    font-size: 1rem;
     font-weight: 500;
     color: $text-main;
     padding: 6px 0;
@@ -168,7 +168,6 @@ h4 {
   }
 }
 
-// Bouton Réinitialiser — style soigné
 .btn-reset {
   display: inline-flex;
   align-items: center;
@@ -204,7 +203,6 @@ h4 {
   overflow: hidden;
   position: relative;
 
-  // Barre accent top
   &::before {
     content: "";
     position: absolute;
@@ -217,11 +215,10 @@ h4 {
 
   .result-card__body {
     padding: 1.5rem;
-    padding-top: 1.75rem;             // compenser la barre top
+    padding-top: 1.75rem;
   }
 }
 
-// Icône dans la card
 .result-icon {
   width: 52px; height: 52px;
   border-radius: 14px;
@@ -235,7 +232,6 @@ h4 {
   &.icon-purple { background: #F5F3FF; color: $purple; }
 }
 
-// Désignation article
 .article-title {
   font-size: 1.15rem;
   font-weight: 800;
@@ -244,7 +240,6 @@ h4 {
   line-height: 1.3;
 }
 
-// Badges info article
 .info-pill {
   display: inline-flex;
   align-items: center;
@@ -261,7 +256,6 @@ h4 {
   &.pill-teal   { background: #F0FDFA; color: $teal; }
 }
 
-// KPI dans la card article
 .kpi-row {
   display: flex;
   gap: 1.5rem;
@@ -376,7 +370,7 @@ h4 {
 
 .table {
   margin: 0;
-  font-size: .875rem;                 // plus grand
+  font-size: .875rem;
 
   thead th {
     background: #F8FAFC;
@@ -394,7 +388,7 @@ h4 {
     padding: 14px 18px;
     vertical-align: middle;
     border-bottom: 1px solid #F1F5F9;
-    font-size: .875rem;               // plus grand
+    font-size: .875rem;
     color: $text-main;
   }
 
@@ -427,7 +421,6 @@ h4 {
 .status-blocked   { background: #FEF2F2; color: #991B1B; }
 .status-warning   { background: #FFFBEB; color: #92400E; }
 
-// Badges Bootstrap
 .badge {
   font-size: .78rem !important;
   font-weight: 600 !important;
@@ -499,3 +492,260 @@ h4 {
     font-weight: 500;
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// NOUVEAU : Inventaire Global — card moderne avec pagination stylisée
+// ══════════════════════════════════════════════════════════════════════════
+.global-inventory-card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: 1px solid $border;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+  position: relative;
+
+  // Barre accent top bleue
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $primary, #60A5FA);
+  }
+}
+
+// Header de la card inventaire
+.gi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 1.25rem 1.5rem 1rem;
+  padding-top: 1.5rem; // compenser la barre top
+  border-bottom: 1px solid $border;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.gi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+
+  i { font-size: 1.3rem; line-height: 1; }
+}
+
+.gi-title {
+  font-size: .97rem;
+  font-weight: 700;
+  color: $text-main;
+  margin: 0 0 2px;
+}
+
+.gi-subtitle {
+  font-size: .75rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+.gi-total-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #EFF6FF;
+  color: $primary;
+  border: 1px solid rgba($primary, .2);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: .82rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  i { font-size: .85rem; line-height: 1; }
+}
+
+// Cellules spécifiques à l'inventaire global
+.gi-item-code {
+  font-size: .875rem;
+  font-weight: 700;
+  color: $primary;
+  letter-spacing: -.2px;
+}
+
+.gi-item-desc {
+  font-size: .75rem;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+.gi-lot-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: .78rem;
+  font-weight: 600;
+  color: $text-main;
+  font-family: 'Courier New', monospace;
+
+  i { opacity: .5; }
+}
+
+.gi-lot-empty {
+  color: #CBD5E1;
+  font-weight: 500;
+}
+
+.gi-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .85rem;
+}
+
+.gi-warehouse {
+  font-weight: 700;
+  color: $text-main;
+}
+
+.gi-loc-sep {
+  color: #CBD5E1;
+  font-weight: 300;
+}
+
+.gi-loc {
+  color: $text-muted;
+  font-size: .82rem;
+}
+
+.gi-qty {
+  font-size: .92rem;
+  font-weight: 700;
+  color: $success;
+}
+
+.gi-unit {
+  font-size: .75rem;
+  color: $text-muted;
+  font-weight: 500;
+  margin-left: 3px;
+}
+
+.gi-date {
+  font-size: .8rem;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+// ── Pagination moderne ─────────────────────────────────────────────────────
+.gi-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid $border;
+  background: #F8FAFC;
+}
+
+.gi-page-info {
+  font-size: .82rem;
+  color: $text-muted;
+  font-weight: 500;
+
+  strong {
+    color: $text-main;
+    font-weight: 700;
+  }
+}
+
+.gi-page-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gi-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: $card-bg;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  color: $text-main;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: $trans;
+
+  i { font-size: 1rem; line-height: 1; }
+
+  &:hover:not(:disabled) {
+    background: #EFF6FF;
+    border-color: $primary;
+    color: $primary;
+  }
+
+  &:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+}
+
+.gi-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.gi-page-num {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid $border;
+  background: $card-bg;
+  color: $text-main;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $trans;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(.active) {
+    background: #F1F5F9;
+    border-color: #94A3B8;
+  }
+
+  &.active {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba($primary, .3);
+  }
+}
+
+.gi-page-dots {
+  color: #CBD5E1;
+  font-size: .85rem;
+  padding: 0 4px;
+  line-height: 34px;
+}
+// ══════════════════════════════════════════════════════════════════════════
