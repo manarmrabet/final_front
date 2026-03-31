@@ -834,30 +834,62 @@ $font        : 'Poppins', sans-serif;
   }
 }
 
-.del-choice-title {
-  font-size: .84rem;
-  font-weight: 600;
-  color: $text-title;
-}
+// ══════════════════════════════════════════════════════════
+// NOUVEAU : Modale confirmation envoi mail
+// ══════════════════════════════════════════════════════════
+.modal-mail-sent {
+  text-align: center;
 
-.del-choice-desc {
-  font-size: .75rem;
-  color: $text-muted;
-  margin-top: 2px;
-}
+  // Bouton fermeture positionné en haut à droite
+  .mail-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    margin-left: 0;
+  }
 
-.warn-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px 13px;
-  background: rgba(240,101,72,.08);
-  border: 1px solid rgba(240,101,72,.2);
-  border-radius: 7px;
-  font-size: .8rem;
-  color: darken(#f06548, 10%);
-  svg {
-    flex-shrink: 0;
+  .mail-sent-body {
+    padding: 36px 24px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mail-sent-icon-wrap {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    border: 2.5px solid $success;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $success;
+    animation: popIn .3s ease;
+  }
+
+  .mail-sent-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $text-title;
+  }
+
+  .mail-sent-desc {
+    margin: 0;
+    font-size: .84rem;
+    color: $text-muted;
+    line-height: 1.6;
+
+    strong {
+      color: $text-dark;
+      font-weight: 600;
+    }
+  }
+
+  // Footer centré pour cette modale
+  .modal-v-footer {
+    justify-content: center;
   }
 }
+// ══════════════════════════════════════════════════════════

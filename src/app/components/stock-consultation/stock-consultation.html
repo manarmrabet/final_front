@@ -54,7 +54,6 @@
           </div>
         </div>
         <div class="col-lg-2">
-          <!-- Bouton Réinitialiser stylisé -->
           <button class="btn-reset" (click)="reset()">
             <i class="mdi mdi-refresh"></i>Réinitialiser
           </button>
@@ -275,8 +274,125 @@
 
     </ng-container>
 
-    <!-- ── État vide ──────────────────────────────────────────────────── -->
-    <div *ngIf="!loading && !article && !lotLines.length && !error">
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- INVENTAIRE GLOBAL — affiché quand aucune recherche active        -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div class="global-inventory-card" *ngIf="!article && !lotLines.length && !loading && !error">
+
+      <!-- Header -->
+      <div class="gi-header">
+        <div class="gi-header__left">
+          <div class="gi-icon">
+            <i class="mdi mdi-warehouse"></i>
+          </div>
+          <div>
+            <h5 class="gi-title">Inventaire Global ERP</h5>
+            <p class="gi-subtitle">Vue consolidée de tous les articles en stock</p>
+          </div>
+        </div>
+        <span class="gi-total-badge">
+          <i class="mdi mdi-layers-triple-outline"></i>
+          {{ totalElements | number }} articles au total
+        </span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Article</th>
+              <th>Lot</th>
+              <th>Emplacement</th>
+              <th class="text-end">Stock</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of globalStock">
+              <td>
+                <div class="gi-item-code">{{ item.itemCode }}</div>
+                <div class="gi-item-desc">{{ item.designation }}</div>
+              </td>
+              <td>
+                <span class="gi-lot-badge" *ngIf="item.lotNumber; else noLot">
+                  <i class="mdi mdi-barcode me-1"></i>{{ item.lotNumber }}
+                </span>
+                <ng-template #noLot>
+                  <span class="gi-lot-empty">—</span>
+                </ng-template>
+              </td>
+              <td>
+                <div class="gi-location">
+                  <span class="gi-warehouse">{{ item.warehouseCode }}</span>
+                  <span class="gi-loc-sep">/</span>
+                  <span class="gi-loc">{{ item.location }}</span>
+                </div>
+              </td>
+              <td class="text-end">
+                <span class="gi-qty">{{ item.quantityAvailable }}</span>
+                <span class="gi-unit">{{ item.unit }}</span>
+              </td>
+              <td>
+                <span class="gi-date">{{ item.entryDate }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="!globalStock?.length">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="mdi mdi-inbox-outline empty-icon"></i>
+                  <p>Aucune donnée disponible</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination moderne -->
+      <div class="gi-pagination">
+        <span class="gi-page-info">
+          Page <strong>{{ currentPage + 1 }}</strong> sur <strong>{{ totalPages }}</strong>
+        </span>
+        <div class="gi-page-btns">
+          <button class="gi-page-btn"
+                  [disabled]="currentPage === 0"
+                  (click)="changePage(-1)">
+            <i class="mdi mdi-chevron-left"></i>
+            Précédent
+          </button>
+
+          <div class="gi-page-numbers">
+            <button class="gi-page-num" [class.active]="currentPage === 0"
+                    (click)="currentPage !== 0 && changePage(-currentPage)">1</button>
+            <span class="gi-page-dots" *ngIf="currentPage > 2">…</span>
+            <button class="gi-page-num" *ngIf="currentPage > 1"
+                    (click)="changePage(-1)">{{ currentPage }}</button>
+            <button class="gi-page-num active" *ngIf="currentPage !== 0 && currentPage !== totalPages - 1">
+              {{ currentPage + 1 }}
+            </button>
+            <button class="gi-page-num" *ngIf="currentPage < totalPages - 2"
+                    (click)="changePage(1)">{{ currentPage + 2 }}</button>
+            <span class="gi-page-dots" *ngIf="currentPage < totalPages - 3">…</span>
+            <button class="gi-page-num" [class.active]="currentPage === totalPages - 1"
+                    (click)="currentPage !== totalPages - 1 && changePage(totalPages - 1 - currentPage)">
+              {{ totalPages }}
+            </button>
+          </div>
+
+          <button class="gi-page-btn"
+                  [disabled]="currentPage >= totalPages - 1"
+                  (click)="changePage(1)">
+            Suivant
+            <i class="mdi mdi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── État vide (après reset ou erreur) ─────────────────────────── -->
+    <div *ngIf="!loading && !article && !lotLines.length && error">
       <div class="empty-state">
         <i class="mdi mdi-package-variant-closed empty-icon"></i>
         <p>{{ searchMode === 'article'
@@ -287,67 +403,4 @@
     </div>
 
   </div>
-</div>
-<div class="page-content">
-    <div class="search-card mb-4">
-        </div>
-
-    <div class="data-card" *ngIf="!article && !lotLines.length">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Inventaire Global ERP</h5>
-            <span class="badge bg-primary">{{ totalElements }} articles au total</span>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Lot</th>
-                        <th>Emplacement</th>
-                        <th class="text-end">Stock</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of globalStock">
-                        <td>
-                            <strong>{{item.itemCode}}</strong><br>
-                            <small class="text-muted">{{item.designation}}</small>
-                        </td>
-                        <td><span class="badge bg-light text-dark">{{item.lotNumber}}</span></td>
-                        <td>{{item.warehouseCode}} / {{item.location}}</td>
-                        <td class="text-end fw-bold text-primary">
-                            {{item.quantityAvailable}} {{item.unit}}
-                        </td>
-                        <td>{{item.entryDate}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="card-footer d-flex justify-content-between align-items-center bg-white">
-            <div class="text-muted small">
-                Page {{ currentPage + 1 }} sur {{ totalPages }}
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-outline-secondary btn-sm"
-                        [disabled]="currentPage === 0"
-                        (click)="changePage(-1)">
-                    Précédent
-                </button>
-                <button class="btn btn-outline-secondary btn-sm"
-                        [disabled]="currentPage >= totalPages - 1"
-                        (click)="changePage(1)">
-                    Suivant
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="article">
-        </div>
-
-    <div *ngIf="lotLines.length > 0">
-        </div>
 </div>

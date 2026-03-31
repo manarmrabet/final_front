@@ -32,6 +32,7 @@
     "chart.js": "^4.5.1",
     "lucide-angular": "^0.577.0",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.26.24",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

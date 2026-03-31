@@ -23,71 +23,74 @@ export class MenuManagementComponent implements OnInit {
   isEditMode   = false;
   isSubMenu    = false;
 
+  // ── NOUVEAU : modale confirmation suppression ─────────
+  showDeleteConfirm = false;
+  menuToDelete: MenuItemDTO | null = null;
+  // ─────────────────────────────────────────────────────
+
   newMenu: MenuItemDTO = {
     menuItemId: 0,
     label: '',
-    icon: 'menu',           // valeur par défaut lucide
+    icon: 'menu',
     link: '',
     isTitle: 0,
     isLayout: 0,
     parentId: null
   };
 
-  // Liste des icônes (on en prend une sélection raisonnable – tu peux en ajouter)
   readonly popularIcons = [
     'home',
-  'layout-dashboard',
-  'grid',
-  'list',
-  'clipboard-list',
-  'shield',
-  'shield-check',
-  'users',
-  'user',
-  'user-plus',
-  'user-minus',
-  'user-check',
-  'settings',
-  'sliders',
-  'bar-chart',
-  'pie-chart',
-  'line-chart',
-  'activity',
-  'mail',
-  'inbox',
-  'send',
-  'file-text',
-  'folder',
-  'folder-plus',
-  'calendar',
-  'clock',
-  'bell',
-  'shopping-cart',
-  'credit-card',
-  'dollar-sign',
-  'percent',
-  'truck',
-  'package',
-  'box',
-  'columns',
-  'table',
-  'file-plus',
-  'plus',
-  'minus',
-  'x',
-  'check',
-  'alert-circle',
-  'info',
-  'help-circle',
-  'lock',
-  'unlock',
-  'log-out',
-  'log-in',
-  'menu',
-  'circle'
+    'layout-dashboard',
+    'grid',
+    'list',
+    'clipboard-list',
+    'shield',
+    'shield-check',
+    'users',
+    'user',
+    'user-plus',
+    'user-minus',
+    'user-check',
+    'settings',
+    'sliders',
+    'bar-chart',
+    'pie-chart',
+    'line-chart',
+    'activity',
+    'mail',
+    'inbox',
+    'send',
+    'file-text',
+    'folder',
+    'folder-plus',
+    'calendar',
+    'clock',
+    'bell',
+    'shopping-cart',
+    'credit-card',
+    'dollar-sign',
+    'percent',
+    'truck',
+    'package',
+    'box',
+    'columns',
+    'table',
+    'file-plus',
+    'plus',
+    'minus',
+    'x',
+    'check',
+    'alert-circle',
+    'info',
+    'help-circle',
+    'lock',
+    'unlock',
+    'log-out',
+    'log-in',
+    'menu',
+    'circle'
   ];
 
-  // Pour l’affichage dans la liste de sélection
   iconSearch = '';
 
   ngOnInit(): void {
@@ -112,7 +115,6 @@ export class MenuManagementComponent implements OnInit {
     this.isEditMode   = true;
     this.isSubMenu    = item.parentId != null;
     this.newMenu      = { ...item };
-    // Si l’icône vient de feather, on peut tenter une conversion approximative
     if (this.newMenu.icon?.includes('feather icon-')) {
       this.newMenu.icon = this.newMenu.icon.replace('feather icon-', '');
     }
@@ -127,8 +129,24 @@ export class MenuManagementComponent implements OnInit {
     this.newMenu.icon = iconName;
   }
 
-  deleteMenu(id: number): void {
-    if (!confirm('Supprimer cet élément ?')) return;
+  // ── NOUVEAU : ouvre la modale de confirmation ─────────
+  openDeleteConfirm(item: MenuItemDTO): void {
+    this.menuToDelete     = item;
+    this.showDeleteConfirm = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm = false;
+    this.menuToDelete      = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.menuToDelete) return;
+    const id = this.menuToDelete.menuItemId!;
+    this.showDeleteConfirm = false;
+    this.menuToDelete      = null;
+
+    // ── même logique qu'avant ─────────────────────────
     this.adminService.deleteMenuItem(id).subscribe({
       next:  () => {
         this.loadMenus();
@@ -137,6 +155,7 @@ export class MenuManagementComponent implements OnInit {
       error: (err) => console.error('Erreur suppression', err)
     });
   }
+  // ─────────────────────────────────────────────────────
 
   submitMenu(): void {
     const payload = { ...this.newMenu };
