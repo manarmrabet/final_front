@@ -951,3 +951,16 @@
 .tm-route-lot {
   margin-left: 2px;
 }
+.tm-btn--archive {
+  background: #F5F3FF;
+  color: #7C3AED;
+  border-color: rgba(124,58,237,.25);
+  font-weight: 600;
+ 
+  &:hover:not(:disabled) {
+    background: #7C3AED;
+    color: white;
+    border-color: #7C3AED;
+    box-shadow: 0 2px 8px rgba(124,58,237,.3);
+  }
+}

@@ -1,0 +1,214 @@
+<!-- src/app/components/transfer-archives/transfer-archives.html -->
+
+<div class="ta-page">
+
+  <!-- HEADER -->
+  <div class="ta-header">
+    <div class="ta-header__left">
+      <div class="ta-header__icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      </div>
+      <div>
+        <h1 class="ta-header__title">Archives des transferts</h1>
+        <p class="ta-header__sub">Historique complet — données de plus de 90 jours</p>
+      </div>
+    </div>
+    <div class="ta-header__actions">
+      <button class="ta-btn ta-btn--ghost" (click)="loadArchives()">
+        Actualiser
+      </button>
+      <button class="ta-btn ta-btn--export" (click)="exportCsv()" [disabled]="archivesLoading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Exporter CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- BANDEAU INFO -->
+  <div class="ta-info-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>
+      Ces données sont en lecture seule. Les transferts récents (&lt; 90 jours)
+      sont disponibles dans
+      <a routerLink="/transfers" class="ta-link">la vue principale</a>.
+    </span>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="ta-card ta-filters" [formGroup]="filterForm">
+    <div class="ta-filters__row">
+      <div class="ta-filter-field">
+        <label class="ta-label">Statut</label>
+        <select class="ta-select ta-select--sm" formControlName="status">
+          <option [ngValue]="null">Tous les statuts</option>
+          <option value="PENDING">En attente</option>
+          <option value="DONE">Effectués</option>
+          <option value="ERROR">Erreurs</option>
+          <option value="CANCELLED">Annulés</option>
+        </select>
+      </div>
+
+      <div class="ta-filter-field">
+        <label class="ta-label">Code article</label>
+        <input type="text" class="ta-input ta-input--sm"
+               formControlName="itemCode" placeholder="Ex: 6RA973332A" />
+      </div>
+
+      <div class="ta-filter-field">
+        <label class="ta-label">Emplacement</label>
+        <input type="text" class="ta-input ta-input--sm"
+               formControlName="location" placeholder="Source ou destination" />
+      </div>
+
+      <div class="ta-filter-field">
+        <label class="ta-label">Du</label>
+        <input type="date" class="ta-input ta-input--sm" formControlName="from" />
+      </div>
+
+      <div class="ta-filter-field">
+        <label class="ta-label">Au</label>
+        <input type="date" class="ta-input ta-input--sm" formControlName="to" />
+      </div>
+
+      <button class="ta-btn ta-btn--ghost ta-btn--sm" (click)="resetFilters()">
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLEAU -->
+  <div class="ta-card ta-table-card">
+
+    <!-- Chargement -->
+    <div class="ta-state" *ngIf="archivesLoading">
+      <div class="ta-loader"><div class="ta-loader__ring"></div></div>
+      <span>Chargement des archives…</span>
+    </div>
+
+    <!-- Erreur -->
+    <div class="ta-state" *ngIf="!archivesLoading && loadError">
+      <p>Erreur de chargement</p>
+      <small>{{ loadError }}</small>
+      <button class="ta-btn ta-btn--ghost ta-btn--sm" (click)="loadArchives()">Réessayer</button>
+    </div>
+
+    <!-- Vide -->
+    <div class="ta-state" *ngIf="!archivesLoading && !loadError && !archivesPage?.content?.length">
+      <p>Aucune archive trouvée</p>
+      <small>Aucun transfert ne correspond aux filtres sélectionnés</small>
+    </div>
+
+    <!-- Table -->
+    <div class="ta-table-wrap" *ngIf="!archivesLoading && !loadError && archivesPage?.content?.length">
+      <table class="ta-table">
+        <thead>
+          <tr>
+            <th>Article (Code + Nom)</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th class="ta-th--center">Qté</th>
+            <th>Lot</th>
+            <th>Type</th>
+            <th>Opérateur</th>
+            <th>Date transfert</th>
+            <th class="ta-th--center">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of archivesPage!.content; trackBy: trackById">
+
+            <!-- Article -->
+            <td>
+              <div class="ta-art-cell">
+                <span class="ta-art-code">{{ t.erpItemCode }}</span>
+                <span class="ta-art-label" [title]="t.erpItemLabel">{{ t.erpItemLabel }}</span>
+              </div>
+            </td>
+
+            <!-- Source -->
+            <td>
+              <ng-container *ngIf="getLocationParts(t.sourceLocation) as src">
+                <span class="ta-loc ta-loc--src">
+                  <strong>{{ src.warehouse }}</strong> / {{ src.emplacement }}
+                </span>
+              </ng-container>
+            </td>
+
+            <!-- Destination -->
+            <td>
+              <ng-container *ngIf="getLocationParts(t.destLocation) as dst">
+                <span class="ta-loc ta-loc--dst">
+                  <strong>{{ dst.warehouse }}</strong> / {{ dst.emplacement }}
+                </span>
+              </ng-container>
+            </td>
+
+            <!-- Quantité -->
+            <td class="ta-td--center">
+              <span class="ta-qty">{{ t.quantity }}</span>
+              <span class="ta-unit">{{ t.unit }}</span>
+            </td>
+
+            <!-- Lot -->
+            <td>
+              <span *ngIf="t.lotNumber" class="ta-lot-badge">{{ t.lotNumber }}</span>
+              <span *ngIf="!t.lotNumber" class="ta-td--muted">—</span>
+            </td>
+
+            <!-- Type -->
+            <td>
+              <span class="ta-type-pill">{{ getTypeLabel(t.transferType) }}</span>
+            </td>
+
+            <td class="ta-td--muted">{{ t.operatorName ?? '—' }}</td>
+
+            <td class="ta-td--date">{{ t.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+
+            <!-- Statut -->
+            <td class="ta-td--center">
+              <span class="ta-status" [ngClass]="'ta-status--' + getStatusColor(t.status)">
+                <span class="ta-status__dot"></span>
+                {{ getStatusLabel(t.status) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="ta-pagination" *ngIf="archivesPage && archivesPage.totalPages > 1">
+      <button class="ta-page-btn" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
+        ←
+      </button>
+      <ng-container *ngFor="let p of pages">
+        <button class="ta-page-btn"
+                [class.ta-page-btn--active]="p === currentPage"
+                (click)="goToPage(p)">
+          {{ p + 1 }}
+        </button>
+      </ng-container>
+      <button class="ta-page-btn"
+              [disabled]="currentPage === (archivesPage.totalPages - 1)"
+              (click)="goToPage(currentPage + 1)">
+        →
+      </button>
+      <span class="ta-pagination__info">
+        {{ archivesPage.totalElements }} archive(s) · Page {{ currentPage + 1 }}/{{ archivesPage.totalPages }}
+      </span>
+    </div>
+  </div>
+
+</div>

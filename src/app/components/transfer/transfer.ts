@@ -238,13 +238,25 @@ export class TransferManagementComponent implements OnInit, OnDestroy {
   getStatusColor(s: TransferStatus): string { return this.statusColors[s] ?? 'secondary'; }
   getTypeLabel(t: string): string           { return this.transferTypeLabels[t] ?? t; }
 
-  getLocationParts(location: string): { warehouse: string; emplacement: string } {
-    if (!location) return { warehouse: '—', emplacement: '—' };
-    const parts = location.split('/');
-    return {
-      warehouse:   parts[0]?.trim() || location,
-      emplacement: parts.length > 1 ? parts.slice(1).join('/').trim() : location
-    };
+   /**
+   * Affiche "Magasin / Emplacement" en utilisant les champs du backend
+   * Priorité : warehouse (t_cwar) puis location (t_loca)
+   */
+  getLocationParts(
+    warehouse: string | null | undefined,
+    location: string | null | undefined
+  ): { warehouse: string; emplacement: string } {
+
+    const wh = (warehouse?.trim()) || '—';
+    const loc = (location?.trim()) || '';
+
+    // Si on a un emplacement différent du magasin → on l'affiche
+    if (loc && loc.toUpperCase() !== wh.toUpperCase()) {
+      return { warehouse: wh, emplacement: loc };
+    }
+
+    // Sinon on affiche seulement le magasin (cas actuel de tes données)
+    return { warehouse: wh, emplacement: '—' };
   }
 
   get pages(): number[] {

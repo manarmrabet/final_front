@@ -61,6 +61,12 @@ export const routes: Routes = [
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/card-management/card-management').then(m => m.CardManagementComponent)
       },
+      {
+  path: 'transfers/archives',
+  loadComponent: () =>
+    import('./components/transfer-archives/transfer-archives')
+      .then(m => m.TransferArchivesComponent)
+},
       // ── Stock ERP — AVANT le wildcard ** ──────────────────────────
       {
         path: 'stock',

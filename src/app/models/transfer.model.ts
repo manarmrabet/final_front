@@ -20,6 +20,8 @@ export interface TransferResponse {
   lotNumber:       string | null;
   sourceLocation:  string;
   destLocation:    string;
+  sourceWarehouse?: string;     // ← à ajouter
+  destWarehouse?: string;
   quantity:        number;
   unit:            string;
   status:          TransferStatus;

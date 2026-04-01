@@ -23,6 +23,14 @@
         Actualiser
       </button>
     </div>
+     <button class="tm-btn tm-btn--archive" routerLink="/transfers/archives">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Voir les archives
+      </button>
   </div>
 
   <!-- DASHBOARD -->
@@ -250,23 +258,30 @@
               </div>
             </td>
 
-            <!-- Source -->
-            <td>
-              <ng-container *ngIf="getLocationParts(t.sourceLocation) as src">
-                <span class="tm-loc tm-loc--src">
-                  <strong>{{ src.warehouse }}</strong> / {{ src.emplacement }}
-                </span>
-              </ng-container>
-            </td>
+           <!-- SOURCE -->
+<td>
+  <ng-container *ngIf="getLocationParts(t.sourceWarehouse, t.sourceLocation) as src">
+    <span class="tm-loc tm-loc--src">
+      <strong>{{ src.warehouse }}</strong>
+      <span *ngIf="src.emplacement !== '—'" class="text-muted"> / </span>
+      <span *ngIf="src.emplacement !== '—'">{{ src.emplacement }}</span>
+    </span>
+  </ng-container>
+</td>
 
-            <!-- Destination -->
-            <td>
-              <ng-container *ngIf="getLocationParts(t.destLocation) as dst">
-                <span class="tm-loc tm-loc--dst">
-                  <strong>{{ dst.warehouse }}</strong> / {{ dst.emplacement }}
-                </span>
-              </ng-container>
-            </td>
+<!-- DESTINATION -->
+<td>
+  <ng-container *ngIf="getLocationParts(t.destWarehouse, t.destLocation) as dst">
+    <span class="tm-loc tm-loc--dst">
+      <strong>{{ dst.warehouse }}</strong>
+      <span *ngIf="dst.emplacement !== '—'" class="text-muted"> / </span>
+      <span *ngIf="dst.emplacement !== '—'">{{ dst.emplacement }}</span>
+    </span>
+  </ng-container>
+</td>
+
+           
+  
 
             <!-- Quantité -->
             <td class="tm-td--center">
@@ -361,18 +376,27 @@
           </div>
 
           <div class="tm-detail-item">
-            <span class="tm-detail-label">Source</span>
-            <ng-container *ngIf="getLocationParts(selectedTransfer.sourceLocation) as src">
-              <span class="tm-detail-value"><strong>{{ src.warehouse }}</strong> / {{ src.emplacement }}</span>
-            </ng-container>
-          </div>
+  <!-- Source -->
+<div class="tm-detail-item">
+  <span class="tm-detail-label">Source</span>
+  <ng-container *ngIf="getLocationParts(selectedTransfer.sourceWarehouse, selectedTransfer.sourceLocation) as src">
+    <span class="tm-detail-value">
+      <strong>{{ src.warehouse }}</strong>
+      <span *ngIf="src.emplacement !== '—'"> / {{ src.emplacement }}</span>
+    </span>
+  </ng-container>
+</div>
 
-          <div class="tm-detail-item">
-            <span class="tm-detail-label">Destination</span>
-            <ng-container *ngIf="getLocationParts(selectedTransfer.destLocation) as dst">
-              <span class="tm-detail-value"><strong>{{ dst.warehouse }}</strong> / {{ dst.emplacement }}</span>
-            </ng-container>
-          </div>
+<!-- Destination -->
+<div class="tm-detail-item">
+  <span class="tm-detail-label">Destination</span>
+  <ng-container *ngIf="getLocationParts(selectedTransfer.destWarehouse, selectedTransfer.destLocation) as dst">
+    <span class="tm-detail-value">
+      <strong>{{ dst.warehouse }}</strong>
+      <span *ngIf="dst.emplacement !== '—'"> / {{ dst.emplacement }}</span>
+    </span>
+  </ng-container>
+</div>
 
           <div class="tm-detail-item">
             <span class="tm-detail-label">Type</span>
