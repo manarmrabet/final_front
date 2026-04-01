@@ -5,6 +5,14 @@ import { TransferManagementComponent } from './components/transfer/transfer';
 import { StockConsultationComponent } from './components/stock-consultation/stock-consultation';
 import { StockDashboardComponent } from './components/stock-dashboard/stock-dashboard';
 export const routes: Routes = [
+
+
+  {
+    path: '',
+    loadComponent: () => import('./components/home/home').then(m => m.HomeComponent),
+    title: 'COFAT WMS — Accueil'
+  },
+
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   {

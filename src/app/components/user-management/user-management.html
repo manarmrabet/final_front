@@ -277,3 +277,41 @@
     </div>
   </div>
 }
+
+<!-- ══════════════════════════════════════════════════════
+     NOUVEAU : Modale confirmation envoi mail
+     ══════════════════════════════════════════════════════ -->
+@if (showMailSentModal()) {
+  <div class="modal-overlay" (click)="closeMailSentModal()"></div>
+  <div class="modal-velzon sm modal-mail-sent" (click)="$event.stopPropagation()">
+
+    <button class="btn-modal-close mail-close-btn" (click)="closeMailSentModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <div class="mail-sent-body">
+      <div class="mail-sent-icon-wrap">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+
+      <h5 class="mail-sent-title">Mail envoyé !</h5>
+      <p class="mail-sent-desc">
+        Les identifiants ont bien été envoyés à<br/>
+        <strong>{{ mailSentUser()?.email }}</strong>
+      </p>
+    </div>
+
+    <div class="modal-v-footer">
+      <button class="btn-v-submit" (click)="closeMailSentModal()">OK</button>
+      <button class="btn-v-cancel" (click)="closeMailSentModal()">Fermer</button>
+    </div>
+
+  </div>
+}
+<!-- ══════════════════════════════════════════════════════ -->

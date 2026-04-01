@@ -7,7 +7,6 @@ import { AdminService } from '../../services/admin/admin';
 import { DataStoreService } from '../../services/dataStore/data-store';
 import { UserDTO, Role, Site } from '../../models/user.model';
 
-// Correction Erreur Locale "fr" (Image 3)
 registerLocaleData(localeFr);
 
 @Component({
@@ -35,6 +34,11 @@ export class UserManagementComponent implements OnInit {
   newUser         = signal<UserDTO>(this.initUser());
   sendingMailId   = signal<number | null>(null);
 
+  // ── NOUVEAU : modale confirmation envoi mail ──────────
+  showMailSentModal = signal(false);
+  mailSentUser      = signal<UserDTO | null>(null);
+  // ─────────────────────────────────────────────────────
+
   filteredUsers = computed(() => {
     const term = this.searchTerm().toLowerCase();
     return this.users().filter(u =>
@@ -53,7 +57,6 @@ export class UserManagementComponent implements OnInit {
   loadInitialData(): void {
     this.isPageLoading.set(true);
 
-    // setTimeout pour éviter ExpressionChangedAfterItHasBeenCheckedError (Image 3)
     setTimeout(() => {
       if (this.dataStore.users.length > 0) {
         this.users.set(this.dataStore.users);
@@ -86,7 +89,7 @@ export class UserManagementComponent implements OnInit {
       siteName: '',
       isActive: 1,
       authorities: [],
-      mustChangePassword: true, // Correction TS2353 (Image 4)
+      mustChangePassword: true,
       credentialsSent: false
     };
   }
@@ -154,11 +157,21 @@ export class UserManagementComponent implements OnInit {
       next: () => {
         this.dataStore.updateUserLocally({ ...user, credentialsSent: true });
         this.sendingMailId.set(null);
-        alert(`Email envoyé à ${user.email}`);
+        // ── NOUVEAU : ouvre la modale au lieu du alert() ──
+        this.mailSentUser.set(user);
+        this.showMailSentModal.set(true);
+        // ─────────────────────────────────────────────────
       },
       error: () => this.sendingMailId.set(null)
     });
   }
+
+  // ── NOUVEAU : fermeture modale mail ───────────────────
+  closeMailSentModal(): void {
+    this.showMailSentModal.set(false);
+    this.mailSentUser.set(null);
+  }
+  // ─────────────────────────────────────────────────────
 
   openDeleteModal(user: UserDTO): void {
     this.userToDelete.set(user);

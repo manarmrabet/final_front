@@ -1,21 +1,23 @@
-// ── Variables ─────────────────────────────────────────────────────
-$cofat-blue : #004a99;
-$cofat-red  : #e30613;
-$teal       : #0ab39c;
-$teal-h     : #099885;
-$text-dark  : #343a40;
-$text-muted : #878a99;
-$border     : #ced4da;
+// ── Variables COFAT (Inspirées de la Home) ───────────────────────
+$cofat-dark-bg: #060b19;      // Bleu très foncé (fond Home)
+$cofat-blue-main: #0061ff;    // Bleu électrique (bouton principal)
+$cofat-blue-glow: rgba(0, 97, 255, 0.5);
+$cofat-red: #e30613;          // Rouge identité COFAT
+$teal-accent: #0ab39c;        // Le "WMS" en vert/cyan
+$text-dark: #1a202c;
+$text-muted: #718096;
+$border-color: #e2e8f0;
 
-// ── Page (fond bleu-marine Velzon) ────────────────────────────────
+// ── Page Background ──────────────────────────────────────────────
 .auth-page {
   min-height: 100vh;
-  background: #405189;
+  // Dégradé radial sombre pour imiter l'effet de profondeur de la Home
+  background: radial-gradient(circle at center, #0a1931 0%, #060b19 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  font-family: 'Nunito', 'Poppins', sans-serif;
+  font-family: 'Inter', 'Nunito', sans-serif;
 }
 
 .auth-page-wrapper {
@@ -28,28 +30,27 @@ $border     : #ced4da;
 .auth-card {
   display: flex;
   width: 100%;
-  max-width: 960px;
-  min-height: 560px;
-  border-radius: 12px;
+  max-width: 1000px;
+  min-height: 600px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 48px rgba(0,0,0,0.35);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  background: #fff;
 }
 
-// ── Panel gauche ──────────────────────────────────────────────────
+// ── Panel gauche (Visuel) ──────────────────────────────────────────
 .auth-left {
-  flex: 0 0 42%;
+  flex: 0 0 45%;
   position: relative;
   overflow: hidden;
-  background: url('/assets/images/auth/img-auth-big.jpg') center/cover no-repeat;
-  background-color: #1a3a6b;
+  background: #060b19;
 }
 
 .auth-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg,
-    rgba(10,179,156,.90) 0%,
-    rgba(64,81,137,.95) 100%);
+  // Dégradé inspiré de votre bannière Home
+  background: linear-gradient(135deg, rgba(0, 97, 255, 0.85) 0%, rgba(6, 11, 25, 0.95) 100%);
   z-index: 1;
 }
 
@@ -57,8 +58,8 @@ $border     : #ced4da;
   position: absolute;
   inset: 0;
   z-index: 2;
-  background-image: radial-gradient(rgba(255,255,255,.18) 1.5px, transparent 1.5px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px);
+  background-size: 25px 25px;
 }
 
 .left-content {
@@ -68,263 +69,118 @@ $border     : #ced4da;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 44px 36px;
+  padding: 50px 40px;
 }
 
-// Logo COFAT
-.auth-brand { display: flex; flex-direction: column; }
-
-.brand-text {
-  font-size: 1.9rem;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: #fff;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.brand-bar {
-  width: 40px;
-  height: 4px;
-  background: $cofat-red;
-  border-radius: 2px;
-  margin-top: 7px;
-}
-
-// Citation
-.auth-quote { color: #fff; }
-
-.quote-marks {
-  font-size: 5rem;
-  line-height: 1;
-  color: $teal;
-  font-family: Georgia, serif;
-  margin-bottom: -10px;
-}
-
-.quote-body {
-  font-size: .93rem;
-  line-height: 1.75;
-  font-style: italic;
-  color: rgba(255,255,255,.88);
-  margin-bottom: 22px;
-}
-
-.quote-pagination {
+// Logo Style Home
+.auth-brand {
   display: flex;
-  gap: 7px;
-
-  .pag-dot {
-    width: 28px; height: 3px;
+  flex-direction: column;
+  .brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-logo-box {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #00dbde 0%, #0061ff 100%);
+    border-radius: 8px;
+  }
+  .brand-text {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    span { color: $teal-accent; font-size: 0.9rem; letter-spacing: 0; }
+  }
+  .brand-bar {
+    width: 45px;
+    height: 4px;
+    background: $cofat-red;
+    margin-top: 8px;
     border-radius: 2px;
-    background: rgba(255,255,255,.35);
-    &.active { background: #fff; }
   }
 }
 
-// ── Panel droit ───────────────────────────────────────────────────
+.auth-quote {
+  color: #fff;
+  .quote-marks { font-size: 4rem; color: rgba(255,255,255,0.2); margin-bottom: -10px; }
+  .quote-body { font-size: 1rem; line-height: 1.6; opacity: 0.9; margin-bottom: 100px; }
+}
+
+// ── Panel droit (Formulaire) ──────────────────────────────────────
 .auth-right {
   flex: 1;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 44px;
+  padding: 50px;
 }
 
-.right-content {
-  width: 100%;
-  max-width: 360px;
-  animation: fadeUp .4s ease both;
-}
+.right-content { width: 100%; max-width: 360px; }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-// Header
 .form-header {
-  margin-bottom: 28px;
-
-  h5 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: $cofat-blue;
-    margin: 0 0 5px;
-  }
-
-  p { font-size: .87rem; color: $text-muted; margin: 0; }
+  margin-bottom: 35px;
+  h5 { font-size: 1.6rem; font-weight: 700; color: $cofat-dark-bg; margin-bottom: 8px; }
+  p { color: $text-muted; font-size: 0.95rem; }
 }
 
-// Alert
-.form-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 13px;
-  border-radius: 6px;
-  font-size: .83rem;
-  margin-bottom: 18px;
-  background: #fde8ea;
-  color: #c0392b;
-  border-left: 3px solid $cofat-red;
-
-  &.blocked {
-    background: #fff3cd;
-    color: #856404;
-    border-left-color: #ffc107;
-  }
-
-  svg { flex-shrink: 0; }
-}
-
-// Form group
 .form-group {
-  margin-bottom: 20px;
-
-  label {
-    display: block;
-    font-size: .82rem;
-    font-weight: 600;
-    color: $text-dark;
-    margin-bottom: 7px;
-  }
+  margin-bottom: 22px;
+  label { display: block; font-size: 0.85rem; font-weight: 600; color: $text-dark; margin-bottom: 8px; }
 }
 
-.label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 7px;
-  label { margin-bottom: 0; }
-}
-
-.forgot-link {
-  font-size: .78rem;
-  color: $text-muted;
-  text-decoration: none;
-  &:hover { color: $cofat-blue; }
-}
-
-// Input
 .form-input {
   width: 100%;
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid $border;
-  border-radius: 6px;
-  font-size: .9rem;
-  color: $text-dark;
-  background: #fff;
-  box-sizing: border-box;
-  transition: border-color .2s, box-shadow .2s;
-
-  &::placeholder { color: #adb5bd; }
-
+  height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid $border-color;
+  border-radius: 10px;
+  transition: all 0.2s;
   &:focus {
     outline: none;
-    border-color: $cofat-blue;
-    box-shadow: 0 0 0 3px rgba(0,74,153,.12);
+    border-color: $cofat-blue-main;
+    box-shadow: 0 0 0 4px rgba(0, 97, 255, 0.1);
   }
-
-  &:disabled { background: #f8f9fa; cursor: not-allowed; opacity: .7; }
 }
 
 .input-pw-wrap {
   position: relative;
-  .form-input { padding-right: 44px; }
-}
-
-.eye-btn {
-  position: absolute;
-  right: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: $text-muted;
-  display: flex;
-  align-items: center;
-  padding: 0;
-  &:hover { color: $cofat-blue; }
-}
-
-// Remember me
-.remember-row { margin-bottom: 24px; }
-
-.check-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.check-native { display: none; }
-
-.check-box {
-  width: 17px; height: 17px;
-  border: 2px solid $border;
-  border-radius: 4px;
-  flex-shrink: 0;
-  background: #fff;
-  transition: all .2s;
-
-  .check-native:checked + & {
-    background: $cofat-blue;
-    border-color: $cofat-blue;
+  .eye-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none; background: none; color: $text-muted; cursor: pointer;
   }
 }
 
-.check-label { font-size: .84rem; color: $text-muted; }
-
-// Bouton Sign In
+// Bouton principal (Style Home)
 .btn-signin {
   width: 100%;
-  height: 44px;
-  background: $teal;
+  height: 50px;
+  background: $cofat-blue-main;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  font-size: .95rem;
-  font-weight: 600;
-  letter-spacing: .3px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  transition: background .2s, transform .1s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 97, 255, 0.2);
 
-  &:hover:not(:disabled)  { background: $teal-h; }
-  &:active:not(:disabled) { transform: scale(.98); }
-  &:disabled              { opacity: .65; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    background: darken($cofat-blue-main, 5%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 97, 255, 0.3);
+  }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
-.btn-spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.blocked-note {
-  text-align: center;
-  font-size: .79rem;
-  color: $cofat-red;
-  font-weight: 600;
-  margin-top: 12px;
-  margin-bottom: 0;
-}
-
-// ── Responsive ────────────────────────────────────────────────────
-@media (max-width: 768px) {
-  .auth-left  { display: none; }
-  .auth-page  { background: #f3f3f9; }
-  .auth-right { padding: 40px 28px; }
+// Responsive
+@media (max-width: 850px) {
+  .auth-left { display: none; }
+  .auth-card { max-width: 450px; }
 }

@@ -64,7 +64,8 @@
                     </svg>
                     Éditer
                   </button>
-                  <button class="btn-action delete" (click)="deleteMenu(item.menuItemId)" title="Supprimer">
+                  <!-- MODIFIÉ : ouvre la modale de confirmation au lieu de confirm() -->
+                  <button class="btn-action delete" (click)="openDeleteConfirm(item)" title="Supprimer">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"/>
                       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -98,7 +99,62 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- ══════════════════════════════════════════════════════════
+     NOUVEAU : Modale confirmation suppression (style Velzon)
+     ══════════════════════════════════════════════════════════ -->
+@if (showDeleteConfirm) {
+  <div class="del-confirm-backdrop" (click)="cancelDelete()"></div>
+
+  <div class="del-confirm-modal">
+
+    <button class="del-confirm-close" (click)="cancelDelete()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- Icône animée -->
+    <div class="del-confirm-icon-wrap">
+      <div class="del-confirm-icon-ring"></div>
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round"
+           class="del-confirm-icon-svg">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </div>
+
+    <h5 class="del-confirm-title">Êtes-vous sûr ?</h5>
+    <p class="del-confirm-desc">
+      Vous allez supprimer le menu
+      <strong>« {{ menuToDelete?.label }} »</strong>.
+      Cette action est irréversible.
+    </p>
+
+    <div class="del-confirm-actions">
+      <button class="del-btn-cancel" (click)="cancelDelete()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Non, annuler
+      </button>
+      <button class="del-btn-confirm" (click)="confirmDelete()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        Oui, supprimer !
+      </button>
+    </div>
+
+  </div>
+}
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<!-- Modal Ajout / Édition -->
 @if (displayModal) {
   <div class="modal-backdrop-custom" (click)="displayModal=false"></div>
 
@@ -191,42 +247,45 @@
         </div>
 
         <!-- Icône -->
+        <div class="form-field full-width">
+          <label class="field-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Icône
+          </label>
 
-<div class="form-field full-width">
-  <label class="field-label">
-    <svg width="13" height="13" ...> ... </svg>
-    Icône
-  </label>
+          <input
+            class="field-input"
+            [(ngModel)]="iconSearch"
+            placeholder="Rechercher une icône (ex: home, users, settings)"
+          />
 
-  <input
-    class="field-input"
-    [(ngModel)]="iconSearch"
-    placeholder="Rechercher une icône (ex: home, users, settings)"
-  />
+          <div class="icon-selector-grid">
+            @for (icon of filteredIcons; track icon) {
+              <div
+                class="icon-item"
+                [class.selected]="newMenu.icon === icon"
+                (click)="selectIcon(icon)"
+                title="{{ icon }}"
+              >
+                <lucide-angular [name]="icon" size="24"></lucide-angular>
+              </div>
+            }
+            @if (filteredIcons.length === 0) {
+              <div class="no-icons">Aucune icône trouvée</div>
+            }
+          </div>
 
-  <div class="icon-selector-grid">
-    @for (icon of filteredIcons; track icon) {
-      <div
-        class="icon-item"
-        [class.selected]="newMenu.icon === icon"
-        (click)="selectIcon(icon)"
-        title="{{ icon }}"
-      >
-        <lucide-angular [name]="icon" size="24"></lucide-angular>
-      </div>
-    }
-    @if (filteredIcons.length === 0) {
-      <div class="no-icons">Aucune icône trouvée</div>
-    }
-  </div>
+          <div class="selected-icon-preview" *ngIf="newMenu.icon">
+            Icône sélectionnée : <lucide-angular [name]="newMenu.icon" size="20"></lucide-angular>
+            <code>{{ newMenu.icon }}</code>
+          </div>
 
-  <div class="selected-icon-preview" *ngIf="newMenu.icon">
-    Icône sélectionnée : <lucide-angular [name]="newMenu.icon" size="20"></lucide-angular>
-    <code>{{ newMenu.icon }}</code>
-  </div>
-
-  <span class="field-hint">Cliquez sur une icône pour la sélectionner</span>
-</div>
+          <span class="field-hint">Cliquez sur une icône pour la sélectionner</span>
+        </div>
 
         <!-- Toggle Sous-menu -->
         <div class="form-field full-width">
