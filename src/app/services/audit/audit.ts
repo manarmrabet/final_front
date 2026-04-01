@@ -9,7 +9,6 @@ import { environment } from '../../../environments/environment';
 export class AuditService {
   private http = inject(HttpClient);
 
-  // URL harmonisée avec votre controller actuel
   private readonly API = `${environment.baseUrl}/api/audit`;
 
   getLogs(filters: AuditFilter): Observable<ApiResponse<PageResponse<AuditLog>>> {
@@ -28,6 +27,14 @@ export class AuditService {
       params = params.set('userId', filters.userId.toString());
     }
 
+    // ── Filtres date ── les 2 lignes qui manquaient ────────
+    if (filters.from) {
+      params = params.set('from', filters.from.length === 16 ? filters.from + ':00' : filters.from);
+    }
+    if (filters.to) {
+      params = params.set('to', filters.to.length === 16 ? filters.to + ':00' : filters.to);
+    }
+
     return this.http.get<ApiResponse<PageResponse<AuditLog>>>(this.API, { params });
   }
 
@@ -44,12 +51,10 @@ export class AuditService {
     return this.http.get<ApiResponse<AuditLog[]>>(`${this.API}/user/${userId}/connections`);
   }
 
-  /** Lister les fichiers CSV */
   getArchives(): Observable<ApiResponse<string[]>> {
     return this.http.get<ApiResponse<string[]>>(`${this.API}/archives`);
   }
 
-  /** Télécharger un fichier via Blob pour inclure le Token JWT */
   downloadArchive(filename: string): Observable<Blob> {
     return this.http.get(`${this.API}/archives/download/${filename}`, {
       responseType: 'blob'
