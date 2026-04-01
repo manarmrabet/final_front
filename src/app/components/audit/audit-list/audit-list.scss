@@ -66,6 +66,48 @@ $font        : 'Poppins', sans-serif;
       .page-card-sub   { font-size: .75rem; color: $text-muted; margin: 2px 0 0; font-family: $font; }
     }}
 
+// ── Toggle View Buttons (Temps réel / Archives) ──────────
+.flex.space-x-2.bg-gray-100.p-1.rounded-lg {
+  display: inline-flex;
+  align-items: center;
+  background: $bg !important;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 4px !important;
+  gap: 4px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px !important;
+    border-radius: 7px;
+    font-size: 0.8rem !important;
+    font-weight: 500;
+    font-family: $font;
+    color: $text-muted;
+    background: transparent !important;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: none !important;
+
+    &:hover {
+      color: $text-dark;
+      background: rgba($border, 0.6) !important;
+    }
+
+    // État actif — bg-white + shadow-sm sont ajoutés dynamiquement par Angular
+    &.bg-white {
+      background: $white !important;
+      color: $primary !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 0 1px $border !important;
+    }
+  }
+}
+
 // ── Filtres ───────────────────────────────────────────────
 .filters-bar {
   padding: 16px 24px; border-bottom: 1px solid $border; background: $bg-soft;
@@ -300,4 +342,3 @@ $font        : 'Poppins', sans-serif;
   font-family: $font; cursor: pointer; font-weight: 500;
   &:hover { background: $bg; }
 }
-
