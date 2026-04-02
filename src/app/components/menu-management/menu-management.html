@@ -37,16 +37,25 @@
           </tr>
         </thead>
         <tbody>
+          <!-- ✅ PERF : track trackByMenuId → Angular réutilise les éléments DOM -->
           @for (item of menus(); track item.menuItemId) {
             <tr>
               <td><span class="row-id">{{ item.menuItemId }}</span></td>
               <td><span class="row-label">{{ item.label }}</span></td>
+
+              <!-- ✅ Icône : CSS class ou Lucide normalisé via pipe -->
               <td>
                 <span class="icon-badge">
-                  <i class="{{ item.icon }}"></i>
-                  {{ item.icon }}
+                  @if (isCustomCssClass(item.icon || '')) {
+                    <i [class]="item.icon"></i>
+                  } @else {
+                    <!-- ✅ pipe lucideIcon : normalise + cache → pas de recalcul -->
+                    <lucide-angular [name]="item.icon | lucideIcon" size="14"></lucide-angular>
+                  }
+                  <span class="icon-name-text">{{ item.icon }}</span>
                 </span>
               </td>
+
               <td><span class="link-text">{{ item.link }}</span></td>
               <td>
                 @if (item.parentId) {
@@ -64,7 +73,6 @@
                     </svg>
                     Éditer
                   </button>
-                  <!-- MODIFIÉ : ouvre la modale de confirmation au lieu de confirm() -->
                   <button class="btn-action delete" (click)="openDeleteConfirm(item)" title="Supprimer">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"/>
@@ -99,21 +107,15 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     NOUVEAU : Modale confirmation suppression (style Velzon)
-     ══════════════════════════════════════════════════════════ -->
+<!-- ══ Modale confirmation suppression ════════════════════════ -->
 @if (showDeleteConfirm) {
   <div class="del-confirm-backdrop" (click)="cancelDelete()"></div>
-
   <div class="del-confirm-modal">
-
     <button class="del-confirm-close" (click)="cancelDelete()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
-
-    <!-- Icône animée -->
     <div class="del-confirm-icon-wrap">
       <div class="del-confirm-icon-ring"></div>
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none"
@@ -126,14 +128,12 @@
         <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
       </svg>
     </div>
-
     <h5 class="del-confirm-title">Êtes-vous sûr ?</h5>
     <p class="del-confirm-desc">
       Vous allez supprimer le menu
       <strong>« {{ menuToDelete?.label }} »</strong>.
       Cette action est irréversible.
     </p>
-
     <div class="del-confirm-actions">
       <button class="del-btn-cancel" (click)="cancelDelete()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -149,15 +149,12 @@
         Oui, supprimer !
       </button>
     </div>
-
   </div>
 }
-<!-- ══════════════════════════════════════════════════════════ -->
 
-<!-- Modal Ajout / Édition -->
+<!-- ══ Modal Ajout / Édition ════════════════════════════════════ -->
 @if (displayModal) {
   <div class="modal-backdrop-custom" (click)="displayModal=false"></div>
-
   <div class="modal-custom">
 
     <!-- Header -->
@@ -178,7 +175,9 @@
         </div>
         <div>
           <h6>{{ isEditMode ? 'Modifier le menu' : 'Ajouter un menu' }}</h6>
-          <span class="modal-sub">{{ isEditMode ? 'Modifiez les informations du menu' : 'Remplissez les informations du nouveau menu' }}</span>
+          <span class="modal-sub">
+            {{ isEditMode ? 'Modifiez les informations du menu' : 'Remplissez les informations du nouveau menu' }}
+          </span>
         </div>
       </div>
       <button class="btn-close-custom" (click)="displayModal=false">
@@ -197,7 +196,11 @@
         <div class="preview-label">Aperçu</div>
         <div class="preview-content">
           <div class="preview-icon-wrap">
-            <i class="{{ newMenu.icon || 'feather icon-menu' }}"></i>
+            @if (isCustomCssClass(newMenu.icon || '')) {
+              <i [class]="newMenu.icon"></i>
+            } @else {
+              <lucide-angular [name]="newMenu.icon | lucideIcon" size="20"></lucide-angular>
+            }
           </div>
           <div class="preview-info">
             <span class="preview-name">{{ newMenu.label || 'Nom du menu' }}</span>
@@ -218,12 +221,8 @@
             </svg>
             Label <span class="required">*</span>
           </label>
-          <input
-            class="field-input"
-            [(ngModel)]="newMenu.label"
-            placeholder="ex: Dashboard"
-            [class.filled]="newMenu.label"
-          />
+          <input class="field-input" [(ngModel)]="newMenu.label"
+                 placeholder="ex: Dashboard" [class.filled]="newMenu.label"/>
         </div>
 
         <!-- Lien -->
@@ -237,16 +236,12 @@
           </label>
           <div class="input-prefix-wrap">
             <span class="input-prefix">/</span>
-            <input
-              class="field-input with-prefix"
-              [(ngModel)]="newMenu.link"
-              placeholder="ex: dashboard"
-              [class.filled]="newMenu.link"
-            />
+            <input class="field-input with-prefix" [(ngModel)]="newMenu.link"
+                   placeholder="ex: dashboard" [class.filled]="newMenu.link"/>
           </div>
         </div>
 
-        <!-- Icône -->
+        <!-- ══ Icône ══════════════════════════════════════════════ -->
         <div class="form-field full-width">
           <label class="field-label">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -257,35 +252,133 @@
             Icône
           </label>
 
-          <input
-            class="field-input"
-            [(ngModel)]="iconSearch"
-            placeholder="Rechercher une icône (ex: home, users, settings)"
-          />
+          <!-- Onglets -->
+          <div class="icon-mode-tabs">
+            <button type="button" class="icon-mode-tab"
+                    [class.active]="iconMode === 'grid'"
+                    (click)="switchIconMode('grid')">
+              <lucide-angular name="grid" size="13"></lucide-angular>
+              Bibliothèque
+            </button>
+            <button type="button" class="icon-mode-tab"
+                    [class.active]="iconMode === 'custom'"
+                    (click)="switchIconMode('custom')">
+              <lucide-angular name="pencil" size="13"></lucide-angular>
+              Nom personnalisé
+            </button>
+          </div>
 
-          <div class="icon-selector-grid">
-            @for (icon of filteredIcons; track icon) {
-              <div
-                class="icon-item"
-                [class.selected]="newMenu.icon === icon"
-                (click)="selectIcon(icon)"
-                title="{{ icon }}"
-              >
-                <lucide-angular [name]="icon" size="24"></lucide-angular>
+          <!-- MODE GRILLE -->
+          @if (iconMode === 'grid') {
+            <input class="field-input" [(ngModel)]="iconSearch"
+                   placeholder="Rechercher une icône (ex: home, users…)"/>
+
+            <div class="icon-catalog">
+              <!-- ✅ PERF : track trackByCatLabel sur les catégories -->
+              @for (cat of filteredCategories; track cat.label) {
+                <div class="icon-catalog-section">
+                  <span class="icon-catalog-label">{{ cat.label }}</span>
+                  <div class="icon-selector-grid">
+                    <!-- ✅ PERF : track trackByIcon sur les icônes -->
+                    @for (icon of cat.icons; track icon) {
+                      <div class="icon-item"
+                           [class.selected]="newMenu.icon === icon"
+                           (click)="selectIcon(icon)"
+                           [title]="icon">
+                        <lucide-angular [name]="icon | lucideIcon" size="20"></lucide-angular>
+                        <span class="icon-item-name">{{ icon }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (filteredCategories.length === 0) {
+                <div class="icon-no-result">
+                  <lucide-angular name="search-x" size="28"></lucide-angular>
+                  <p>Aucune icône trouvée pour <strong>"{{ iconSearch }}"</strong></p>
+                  <button type="button" class="btn-switch-custom"
+                          (click)="switchIconMode('custom')">
+                    <lucide-angular name="pencil" size="14"></lucide-angular>
+                    Utiliser ce nom comme icône personnalisée
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- MODE CUSTOM -->
+          @if (iconMode === 'custom') {
+            <div class="custom-icon-wrap">
+
+              <div class="custom-icon-hint">
+                <lucide-angular name="info" size="14"></lucide-angular>
+                <span>
+                  Entrez un nom Lucide, Feather ou toute classe CSS.<br>
+                  Exemples :
+                  <code>trending-up</code>,
+                  <code>feather icon-home</code>,
+                  <code>mdi mdi-account</code>
+                </span>
               </div>
-            }
-            @if (filteredIcons.length === 0) {
-              <div class="no-icons">Aucune icône trouvée</div>
-            }
-          </div>
 
-          <div class="selected-icon-preview" *ngIf="newMenu.icon">
-            Icône sélectionnée : <lucide-angular [name]="newMenu.icon" size="20"></lucide-angular>
-            <code>{{ newMenu.icon }}</code>
-          </div>
+              <div class="custom-icon-input-row">
+                <input class="field-input"
+                       [(ngModel)]="customIconInput"
+                       (ngModelChange)="onCustomIconChange()"
+                       placeholder="ex: feather icon-home  ou  trending-up"/>
 
-          <span class="field-hint">Cliquez sur une icône pour la sélectionner</span>
+                <div class="custom-icon-preview"
+                     [class.has-icon]="customIconInput.trim()">
+                  @if (customIconInput.trim()) {
+                    @if (isCustomCssClass(customIconInput)) {
+                      <i [class]="customIconInput.trim()"></i>
+                    } @else {
+                      <lucide-angular [name]="customIconInput.trim() | lucideIcon"
+                                      size="24"></lucide-angular>
+                    }
+                  } @else {
+                    <lucide-angular name="image-off" size="20"></lucide-angular>
+                  }
+                </div>
+              </div>
+
+              @if (customIconInput.trim()) {
+                <div class="icon-type-badge"
+                     [class.css]="isCustomCssClass(customIconInput)"
+                     [class.lucide]="!isCustomCssClass(customIconInput)">
+                  @if (isCustomCssClass(customIconInput)) {
+                    <lucide-angular name="code-2" size="12"></lucide-angular>
+                    Classe CSS — rendu via <code>&lt;i class="..."&gt;</code>
+                  } @else {
+                    <lucide-angular name="zap" size="12"></lucide-angular>
+                    Icône Lucide — rendu natif
+                  }
+                </div>
+              }
+
+              <span class="field-hint">
+                La prévisualisation s'adapte selon le type détecté automatiquement.
+              </span>
+            </div>
+          }
+
+          @if (newMenu.icon) {
+            <div class="selected-icon-preview">
+              @if (isCustomCssClass(newMenu.icon)) {
+                <i [class]="newMenu.icon" style="font-size:16px"></i>
+              } @else {
+                <lucide-angular [name]="newMenu.icon | lucideIcon" size="16"></lucide-angular>
+              }
+              Icône active : <code>{{ newMenu.icon }}</code>
+            </div>
+          }
+
+          <span class="field-hint" style="margin-top:4px">
+            Cliquez sur une icône pour la sélectionner, ou saisissez un nom personnalisé.
+          </span>
         </div>
+        <!-- ════════════════════════════════════════════════════ -->
 
         <!-- Toggle Sous-menu -->
         <div class="form-field full-width">
@@ -303,13 +396,12 @@
               </div>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" [(ngModel)]="isSubMenu" (change)="onSubMenuToggle()" />
+              <input type="checkbox" [(ngModel)]="isSubMenu" (change)="onSubMenuToggle()"/>
               <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
 
-        <!-- Menu parent -->
         @if (isSubMenu) {
           <div class="form-field full-width" style="animation: slideDown 0.25s ease">
             <label class="field-label">

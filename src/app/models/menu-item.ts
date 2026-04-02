@@ -4,8 +4,8 @@ export interface MenuItemDTO {
   icon: string;
   link: string;
   parentId?: number | null;
-  isTitle?: number;
-  isLayout?: number;
+  isTitle?: boolean;
+  isLayout?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
