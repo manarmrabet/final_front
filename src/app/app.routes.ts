@@ -70,6 +70,11 @@ export const routes: Routes = [
         loadComponent: () => import('./components/card-management/card-management').then(m => m.CardManagementComponent)
       },
       {
+        path: 'inventory',
+        canActivate: [authGuard, lockGuard],
+        loadComponent: () => import('./components/inventory/inventory').then(m => m.InventoryComponent)
+      },
+      {
   path: 'transfers/archives',
   loadComponent: () =>
     import('./components/transfer-archives/transfer-archives')

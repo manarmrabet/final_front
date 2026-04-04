@@ -1,12 +1,17 @@
-// src/app/services/transfer/archive.service.ts
+// src/app/services/transfer/Archive.service.ts
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { TransferResponse } from '../../models/transfer.model';
-import { PagedResponse } from './transfer.service';
 import { environment } from '../../../environments/environment';
+
+export interface ArchiveFile {
+  fileName:  string;
+  period:    string;   // Ex : "Mars 2025"
+  createdAt: string;   // Ex : "01/04/2025 02:00"
+  sizeKb:    number;
+}
 
 interface ApiResponse<T> {
   success: boolean;
@@ -14,119 +19,68 @@ interface ApiResponse<T> {
   data:    T;
 }
 
-export interface ArchiveSearchParams {
-  status?:   string;
-  itemCode?: string;
-  location?: string;
-  from?:     string;
-  to?:       string;
-  page?:     number;
-  size?:     number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class ArchiveService {
 
   private readonly api = environment.baseUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   /**
-   * Recherche paginée dans les archives.
-   * Endpoint : GET /api/transfers/archives/search
+   * Récupère la liste des fichiers CSV d'archives disponibles.
+   * GET /api/transfers/archives/files
    */
-  search(params: ArchiveSearchParams): Observable<PagedResponse<TransferResponse>> {
-    let p = new HttpParams()
-      .set('page', params.page ?? 0)
-      .set('size', params.size ?? 20);
-
-    if (params.status)   p = p.set('status',   params.status);
-    if (params.itemCode) p = p.set('itemCode', params.itemCode);
-    if (params.location) p = p.set('location', params.location);
-    if (params.from)     p = p.set('from',     params.from);
-    if (params.to)       p = p.set('to',       params.to);
-
+  listFiles(): Observable<ArchiveFile[]> {
     return this.http
-      .get<ApiResponse<PagedResponse<TransferResponse>>>(
-        `${this.api}/api/transfers/archives/search`, { params: p }
-      )
+      .get<ApiResponse<ArchiveFile[]>>(`${this.api}/api/transfers/archives/files`)
       .pipe(map(r => r.data));
   }
 
   /**
-   * Déclenche le téléchargement CSV des archives via le navigateur.
-   * Endpoint : GET /api/transfers/archives/export/csv
-   *
-   * Utilise window.open pour déclencher le téléchargement natif
-   * (le backend renvoie Content-Disposition: attachment).
+   * Télécharge un fichier CSV via fetch (pour envoyer le token JWT).
+   * GET /api/transfers/archives/files/{fileName}
    */
-  // src/app/services/transfer/archive.service.ts
+  downloadFile(fileName: string): void {
+    const url   = `${this.api}/api/transfers/archives/files/${encodeURIComponent(fileName)}`;
+    const token =
+      localStorage.getItem('jwt_token')    ||
+      localStorage.getItem('token')        ||
+      localStorage.getItem('access_token') ||
+      localStorage.getItem('auth_token')   ||
+      sessionStorage.getItem('jwt_token');
 
-/**
- * Export CSV avec gestion robuste du token JWT
- */
-downloadCsv(params: ArchiveSearchParams): void {
-  let p = new HttpParams();
+    if (!token) {
+      alert('Vous devez être connecté pour télécharger une archive.');
+      return;
+    }
 
-  if (params.status)   p = p.set('status', params.status);
-  if (params.itemCode) p = p.set('itemCode', params.itemCode);
-  if (params.location) p = p.set('location', params.location);
-  if (params.from)     p = p.set('from', params.from);
-  if (params.to)       p = p.set('to', params.to);
-
-  const baseUrl = `${this.api}/api/transfers/archives/export/csv`;
-  const url = p.toString() ? `${baseUrl}?${p.toString()}` : baseUrl;
-
-  // === RÉCUPÉRATION DU TOKEN (à adapter selon ton authentification) ===
-  const token = 
-    localStorage.getItem('jwt_token') ||
-    localStorage.getItem('token') ||
-    localStorage.getItem('access_token') ||
-    localStorage.getItem('auth_token') ||
-    sessionStorage.getItem('jwt_token');
-
-  if (!token) {
-    console.error('❌ Aucun token JWT trouvé dans localStorage/sessionStorage');
-    console.log('Clés disponibles dans localStorage:', Object.keys(localStorage));
-    alert('Vous devez être connecté pour exporter les archives.');
-    return;
+    fetch(url, {
+      method:  'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept':        'text/csv;charset=UTF-8'
+      }
+    })
+    .then(async response => {
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`HTTP ${response.status} — ${text || response.statusText}`);
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a           = document.createElement('a');
+      a.href            = downloadUrl;
+      a.download        = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+    })
+    .catch(error => {
+      console.error('❌ Erreur téléchargement archive :', error);
+      alert(`Erreur lors du téléchargement :\n${error.message}`);
+    });
   }
-
-  console.log('✅ Token trouvé, longueur:', token.length);
-
-  // Téléchargement via fetch avec Authorization header
-  fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'text/csv;charset=UTF-8'
-    }
-  })
-  .then(async response => {
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP ${response.status} - ${text || response.statusText}`);
-    }
-    return response.blob();
-  })
-  .then(blob => {
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    
-    const filename = `transferts_archives_${new Date().toISOString().slice(0,10)}.csv`;
-    
-    a.href = downloadUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(downloadUrl);
-
-    console.log(`✅ Fichier CSV téléchargé : ${filename}`);
-  })
-  .catch(error => {
-    console.error('❌ Erreur export CSV:', error);
-    alert(`Erreur lors du téléchargement :\n${error.message}`);
-  });
-}
 }
