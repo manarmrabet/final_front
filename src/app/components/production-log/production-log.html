@@ -1,0 +1,259 @@
+<div class="page-wrap">
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon"><i class="bi bi-arrow-up-circle"></i></div>
+      <div>
+        <h1 class="page-title">Sorties Production</h1>
+        <p class="page-subtitle">
+          Historique complet · {{ logs.length }} opérations
+          <span class="live-dot" *ngIf="autoRefresh" title="Actualisation auto"></span>
+        </p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" [class.btn-active]="autoRefresh"
+              (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
+        <i class="bi bi-arrow-repeat" [class.spin]="autoRefresh"></i>
+      </button>
+      <button class="btn-outline" (click)="exportCsv()">
+        <i class="bi bi-download"></i> CSV
+      </button>
+      <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
+        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ SKELETONS ════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="isLoading">
+    <div class="kpi-grid">
+      <div class="kpi-skel" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isLoading">
+
+    <!-- ══ KPI ══════════════════════════════════════════════════════════ -->
+    <div class="kpi-grid">
+      <div class="kpi blue">
+        <i class="bi bi-arrow-up-circle kpi-icon"></i>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ totalOpsToday }}</span>
+          <span class="kpi-lbl">Sorties aujourd'hui</span>
+          <span class="kpi-sub">opérations réussies</span>
+        </div>
+      </div>
+      <div class="kpi teal">
+        <i class="bi bi-layers kpi-icon"></i>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ totalQtyToday | number }}</span>
+          <span class="kpi-lbl">Quantité sortie</span>
+          <span class="kpi-sub">unités aujourd'hui</span>
+        </div>
+      </div>
+      <div class="kpi green">
+        <i class="bi bi-archive kpi-icon"></i>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ lotsVidesToday }}</span>
+          <span class="kpi-lbl">Lots vidés</span>
+          <span class="kpi-sub">sorties totales</span>
+        </div>
+      </div>
+      <div class="kpi red" [class.kpi-alert]="failedToday > 0">
+        <i class="bi bi-exclamation-triangle kpi-icon"></i>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ failedToday }}</span>
+          <span class="kpi-lbl">Erreurs</span>
+          <span class="kpi-sub">opérations échouées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ OPÉRATEURS ═══════════════════════════════════════════════════ -->
+    <div class="section-card" *ngIf="stats?.operatorStats?.length">
+      <div class="section-hd">
+        <h3>Activité des Opérateurs</h3>
+        <span class="badge-count">{{ stats.operatorStats.length }} opérateur(s)</span>
+      </div>
+      <div class="ops-grid">
+        <div class="op-card" *ngFor="let op of stats.operatorStats; let i = index">
+          <div class="op-rank">#{{ i + 1 }}</div>
+          <div class="op-av">{{ op.userName?.charAt(0)?.toUpperCase() || 'U' }}</div>
+          <div class="op-info">
+            <span class="op-name">{{ op.userName }}</span>
+            <span class="op-meta">{{ op.nbOps }} ops · {{ op.totalQty | number }} unités</span>
+          </div>
+          <div class="op-badge">{{ op.nbOps }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FILTRES ═══════════════════════════════════════════════════════ -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" [(ngModel)]="searchTerm"
+               placeholder="Lot, article, magasin, opérateur..." class="search-in">
+        <button *ngIf="searchTerm" class="clear-x" (click)="searchTerm=''">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <select [(ngModel)]="selectedType"   class="f-sel">
+        <option value="">Tous les types</option>
+        <option value="TOTALE">Totale</option>
+        <option value="PARTIELLE">Partielle</option>
+      </select>
+      <select [(ngModel)]="selectedStatus" class="f-sel">
+        <option value="">Tous statuts</option>
+        <option value="SUCCESS">Succès</option>
+        <option value="FAILED">Échec</option>
+      </select>
+      <select [(ngModel)]="selectedSource" class="f-sel">
+        <option value="">Toutes sources</option>
+        <option value="MOBILE">Mobile</option>
+        <option value="WEB">Web</option>
+      </select>
+      <select [(ngModel)]="selectedUser"   class="f-sel">
+        <option value="">Tous opérateurs</option>
+        <option *ngFor="let u of uniqueUsers" [value]="u">{{ u }}</option>
+      </select>
+      <label class="toggle-lbl">
+        <input type="checkbox" [(ngModel)]="todayOnly"> Aujourd'hui
+      </label>
+      <button class="btn-sm" (click)="clearFilters()">
+        <i class="bi bi-x-circle"></i> Réinitialiser
+      </button>
+      <span class="res-count">{{ filteredLogs.length }} résultat(s)</span>
+    </div>
+
+    <!-- ══ TABLE ═════════════════════════════════════════════════════════ -->
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Date / Heure</th>
+            <th>Opérateur</th>
+            <th>Lot</th>
+            <th>Article</th>
+            <th>Magasin</th>
+            <th class="tc">Type</th>
+            <th class="tr">Avant</th>
+            <th class="tr">Sortie</th>
+            <th class="tr">Après</th>
+            <th class="tc">Source</th>
+            <th class="tc">Statut</th>
+            <th class="tc">Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of filteredLogs; trackBy: trackByLog"
+              class="tbl-row"
+              [class.row-fail]="l.status === 'FAILED'"
+              [class.row-vide]="l.stockVide && l.status === 'SUCCESS'">
+
+            <td>
+              <div class="dt-block">
+                <span class="dt-d">{{ l.createdAt?.slice(0,10) }}</span>
+                <span class="dt-t">{{ l.createdAt?.slice(11,19) }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="user-row">
+                <div class="av-sm">{{ l.userName?.charAt(0)?.toUpperCase()||'U' }}</div>
+                <span>{{ l.userName }}</span>
+              </div>
+            </td>
+            <td><code class="lot-tag">{{ l.lotCode }}</code></td>
+            <td><span class="item-txt">{{ l.itemCode }}</span></td>
+            <td><span class="wh-pill">{{ l.warehouse }}</span></td>
+            <td class="tc">
+              <span class="type-pill"
+                [class.t-total]="l.operationType==='TOTALE'"
+                [class.t-part]="l.operationType==='PARTIELLE'">
+                {{ l.operationType === 'TOTALE' ? '● Total' : '◐ Partiel' }}
+              </span>
+            </td>
+            <td class="tr mono">{{ l.qtyBefore | number }}</td>
+            <td class="tr mono qty-out">−{{ l.qtyRequested | number }}</td>
+            <td class="tr mono" [class.qty-zero]="l.qtyAfter === 0">
+              {{ l.qtyAfter | number }}
+            </td>
+            <td class="tc">
+              <span class="src-pill" [class.src-mob]="l.source==='MOBILE'">
+                <i [class]="l.source==='MOBILE'?'bi bi-phone':'bi bi-display'"></i>
+                {{ l.source }}
+              </span>
+            </td>
+            <td class="tc">
+              <span class="status-dot"
+                [class.dot-ok]="l.status==='SUCCESS'"
+                [class.dot-ko]="l.status==='FAILED'"
+                [title]="l.status==='FAILED'?(l.errorMessage||'Erreur'):'Succès'">
+              </span>
+            </td>
+            <td class="tc">
+              <button class="btn-detail" (click)="openDetail(l)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredLogs.length === 0">
+            <td colspan="12" class="empty-st">
+              <i class="bi bi-inbox"></i>
+              <span>Aucune opération enregistrée</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- ══ PANEL DÉTAIL ═════════════════════════════════════════════════════ -->
+  <div class="detail-overlay" *ngIf="selectedLog" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <div class="detail-hd">
+        <h3>Détail opération #{{ selectedLog.id }}</h3>
+        <button class="btn-close" (click)="closeDetail()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="detail-body">
+        <div class="det-row"><span>Lot</span><code>{{ selectedLog.lotCode }}</code></div>
+        <div class="det-row"><span>Article</span><strong>{{ selectedLog.itemCode }}</strong></div>
+        <div class="det-row"><span>Magasin</span><span>{{ selectedLog.warehouse }}</span></div>
+        <div class="det-row"><span>Emplacement</span><span>{{ selectedLog.location }}</span></div>
+        <div class="det-row"><span>Type</span>
+          <span class="type-pill" [class.t-total]="selectedLog.operationType==='TOTALE'"
+                [class.t-part]="selectedLog.operationType==='PARTIELLE'">
+            {{ selectedLog.operationType }}
+          </span>
+        </div>
+        <div class="det-divider"></div>
+        <div class="det-row"><span>Qté avant</span><strong>{{ selectedLog.qtyBefore | number }}</strong></div>
+        <div class="det-row"><span>Qté sortie</span>
+          <strong class="qty-out">−{{ selectedLog.qtyRequested | number }}</strong>
+        </div>
+        <div class="det-row"><span>Qté après</span>
+          <strong [class.qty-zero]="selectedLog.qtyAfter===0">
+            {{ selectedLog.qtyAfter | number }}
+          </strong>
+        </div>
+        <div class="det-divider"></div>
+        <div class="det-row"><span>Opérateur</span><strong>{{ selectedLog.userName }}</strong></div>
+        <div class="det-row"><span>Source</span><span>{{ selectedLog.source }}</span></div>
+        <div class="det-row"><span>Appareil</span><span>{{ selectedLog.deviceInfo || '—' }}</span></div>
+        <div class="det-row"><span>Date</span><span>{{ selectedLog.createdAt }}</span></div>
+        <div class="det-row" *ngIf="selectedLog.notes">
+          <span>Notes</span><span>{{ selectedLog.notes }}</span>
+        </div>
+        <div class="det-row det-err" *ngIf="selectedLog.errorMessage">
+          <span>Erreur</span><span>{{ selectedLog.errorMessage }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
