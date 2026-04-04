@@ -90,6 +90,10 @@ export const routes: Routes = [
           { path: 'consultation', component: StockConsultationComponent, title: 'Consultation Stock' },
         ]
       },
+      {
+        path: 'production-log',
+        loadComponent: () => import('./components/production-log/production-log').then(m => m.ProductionLogComponent)
+      },
 
       {
         path: '**',
