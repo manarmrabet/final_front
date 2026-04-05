@@ -30,4 +30,22 @@ export const API = {
     BY_ID:  (id: number) => `${BASE}/audit-logs/${id}`,
     EXPORT: `${BASE}/audit-logs/export`,
   },
+  // ====================== INVENTORY ======================
+  INVENTORY: {
+    BASE: `${BASE}/inventory`,
+    SESSIONS: {
+      BASE: `${BASE}/inventory/sessions`,
+      BY_ID: (id: number) => `${BASE}/inventory/sessions/${id}`,
+      LINES: (sessionId: number) => `${BASE}/inventory/sessions/${sessionId}/lines`,
+      EXPORT_COLLECT: (sessionId: number) => `${BASE}/inventory/sessions/${sessionId}/export/collect`,
+      EXPORT_REPORT: (sessionId: number) => `${BASE}/inventory/sessions/${sessionId}/export/report`,
+      REPORT: (sessionId: number) => `${BASE}/inventory/sessions/${sessionId}/report`,
+      VALIDATE: (sessionId: number) => `${BASE}/inventory/sessions/${sessionId}/validate`,
+    },
+    TEMPLATES: `${BASE}/inventory/templates`,
+    ERP: {
+      WAREHOUSES: `${BASE}/inventory/erp/warehouses`,
+      LOCATIONS: (warehouseCode: string) => `${BASE}/inventory/erp/locations?warehouseCode=${warehouseCode}`,
+    },
+  },
 };

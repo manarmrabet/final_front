@@ -1,16 +1,16 @@
-// src/app/components/inventory/inventory.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
+import { API } from '../../utils/api-endpoints';
 import {
   InventorySession, CollectLine, CollectTemplate,
   InventoryReport, ReportLine, CreateSessionRequest, AddCollectLineRequest
 } from '../../models/inventory.model';
 
 type ReportFilter = 'ALL' | 'CONFORME' | 'ECART' | 'MANQUANT' | 'SURPLUS';
-const REPORT_FILTERS: ReportFilter[] = ['ALL', 'CONFORME', 'ECART', 'MANQUANT', 'SURPLUS'];
-type ViewMode = 'sessions' | 'lines' | 'report';
+const FILTERS: ReportFilter[] = ['ALL', 'CONFORME', 'ECART', 'MANQUANT', 'SURPLUS'];
+type View = 'sessions' | 'lines' | 'report';
 
 @Component({
   selector: 'app-inventory',
@@ -21,348 +21,404 @@ type ViewMode = 'sessions' | 'lines' | 'report';
 })
 export class InventoryComponent implements OnInit {
 
-  // ── View state ─────────────────────────────────────────────────
-  view: ViewMode = 'sessions';
-  loading = false;
-  saving  = false;
-  errorMsg   = '';
-  successMsg = '';
+  view: View = 'sessions';
+  loadingSessions = true;
+  loadingLines    = false;
+  loadingReport   = false;
+  saving          = false;
+  errorMsg        = '';
+  successMsg      = '';
 
-  // ── Data ───────────────────────────────────────────────────────
-  sessions:        InventorySession[] = [];
+  sessions:        InventorySession[]  = [];
   selectedSession: InventorySession | null = null;
-  lines:           CollectLine[] = [];
-  templates:       CollectTemplate[] = [];
+  lines:           CollectLine[]       = [];
+  templates:       CollectTemplate[]   = [];
   report:          InventoryReport | null = null;
-  erpWarehouses:   string[] = [];
+  reportNotFound   = false;
+  erpWarehouses:   string[]            = [];
 
-  // ── Modals ─────────────────────────────────────────────────────
-  showCreateModal  = false;
-  showTemplateModal = false;
-  showCollectModal  = false;
-  showValidateModal = false;
+  showCreate   = false;
+  showTemplate = false;
+  showCollect  = false;
+  showValidate = false;
 
-  // ── Forms ──────────────────────────────────────────────────────
   newSession: CreateSessionRequest = { name: '', warehouseCode: '', warehouseLabel: '' };
-  collectLocationCode = '';
+  collectLoc    = '';
   collectValues: Record<string, string> = {};
-  collectTemplate: CollectTemplate | null = null;
-  newTemplateName = '';
-  newTemplateFields: string[] = ['ARTICLE', 'LOT', 'QUANTITE'];
-  newFieldInput = '';
+  activeTemplate: CollectTemplate | null = null;
+  tplName   = '';
+  tplFields: string[] = ['ARTICLE', 'LOT', 'QUANTITE'];
+  tplInput  = '';
 
-  // ── Pagination collecte ────────────────────────────────────────
-  collectPage     = 1;
-  collectPageSize = 10;
+  linesPage = 1; linesPageSize = 10;
+  rptPage   = 1; rptPageSize   = 15;
+  rptFilter: ReportFilter = 'ALL';
+  readonly rptFilters = FILTERS;
 
-  // ── Pagination rapport ─────────────────────────────────────────
-  reportPage     = 1;
-  reportPageSize = 15;
-  reportFilter: ReportFilter = 'ALL';
-  readonly reportFilters = REPORT_FILTERS;
+  get uniqueLocationsCount(): number {
+    return this.lines.length === 0 ? 0 : new Set(this.lines.map(l => l.locationCode)).size;
+  }
+
+  get activeTemplateName(): string {
+    return this.activeTemplate?.name || 'Aucun';
+  }
 
   constructor(private svc: InventoryService) {}
 
   ngOnInit(): void {
-    this.loadAll();
+    this.loadSessions();
+    this.loadTemplatesAndWarehouses();
   }
 
-  private loadAll(): void {
-    this.loading = true;
-    this.svc.getSessions().subscribe({
-      next: s => { this.sessions = s; this.loading = false; },
-      error: () => { this.error('Erreur chargement sessions'); this.loading = false; }
-    });
+  private loadTemplatesAndWarehouses(): void {
     this.svc.getTemplates().subscribe({
-      next: t => { this.templates = t; this.collectTemplate = t[0] ?? null; }
+      next: t => { this.templates = t; this.activeTemplate = t[0] ?? null; },
+      error: () => console.warn('Templates non chargés')
     });
+
     this.svc.getErpWarehouses().subscribe({
-      next: w => { this.erpWarehouses = w; }
+      next: w => this.erpWarehouses = w
     });
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // SESSIONS
-  // ════════════════════════════════════════════════════════════════
+  loadSessions(): void {
+    this.loadingSessions = true;
+    this.svc.getSessions().subscribe({
+      next: (s) => {
+        this.sessions = s || [];
+        this.loadingSessions = false;
+      },
+      error: (err) => {
+        console.error('Erreur sessions:', err);
+        this.sessions = [];
+        this.loadingSessions = false;
+        this.err('Impossible de charger les sessions');
+      }
+    });
+  }
 
-  openCreateModal(): void {
+  // ====================== SESSIONS ======================
+  openCreate(): void {
     this.newSession = { name: '', warehouseCode: '', warehouseLabel: '' };
-    this.errorMsg = '';
-    this.showCreateModal = true;
+    this.showCreate = true;
   }
 
   createSession(): void {
     if (!this.newSession.name?.trim() || !this.newSession.warehouseCode?.trim()) {
-      this.error('Nom et magasin obligatoires'); return;
+      this.err('Nom et magasin obligatoires'); return;
     }
     this.saving = true;
     this.svc.createSession(this.newSession).subscribe({
       next: s => {
         this.sessions.unshift(s);
-        this.showCreateModal = false;
+        this.showCreate = false;
         this.saving = false;
-        this.success(`Session "${s.name}" créée`);
+        this.ok(`Session "${s.name}" créée`);
       },
-      error: e => { this.error(e?.error?.message || 'Erreur création'); this.saving = false; }
-    });
-  }
-
-  // ── Valider session avec confirmation ──────────────────────────
-  confirmValidate(session: InventorySession, e?: Event): void {
-    e?.stopPropagation();
-    this.selectedSession = session;
-    this.showValidateModal = true;
-  }
-
-  doValidateSession(): void {
-    if (!this.selectedSession) return;
-    this.saving = true;
-    this.svc.validateSession(this.selectedSession.id).subscribe({
-      next: updated => {
-        this.updateSessionInList(updated);
-        this.selectedSession = updated;
-        this.showValidateModal = false;
+      error: e => {
+        this.err(e?.error?.message || 'Erreur création');
         this.saving = false;
-        this.success('Session validée ✅');
-        // Si on est dans la vue lignes, rester dedans mais rafraîchir l'état
-        if (this.view === 'lines') {
-          // pas besoin de recharger les lignes, juste mettre à jour le statut
-        }
-      },
-      error: e => { this.error(e?.error?.message || 'Erreur validation'); this.saving = false; }
-    });
-  }
-
-  private updateSessionInList(updated: InventorySession): void {
-    const idx = this.sessions.findIndex(s => s.id === updated.id);
-    if (idx !== -1) this.sessions[idx] = updated;
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // LIGNES DE COLLECTE
-  // ════════════════════════════════════════════════════════════════
-
-  openSession(session: InventorySession): void {
-    this.selectedSession = session;
-    this.collectTemplate = this.templates[0] ?? null;
-    this.resetCollectForm();
-    this.collectPage = 1;
-    this.view = 'lines';
-    this.loading = true;
-    this.svc.getLines(session.id).subscribe({
-      next: l => { this.lines = l; this.loading = false; },
-      error: () => { this.error('Erreur chargement lignes'); this.loading = false; }
-    });
-  }
-
-  openCollectModal(): void {
-    if (!this.collectTemplate) { this.error('Créez d\'abord un template'); return; }
-    this.resetCollectForm();
-    this.errorMsg = '';
-    this.showCollectModal = true;
-  }
-
-  resetCollectForm(): void {
-    this.collectLocationCode = '';
-    this.collectValues = {};
-    if (this.collectTemplate) {
-      for (const f of this.collectTemplate.fields) this.collectValues[f] = '';
-    }
-  }
-
-  addLineFromWeb(): void {
-    if (!this.collectLocationCode.trim()) { this.error('Emplacement obligatoire'); return; }
-    for (const f of this.collectTemplate!.fields) {
-      if (!this.collectValues[f]?.trim()) { this.error(`"${f}" obligatoire`); return; }
-    }
-    this.saving = true;
-    const req: AddCollectLineRequest = {
-      sessionId:    this.selectedSession!.id,
-      locationCode: this.collectLocationCode.trim().toUpperCase(),
-      locationLabel: '',
-      values: { ...this.collectValues }
-    };
-    this.svc.addLine(req).subscribe({
-      next: line => {
-        this.lines.unshift(line);
-        // Mettre à jour le compteur de la session sans rechargement
-        if (this.selectedSession) {
-          this.selectedSession = { ...this.selectedSession, totalLines: this.lines.length };
-          this.updateSessionInList(this.selectedSession);
-        }
-        this.showCollectModal = false;
-        this.saving = false;
-        this.success('Ligne ajoutée');
-      },
-      error: e => { this.error(e?.error?.message || 'Erreur ajout'); this.saving = false; }
-    });
-  }
-
-  deleteLine(lineId: number): void {
-    if (!confirm('Supprimer cette ligne ?')) return;
-    this.svc.deleteLine(lineId).subscribe({
-      next: () => {
-        this.lines = this.lines.filter(l => l.id !== lineId);
-        if (this.selectedSession) {
-          this.selectedSession = { ...this.selectedSession, totalLines: this.lines.length };
-          this.updateSessionInList(this.selectedSession);
-        }
       }
     });
   }
 
-  // Pagination collecte
+  askValidate(s: InventorySession, e?: Event): void {
+    e?.stopPropagation();
+    this.selectedSession = s;
+    this.showValidate = true;
+  }
+
+  confirmValidate(): void {
+    if (!this.selectedSession) return;
+    this.saving = true;
+    this.svc.validateSession(this.selectedSession.id).subscribe({
+      next: updated => {
+        this._patchSession(updated);
+        this.selectedSession = updated;
+        this.showValidate = false;
+        this.saving = false;
+        this.ok('Session validée ✅');
+      },
+      error: e => {
+        this.err(e?.error?.message || 'Erreur validation');
+        this.saving = false;
+      }
+    });
+  }
+
+  private _patchSession(s: InventorySession): void {
+    const i = this.sessions.findIndex(x => x.id === s.id);
+    if (i !== -1) this.sessions[i] = s;
+  }
+
+  // ====================== LIGNES ======================
+  openLines(s: InventorySession): void {
+    this.selectedSession = s;
+    this.view = 'lines';
+    this.lines = [];
+    this.linesPage = 1;
+    this.loadingLines = true;
+
+    this.svc.getLines(s.id).subscribe({
+      next: l => {
+        this.lines = l || [];
+        this.loadingLines = false;
+      },
+      error: () => {
+        this.err('Erreur chargement de la collecte');
+        this.loadingLines = false;
+      }
+    });
+  }
+
+  openCollectModal(): void {
+    if (!this.activeTemplate) {
+      this.err('Créez d’abord un template');
+      return;
+    }
+    this.collectLoc = '';
+    this.collectValues = {};
+    this.activeTemplate.fields.forEach(f => this.collectValues[f] = '');
+    this.showCollect = true;
+  }
+
+  addLine(): void {
+    if (!this.collectLoc.trim()) { this.err('Emplacement obligatoire'); return; }
+    for (const f of this.activeTemplate!.fields) {
+      if (!this.collectValues[f]?.trim()) { this.err(`"${f}" obligatoire`); return; }
+    }
+
+    this.saving = true;
+    const req: AddCollectLineRequest = {
+      sessionId: this.selectedSession!.id,
+      locationCode: this.collectLoc.trim().toUpperCase(),
+      locationLabel: '',
+      values: { ...this.collectValues }
+    };
+
+    this.svc.addLine(req).subscribe({
+      next: line => {
+        this.lines.unshift(line);
+        this._patchSession({ ...this.selectedSession!, totalLines: this.lines.length });
+        this.showCollect = false;
+        this.saving = false;
+        this.ok('Ligne ajoutée');
+      },
+      error: e => {
+        this.err(e?.error?.message || 'Erreur ajout');
+        this.saving = false;
+      }
+    });
+  }
+
+  delLine(id: number): void {
+    if (!confirm('Supprimer cette ligne ?')) return;
+    this.svc.deleteLine(id).subscribe({
+      next: () => {
+        this.lines = this.lines.filter(l => l.id !== id);
+        if (this.selectedSession) this.selectedSession.totalLines = this.lines.length;
+      }
+    });
+  }
+
   get pagedLines(): CollectLine[] {
-    const start = (this.collectPage - 1) * this.collectPageSize;
-    return this.lines.slice(start, start + this.collectPageSize);
+    const start = (this.linesPage - 1) * this.linesPageSize;
+    return this.lines.slice(start, start + this.linesPageSize);
   }
 
-  get collectTotalPages(): number {
-    return Math.max(1, Math.ceil(this.lines.length / this.collectPageSize));
+  get linesTotalPages(): number {
+    return Math.max(1, Math.ceil(this.lines.length / this.linesPageSize));
   }
 
-  getUniqueLocations(): string[] {
-    return [...new Set(this.lines.map(l => l.locationCode))];
+  lineHeaders(): string[] {
+    return this.lines.length > 0 ? Object.keys(this.lines[0].values) : [];
   }
 
-  getLinesByLocation(loc: string): CollectLine[] {
-    return this.lines.filter(l => l.locationCode === loc);
-  }
-
-  getHeadersForLocation(loc: string): string[] {
-    const l = this.getLinesByLocation(loc);
-    return l.length > 0 ? Object.keys(l[0].values) : [];
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // RAPPORT
-  // ════════════════════════════════════════════════════════════════
-
-  openReport(session: InventorySession): void {
-    this.selectedSession = session;
+  // ====================== RAPPORT ======================
+  openReport(s: InventorySession): void {
+    this.selectedSession = s;
     this.view = 'report';
     this.report = null;
-    this.reportPage = 1;
-    this.reportFilter = 'ALL';
-    this.loading = true;
-    this.svc.getReport(session.id).subscribe({
-      next: r => { this.report = r; this.loading = false; },
-      error: () => { this.report = null; this.loading = false; }
+    this.reportNotFound = false;
+    this.rptPage = 1;
+    this.rptFilter = 'ALL';
+    this.loadingReport = true;
+
+    this.svc.getReport(s.id).subscribe({
+      next: r => {
+        this.report = r;
+        this.loadingReport = false;
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || '';
+        if (msg.includes('RAPPORT_NON_GENERE') || msg.includes('Aucun rapport')) {
+          this.reportNotFound = true;
+        } else {
+          this.err('Erreur lors du chargement du rapport');
+        }
+        this.loadingReport = false;
+      }
     });
   }
 
   generateReport(): void {
     if (!this.selectedSession) return;
-    this.loading = true;
-    this.reportPage = 1;
+    this.loadingReport = true;
+    this.reportNotFound = false;
+
     this.svc.generateReport(this.selectedSession.id).subscribe({
-      next: r => { this.report = r; this.loading = false; this.success('Rapport généré'); },
-      error: e => { this.error(e?.error?.message || 'Erreur génération'); this.loading = false; }
+      next: r => {
+        this.report = r;
+        this.loadingReport = false;
+        this.ok('Rapport généré avec succès');
+      },
+      error: e => {
+        this.err(e?.error?.message || 'Erreur génération rapport');
+        this.loadingReport = false;
+      }
     });
   }
 
   setFilter(f: ReportFilter): void {
-    this.reportFilter = f;
-    this.reportPage = 1;
+    this.rptFilter = f;
+    this.rptPage = 1;
   }
 
-  get filteredReportLines(): ReportLine[] {
+  get filteredLines(): ReportLine[] {
     if (!this.report) return [];
-    return this.reportFilter === 'ALL'
-        ? this.report.lines
-        : this.report.lines.filter(l => l.statut === this.reportFilter);
+    return this.rptFilter === 'ALL' ? this.report.lines : this.report.lines.filter(l => l.statut === this.rptFilter);
   }
 
-  get pagedReportLines(): ReportLine[] {
-    const start = (this.reportPage - 1) * this.reportPageSize;
-    return this.filteredReportLines.slice(start, start + this.reportPageSize);
+  get pagedReport(): ReportLine[] {
+    const start = (this.rptPage - 1) * this.rptPageSize;
+    return this.filteredLines.slice(start, start + this.rptPageSize);
   }
 
-  get reportTotalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredReportLines.length / this.reportPageSize));
+  get rptTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredLines.length / this.rptPageSize));
   }
 
-  getCountByStatut(s: ReportFilter): number {
+  countStatut(f: ReportFilter): number {
     if (!this.report) return 0;
-    return s === 'ALL' ? this.report.lines.length : this.report.lines.filter(l => l.statut === s).length;
+    return f === 'ALL' ? this.report.lines.length : this.report.lines.filter(l => l.statut === f).length;
   }
 
-  statutClass(s: string): string {
-    return ({CONFORME:'badge-success',ECART:'badge-warning',MANQUANT:'badge-danger',SURPLUS:'badge-info'} as any)[s]||'';
+  sClass(s: string): string {
+    const map: any = { CONFORME: 'badge-success', ECART: 'badge-warning', MANQUANT: 'badge-danger', SURPLUS: 'badge-info' };
+    return map[s] || '';
   }
 
-  statutIcon(s: string): string {
-    return ({CONFORME:'✅',ECART:'⚠️',MANQUANT:'🔴',SURPLUS:'🟡',ALL:'📋'} as any)[s]||'';
+  sIcon(s: string): string {
+    const map: any = { CONFORME: '✅', ECART: '⚠️', MANQUANT: '🔴', SURPLUS: '🟡', ALL: '📋' };
+    return map[s] || '';
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // TEMPLATES
-  // ════════════════════════════════════════════════════════════════
-
+  // ====================== TEMPLATES ======================
   addField(): void {
-    const f = this.newFieldInput.trim().toUpperCase();
-    if (f && !this.newTemplateFields.includes(f)) { this.newTemplateFields.push(f); this.newFieldInput = ''; }
+    const f = this.tplInput.trim().toUpperCase();
+    if (f && !this.tplFields.includes(f)) {
+      this.tplFields.push(f);
+      this.tplInput = '';
+    }
   }
 
-  removeField(field: string): void {
-    this.newTemplateFields = this.newTemplateFields.filter(f => f !== field);
+  removeField(f: string): void {
+    this.tplFields = this.tplFields.filter(x => x !== f);
   }
 
   saveTemplate(): void {
-    if (!this.newTemplateName.trim() || this.newTemplateFields.length === 0) {
-      this.error('Nom et champs obligatoires'); return;
-    }
+    if (!this.tplName.trim()) { this.err('Nom obligatoire'); return; }
     this.saving = true;
-    this.svc.createTemplate({ name: this.newTemplateName.trim(), fields: this.newTemplateFields, active: true }).subscribe({
+    this.svc.createTemplate({ name: this.tplName.trim(), fields: this.tplFields, active: true }).subscribe({
       next: t => {
-        const idx = this.templates.findIndex(x => x.id === t.id);
-        if (idx !== -1) this.templates[idx] = t; else this.templates.push(t);
-        this.collectTemplate = t;
-        this.showTemplateModal = false;
+        const i = this.templates.findIndex(x => x.id === t.id);
+        if (i !== -1) this.templates[i] = t; else this.templates.push(t);
+        this.activeTemplate = t;
+        this.showTemplate = false;
         this.saving = false;
-        this.newTemplateName = '';
-        this.newTemplateFields = ['ARTICLE', 'LOT', 'QUANTITE'];
-        this.success('Template sauvegardé');
+        this.tplName = '';
+        this.tplFields = ['ARTICLE', 'LOT', 'QUANTITE'];
+        this.ok('Template sauvegardé');
       },
-      error: e => { this.error(e?.error?.message || 'Erreur template'); this.saving = false; }
+      error: e => {
+        this.err(e?.error?.message || 'Erreur template');
+        this.saving = false;
+      }
     });
   }
 
-  selectTemplate(t: CollectTemplate): void {
-    this.collectTemplate = t;
-    this.success(`Template "${t.name}" sélectionné`);
+  // ====================== EXPORT ======================
+exportCollect(): void {
+  if (!this.selectedSession) return;
+  this.downloadWithAuth(
+    API.INVENTORY.SESSIONS.EXPORT_COLLECT(this.selectedSession.id),
+    `collecte_${this.selectedSession.warehouseCode || this.selectedSession.name || 'session'}.xlsx`
+  );
+}
+
+exportReport(): void {
+  if (!this.selectedSession) return;
+  this.downloadWithAuth(
+    API.INVENTORY.SESSIONS.EXPORT_REPORT(this.selectedSession.id),
+    `rapport_detaille_${this.selectedSession.name || this.selectedSession.id}.xlsx`
+  );
+}
+
+// Méthode de téléchargement sécurisée avec token JWT
+private downloadWithAuth(url: string, filename: string): void {
+  const token = localStorage.getItem('token') || 
+                localStorage.getItem('jwt') || 
+                sessionStorage.getItem('token');
+
+  if (!token) {
+    this.err('Vous devez être connecté pour exporter');
+    return;
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // EXPORT
-  // ════════════════════════════════════════════════════════════════
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }
+  })
+  .then(async response => {
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      if (response.status === 403) throw new Error('Accès refusé (403)');
+      if (response.status === 404) throw new Error('Endpoint non trouvé (404)');
+      throw new Error(`Erreur ${response.status}: ${text}`);
+    }
+    return response.blob();
+  })
+  .then(blob => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 
-  exportCollect(): void {
-    if (this.selectedSession) this.svc.exportCollect(this.selectedSession.id);
-  }
+    this.ok('Rapport détaillé téléchargé avec succès (Excel avec plusieurs onglets)');
+  })
+  .catch(err => {
+    console.error('Download error:', err);
+    this.err(err.message || 'Erreur lors du téléchargement du rapport détaillé');
+  });
+}
 
-  exportReport(): void {
-    if (this.selectedSession) this.svc.exportReport(this.selectedSession.id);
-  }
-
-  // ════════════════════════════════════════════════════════════════
-  // NAVIGATION
-  // ════════════════════════════════════════════════════════════════
-
+  // ====================== NAVIGATION ======================
   back(): void {
     this.view = 'sessions';
     this.selectedSession = null;
     this.report = null;
     this.lines = [];
     this.errorMsg = '';
-    // Rafraîchir la liste des sessions pour avoir les compteurs à jour
-    this.svc.getSessions().subscribe({ next: s => { this.sessions = s; } });
+    this.loadSessions();
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // HELPERS
-  // ════════════════════════════════════════════════════════════════
-
+  // ====================== HELPERS ======================
   get statusLabel(): Record<string, string> {
     return { EN_COURS: 'En cours', VALIDEE: 'Validée', CLOTUREE: 'Clôturée' };
   }
@@ -371,26 +427,26 @@ export class InventoryComponent implements OnInit {
     return { EN_COURS: 'status-active', VALIDEE: 'status-validated', CLOTUREE: 'status-closed' };
   }
 
-  isNumericField(f: string): boolean {
-    return ['QUANTITE','QTE'].includes(f.toUpperCase());
+  isNum(f: string): boolean {
+    return ['QUANTITE', 'QTE'].includes(f.toUpperCase());
   }
 
-  formatDate(d: string | undefined): string {
+  fmtDate(d?: string): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('fr-FR', {
-      day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   }
 
-  private error(msg: string): void {
+  private err(msg: string): void {
     this.errorMsg = msg;
     this.successMsg = '';
-    setTimeout(() => { this.errorMsg = ''; }, 5000);
+    setTimeout(() => this.errorMsg = '', 6000);
   }
 
-  private success(msg: string): void {
+  ok(msg: string): void {
     this.successMsg = msg;
     this.errorMsg = '';
-    setTimeout(() => { this.successMsg = ''; }, 3000);
+    setTimeout(() => this.successMsg = '', 3000);
   }
 }

@@ -1,5 +1,3 @@
-// src/app/services/inventory/inventory.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -9,6 +7,7 @@ import {
   CollectLine, AddCollectLineRequest,
   CollectTemplate, InventoryReport
 } from '../models/inventory.model';
+import { API } from '../utils/api-endpoints';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
@@ -18,26 +17,25 @@ export class InventoryService {
   constructor(private http: HttpClient) {}
 
   getSessions(): Observable<InventorySession[]> {
-    return this.http.get<InventorySession[]>(`${this.base}/sessions`);
+    return this.http.get<InventorySession[]>(API.INVENTORY.SESSIONS.BASE);
   }
 
   getSession(id: number): Observable<InventorySession> {
-    return this.http.get<InventorySession>(`${this.base}/sessions/${id}`);
+    return this.http.get<InventorySession>(API.INVENTORY.SESSIONS.BY_ID(id));
   }
 
   createSession(req: CreateSessionRequest): Observable<InventorySession> {
-    return this.http.post<InventorySession>(`${this.base}/sessions`, req);
+    return this.http.post<InventorySession>(API.INVENTORY.SESSIONS.BASE, req);
   }
 
   validateSession(id: number): Observable<InventorySession> {
-    return this.http.put<InventorySession>(`${this.base}/sessions/${id}/validate`, {});
+    return this.http.put<InventorySession>(API.INVENTORY.SESSIONS.VALIDATE(id), {});
   }
 
   getLines(sessionId: number): Observable<CollectLine[]> {
-    return this.http.get<CollectLine[]>(`${this.base}/sessions/${sessionId}/lines`);
+    return this.http.get<CollectLine[]>(API.INVENTORY.SESSIONS.LINES(sessionId));
   }
 
-  // ← Ajout pour la collecte depuis le web
   addLine(req: AddCollectLineRequest): Observable<CollectLine> {
     return this.http.post<CollectLine>(`${this.base}/lines`, req);
   }
@@ -47,35 +45,30 @@ export class InventoryService {
   }
 
   getTemplates(): Observable<CollectTemplate[]> {
-    return this.http.get<CollectTemplate[]>(`${this.base}/templates`);
+    return this.http.get<CollectTemplate[]>(API.INVENTORY.TEMPLATES);
   }
 
   createTemplate(dto: Partial<CollectTemplate>): Observable<CollectTemplate> {
-    return this.http.post<CollectTemplate>(`${this.base}/templates`, dto);
+    return this.http.post<CollectTemplate>(API.INVENTORY.TEMPLATES, dto);
   }
 
   getErpWarehouses(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.base}/erp/warehouses`);
+    return this.http.get<string[]>(API.INVENTORY.ERP.WAREHOUSES);
   }
 
   getErpLocations(warehouseCode: string): Observable<string[]> {
-    const params = new HttpParams().set('warehouseCode', warehouseCode);
-    return this.http.get<string[]>(`${this.base}/erp/locations`, { params });
+    return this.http.get<string[]>(API.INVENTORY.ERP.LOCATIONS(warehouseCode));
   }
 
   generateReport(sessionId: number): Observable<InventoryReport> {
-    return this.http.post<InventoryReport>(`${this.base}/sessions/${sessionId}/report`, {});
+    return this.http.post<InventoryReport>(API.INVENTORY.SESSIONS.REPORT(sessionId), {});
   }
 
   getReport(sessionId: number): Observable<InventoryReport> {
-    return this.http.get<InventoryReport>(`${this.base}/sessions/${sessionId}/report`);
+    return this.http.get<InventoryReport>(API.INVENTORY.SESSIONS.REPORT(sessionId));
   }
 
-  exportCollect(sessionId: number): void {
-    window.open(`${this.base}/sessions/${sessionId}/export/collect`, '_blank');
-  }
-
-  exportReport(sessionId: number): void {
-    window.open(`${this.base}/sessions/${sessionId}/export/report`, '_blank');
-  }
+  // On garde ces méthodes vides car l'export est géré avec fetch dans le component
+  exportCollect(sessionId: number): void {}
+  exportReport(sessionId: number): void {}
 }
