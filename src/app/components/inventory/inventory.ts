@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
@@ -7,6 +7,8 @@ import {
   InventorySession, CollectLine, CollectTemplate,
   InventoryReport, ReportLine, CreateSessionRequest, AddCollectLineRequest
 } from '../../models/inventory.model';
+
+declare const feather: any;
 
 type ReportFilter = 'ALL' | 'CONFORME' | 'ECART' | 'MANQUANT' | 'SURPLUS';
 const FILTERS: ReportFilter[] = ['ALL', 'CONFORME', 'ECART', 'MANQUANT', 'SURPLUS'];
@@ -19,7 +21,7 @@ type View = 'sessions' | 'lines' | 'report';
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.scss']
 })
-export class InventoryComponent implements OnInit {
+export class InventoryComponent implements OnInit, AfterViewChecked {
 
   view: View = 'sessions';
   loadingSessions = true;
@@ -55,6 +57,8 @@ export class InventoryComponent implements OnInit {
   rptFilter: ReportFilter = 'ALL';
   readonly rptFilters = FILTERS;
 
+  private needFeatherRefresh = false;
+
   get uniqueLocationsCount(): number {
     return this.lines.length === 0 ? 0 : new Set(this.lines.map(l => l.locationCode)).size;
   }
@@ -63,21 +67,53 @@ export class InventoryComponent implements OnInit {
     return this.activeTemplate?.name || 'Aucun';
   }
 
-  constructor(private svc: InventoryService) {}
+  constructor(private svc: InventoryService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.loadSessions();
-    this.loadTemplatesAndWarehouses();
+    this.loadAll();
   }
 
-  private loadTemplatesAndWarehouses(): void {
+  // ─── FIX FEATHER : re-render après chaque changement de DOM ───
+  ngAfterViewChecked(): void {
+    if (this.needFeatherRefresh) {
+      this.needFeatherRefresh = false;
+      try { feather.replace(); } catch (_) {}
+    }
+  }
+
+  private refreshIcons(): void {
+    this.needFeatherRefresh = true;
+    this.cdr.detectChanges();
+  }
+
+  // ─── FIX : charger tout en parallèle, pas en séquence ─────────
+  private loadAll(): void {
+    this.loadingSessions = true;
+
+    // Templates + warehouses en parallèle (erreurs silencieuses)
     this.svc.getTemplates().subscribe({
-      next: t => { this.templates = t; this.activeTemplate = t[0] ?? null; },
-      error: () => console.warn('Templates non chargés')
+      next: t => { this.templates = t; this.activeTemplate = t[0] ?? null; this.refreshIcons(); },
+      error: () => { this.templates = []; }
     });
 
     this.svc.getErpWarehouses().subscribe({
-      next: w => this.erpWarehouses = w
+      next: w => { this.erpWarehouses = w; },
+      error: () => { this.erpWarehouses = []; }
+    });
+
+    // Sessions
+    this.svc.getSessions().subscribe({
+      next: (s) => {
+        this.sessions = s || [];
+        this.loadingSessions = false;
+        this.refreshIcons();
+      },
+      error: () => {
+        this.sessions = [];
+        this.loadingSessions = false;
+        this.err('Impossible de charger les sessions');
+        this.refreshIcons();
+      }
     });
   }
 
@@ -87,9 +123,9 @@ export class InventoryComponent implements OnInit {
       next: (s) => {
         this.sessions = s || [];
         this.loadingSessions = false;
+        this.refreshIcons();
       },
-      error: (err) => {
-        console.error('Erreur sessions:', err);
+      error: () => {
         this.sessions = [];
         this.loadingSessions = false;
         this.err('Impossible de charger les sessions');
@@ -99,8 +135,9 @@ export class InventoryComponent implements OnInit {
 
   // ====================== SESSIONS ======================
   openCreate(): void {
-    this.newSession = { name: '', warehouseCode: '', warehouseLabel: '' };
+    this.newSession = { name: '', warehouseCode: this.erpWarehouses[0] || '', warehouseLabel: '' };
     this.showCreate = true;
+    this.refreshIcons();
   }
 
   createSession(): void {
@@ -114,6 +151,7 @@ export class InventoryComponent implements OnInit {
         this.showCreate = false;
         this.saving = false;
         this.ok(`Session "${s.name}" créée`);
+        this.refreshIcons();
       },
       error: e => {
         this.err(e?.error?.message || 'Erreur création');
@@ -126,6 +164,7 @@ export class InventoryComponent implements OnInit {
     e?.stopPropagation();
     this.selectedSession = s;
     this.showValidate = true;
+    this.refreshIcons();
   }
 
   confirmValidate(): void {
@@ -138,6 +177,7 @@ export class InventoryComponent implements OnInit {
         this.showValidate = false;
         this.saving = false;
         this.ok('Session validée ✅');
+        this.refreshIcons();
       },
       error: e => {
         this.err(e?.error?.message || 'Erreur validation');
@@ -158,28 +198,32 @@ export class InventoryComponent implements OnInit {
     this.lines = [];
     this.linesPage = 1;
     this.loadingLines = true;
+    this.refreshIcons();
 
     this.svc.getLines(s.id).subscribe({
       next: l => {
         this.lines = l || [];
         this.loadingLines = false;
+        this.refreshIcons();
       },
       error: () => {
         this.err('Erreur chargement de la collecte');
         this.loadingLines = false;
+        this.refreshIcons();
       }
     });
   }
 
   openCollectModal(): void {
     if (!this.activeTemplate) {
-      this.err('Créez d’abord un template');
+      this.err('Créez d\'abord un template via le bouton "Templates"');
       return;
     }
     this.collectLoc = '';
     this.collectValues = {};
     this.activeTemplate.fields.forEach(f => this.collectValues[f] = '');
     this.showCollect = true;
+    this.refreshIcons();
   }
 
   addLine(): void {
@@ -203,6 +247,7 @@ export class InventoryComponent implements OnInit {
         this.showCollect = false;
         this.saving = false;
         this.ok('Ligne ajoutée');
+        this.refreshIcons();
       },
       error: e => {
         this.err(e?.error?.message || 'Erreur ajout');
@@ -217,6 +262,7 @@ export class InventoryComponent implements OnInit {
       next: () => {
         this.lines = this.lines.filter(l => l.id !== id);
         if (this.selectedSession) this.selectedSession.totalLines = this.lines.length;
+        this.refreshIcons();
       }
     });
   }
@@ -243,20 +289,23 @@ export class InventoryComponent implements OnInit {
     this.rptPage = 1;
     this.rptFilter = 'ALL';
     this.loadingReport = true;
+    this.refreshIcons();
 
     this.svc.getReport(s.id).subscribe({
       next: r => {
         this.report = r;
         this.loadingReport = false;
+        this.refreshIcons();
       },
       error: (err) => {
         const msg = err.error?.message || err.message || '';
-        if (msg.includes('RAPPORT_NON_GENERE') || msg.includes('Aucun rapport')) {
+        if (err.status === 404 || msg.includes('RAPPORT_NON_GENERE') || msg.includes('Aucun rapport')) {
           this.reportNotFound = true;
         } else {
           this.err('Erreur lors du chargement du rapport');
         }
         this.loadingReport = false;
+        this.refreshIcons();
       }
     });
   }
@@ -271,6 +320,7 @@ export class InventoryComponent implements OnInit {
         this.report = r;
         this.loadingReport = false;
         this.ok('Rapport généré avec succès');
+        this.refreshIcons();
       },
       error: e => {
         this.err(e?.error?.message || 'Erreur génération rapport');
@@ -314,6 +364,14 @@ export class InventoryComponent implements OnInit {
   }
 
   // ====================== TEMPLATES ======================
+  openTemplateModal(): void {
+    this.tplName = '';
+    this.tplFields = ['ARTICLE', 'LOT', 'QUANTITE'];
+    this.tplInput = '';
+    this.showTemplate = true;
+    this.refreshIcons();
+  }
+
   addField(): void {
     const f = this.tplInput.trim().toUpperCase();
     if (f && !this.tplFields.includes(f)) {
@@ -338,7 +396,8 @@ export class InventoryComponent implements OnInit {
         this.saving = false;
         this.tplName = '';
         this.tplFields = ['ARTICLE', 'LOT', 'QUANTITE'];
-        this.ok('Template sauvegardé');
+        this.ok(`Template "${t.name}" sauvegardé ✅`);
+        this.refreshIcons();
       },
       error: e => {
         this.err(e?.error?.message || 'Erreur template');
@@ -347,75 +406,82 @@ export class InventoryComponent implements OnInit {
     });
   }
 
-  // ====================== EXPORT ======================
-exportCollect(): void {
-  if (!this.selectedSession) return;
-  this.downloadWithAuth(
-    API.INVENTORY.SESSIONS.EXPORT_COLLECT(this.selectedSession.id),
-    `collecte_${this.selectedSession.warehouseCode || this.selectedSession.name || 'session'}.xlsx`
-  );
-}
-
-exportReport(): void {
-  if (!this.selectedSession) return;
-  this.downloadWithAuth(
-    API.INVENTORY.SESSIONS.EXPORT_REPORT(this.selectedSession.id),
-    `rapport_detaille_${this.selectedSession.name || this.selectedSession.id}.xlsx`
-  );
-}
-
-// Méthode de téléchargement sécurisée avec token JWT
-private downloadWithAuth(url: string, filename: string): void {
-  const token = localStorage.getItem('token') || 
-                localStorage.getItem('jwt') || 
-                sessionStorage.getItem('token');
-
-  if (!token) {
-    this.err('Vous devez être connecté pour exporter');
-    return;
+  selectTemplate(t: CollectTemplate): void {
+    this.activeTemplate = t;
+    this.ok('Template actif : ' + t.name);
   }
 
-  fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    }
-  })
-  .then(async response => {
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      if (response.status === 403) throw new Error('Accès refusé (403)');
-      if (response.status === 404) throw new Error('Endpoint non trouvé (404)');
-      throw new Error(`Erreur ${response.status}: ${text}`);
-    }
-    return response.blob();
-  })
-  .then(blob => {
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+  // ====================== EXPORT ======================
+  exportCollect(): void {
+    if (!this.selectedSession) return;
+    this.downloadWithAuth(
+      API.INVENTORY.SESSIONS.EXPORT_COLLECT(this.selectedSession.id),
+      `collecte_${this.selectedSession.warehouseCode || this.selectedSession.name || 'session'}.xlsx`
+    );
+  }
 
-    this.ok('Rapport détaillé téléchargé avec succès (Excel avec plusieurs onglets)');
-  })
-  .catch(err => {
-    console.error('Download error:', err);
-    this.err(err.message || 'Erreur lors du téléchargement du rapport détaillé');
-  });
-}
+  exportReport(): void {
+    if (!this.selectedSession) return;
+    this.downloadWithAuth(
+      API.INVENTORY.SESSIONS.EXPORT_REPORT(this.selectedSession.id),
+      `rapport_detaille_${this.selectedSession.name || this.selectedSession.id}.xlsx`
+    );
+  }
+
+  private downloadWithAuth(url: string, filename: string): void {
+    const token = localStorage.getItem('token') ||
+                  localStorage.getItem('jwt') ||
+                  sessionStorage.getItem('token');
+
+    if (!token) { this.err('Vous devez être connecté pour exporter'); return; }
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    })
+    .then(async response => {
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        if (response.status === 403) throw new Error('Accès refusé (403)');
+        if (response.status === 404) throw new Error('Endpoint non trouvé (404)');
+        throw new Error(`Erreur ${response.status}: ${text}`);
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      this.ok('Fichier téléchargé avec succès');
+    })
+    .catch(err => {
+      console.error('Download error:', err);
+      this.err(err.message || 'Erreur lors du téléchargement');
+    });
+  }
 
   // ====================== NAVIGATION ======================
+  // FIX : back() ne recharge plus les sessions si déjà en mémoire
   back(): void {
     this.view = 'sessions';
     this.selectedSession = null;
     this.report = null;
+    this.reportNotFound = false;
     this.lines = [];
     this.errorMsg = '';
-    this.loadSessions();
+    this.successMsg = '';
+    this.refreshIcons();
+    // Recharger uniquement si liste vide
+    if (this.sessions.length === 0) {
+      this.loadSessions();
+    }
   }
 
   // ====================== HELPERS ======================
