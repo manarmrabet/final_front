@@ -94,6 +94,10 @@ export const routes: Routes = [
         path: 'production-log',
         loadComponent: () => import('./components/production-log/production-log').then(m => m.ProductionLogComponent)
       },
+      {
+        path: 'reception',
+        loadComponent: () => import('./components/reception/reception').then(m => m.ReceptionComponent)
+      },
 
       {
         path: '**',

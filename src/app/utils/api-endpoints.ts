@@ -30,6 +30,7 @@ export const API = {
     BY_ID:  (id: number) => `${BASE}/audit-logs/${id}`,
     EXPORT: `${BASE}/audit-logs/export`,
   },
+
   // ====================== INVENTORY ======================
   INVENTORY: {
     BASE: `${BASE}/inventory`,
@@ -47,5 +48,28 @@ export const API = {
       WAREHOUSES: `${BASE}/inventory/erp/warehouses`,
       LOCATIONS: (warehouseCode: string) => `${BASE}/inventory/erp/locations?warehouseCode=${warehouseCode}`,
     },
+  },
+
+  // ====================== RECEPTION ======================
+  RECEPTION: {
+    SEARCH_BY_ORDER: (orderNumber: string) =>
+      `${BASE}/reception/by-order/${orderNumber}`,
+
+    SEARCH_BY_DATE_RANGE: `${BASE}/reception/by-date-range`,
+
+    GET_RECEPTION_DETAIL: (receptionNumber: string) =>
+      `${BASE}/reception/detail/${receptionNumber}`,
+
+    GET_STATS: `${BASE}/reception/stats`,
+
+    EXPORT_PDF_BY_ORDER: (orderNumber: string) =>
+      `${BASE}/reception/export/pdf/order/${orderNumber}`,
+
+    EXPORT_PDF_VALUED: (orderNumber: string) =>
+      `${BASE}/reception/export/pdf/valued/${orderNumber}`,
+
+    EXPORT_EXCEL: `${BASE}/reception/export/excel`,
+
+    EXPORT_EXCEL_BULK: `${BASE}/reception/export/excel/bulk`,
   },
 };

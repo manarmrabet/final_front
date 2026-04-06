@@ -1,0 +1,287 @@
+<!-- reception.html — Version finale -->
+<div class="reception-page">
+
+  <!-- ══ Header ════════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="header-icon"><i data-lucide="truck"></i></div>
+    <h1 class="page-title">Reception Management</h1>
+    <p class="page-subtitle">&gt; Generate, view and export reception slips</p>
+  </div>
+
+  <!-- ══ Bannière d'erreur ══════════════════════════════════════════════════ -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <i data-lucide="alert-circle"></i>
+    <span>{{ errorMessage }}</span>
+    <button (click)="dismissError()"><i data-lucide="x"></i></button>
+  </div>
+
+  <!-- ══ Layout principal ═══════════════════════════════════════════════════ -->
+  <div class="main-layout" [class.has-preview]="showPdfPanel">
+
+    <!-- ── Panneau gauche : recherche + résultats ─────────────────────────── -->
+    <div class="search-section">
+
+      <!-- Barre de recherche globale -->
+      <div class="global-search-bar">
+        <i data-lucide="search"></i>
+        <span class="current-value">{{ orderNumber || 'Quick search...' }}</span>
+      </div>
+
+      <!-- Onglets de mode -->
+      <div class="mode-tabs">
+        <button class="mode-tab" [class.active]="searchMode === 'ORDER'"
+                (click)="setSearchMode('ORDER')">
+          <i data-lucide="list"></i> Search by Order
+        </button>
+        <button class="mode-tab" [class.active]="searchMode === 'DATE_RANGE'"
+                (click)="setSearchMode('DATE_RANGE')">
+          <i data-lucide="calendar"></i> Search by Date Range
+        </button>
+      </div>
+
+      <!-- ── Mode ORDER ──────────────────────────────────────────────────── -->
+      <div class="search-form" *ngIf="searchMode === 'ORDER'">
+        <div class="form-group">
+          <label class="form-label">
+            <i data-lucide="hash"></i> Order Number <span class="required">*</span>
+          </label>
+          <div class="input-row">
+            <div class="input-wrapper">
+              <i data-lucide="list" class="input-icon"></i>
+              <input type="text" class="form-input"
+                     [(ngModel)]="orderNumber"
+                     placeholder="PO0000050"
+                     (keyup.enter)="searchByOrder()" />
+              <button class="clear-input" *ngIf="orderNumber" (click)="orderNumber = ''">
+                <i data-lucide="x-circle"></i>
+              </button>
+            </div>
+            <button class="btn-generate"
+                    (click)="searchByOrder()"
+                    [disabled]="loading || !orderNumber">
+              <i data-lucide="file-text"></i> Generate PDF
+            </button>
+            <button class="btn-excel"
+                    (click)="exportExcelForOrder(orderNumber)"
+                    [disabled]="!orderNumber || exporting">
+              <i data-lucide="file-spreadsheet"></i> Export Excel
+            </button>
+          </div>
+          <!-- Note : t_orno = PO0000050, pas OR... (OR = numéro réception) -->
+          <p class="hint">
+            <i data-lucide="info"></i>
+            Format : PO suivi de 7 chiffres (ex. PO0000050)
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Mode DATE RANGE ────────────────────────────────────────────── -->
+      <div class="search-form" *ngIf="searchMode === 'DATE_RANGE'">
+        <div class="date-row">
+          <div class="form-group">
+            <label class="form-label"><i data-lucide="calendar"></i> Start Date</label>
+            <!-- type="date" exige yyyy-MM-dd → bindé sur startDateIso -->
+            <input type="date" class="form-input" [(ngModel)]="startDateIso" />
+            <p class="date-hint">{{ startDateDisplay }}</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i data-lucide="calendar"></i> End Date</label>
+            <input type="date" class="form-input" [(ngModel)]="endDateIso" />
+            <p class="date-hint">{{ endDateDisplay }}</p>
+          </div>
+          <button class="btn-search"
+                  (click)="searchByDateRange()"
+                  [disabled]="loading || !startDateIso || !endDateIso">
+            <i data-lucide="search"></i> Search
+          </button>
+        </div>
+        <div class="quick-ranges">
+          <button *ngFor="let r of quickRanges" class="chip"
+                  (click)="applyQuickRange(r.key)">{{ r.label }}</button>
+          <button class="chip chip-clear"
+                  (click)="startDateIso=''; endDateIso=''">Clear</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button class="btn-clear"   (click)="clearAll()">
+          <i data-lucide="rotate-ccw"></i> Clear All
+        </button>
+        <button class="btn-example" (click)="loadExample()">
+          <i data-lucide="zap"></i> Load Example
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Loading reception data...</span>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="hasSearched && !loading && !hasResults">
+        <i data-lucide="file-x"></i>
+        <p>No Results Found</p>
+        <span>Select a date range to view reception orders</span>
+      </div>
+
+      <!-- ══ Tableau résultats : plage de dates ══════════════════════════════ -->
+      <div class="results-section" *ngIf="receptionOrders.length > 0">
+        <div class="results-header">
+          <div class="results-title">
+            <i data-lucide="list"></i>
+            Reception Orders
+            <span class="badge">{{ receptionOrders.length }}</span>
+          </div>
+          <div class="results-meta">
+            <span class="date-range-badge">
+              <i data-lucide="calendar"></i>
+              {{ startDateDisplay }} → {{ endDateDisplay }}
+            </span>
+            <button class="btn-export-all" (click)="exportExcel()" [disabled]="exporting">
+              <i data-lucide="download"></i> Export All
+            </button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="reception-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Date</th>
+                <th>Supplier</th>
+                <th>Supplier Code</th>
+                <th>Tot Qty</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of receptionOrders">
+                <td><i data-lucide="file" class="row-icon"></i> {{ order.orderNumber }}</td>
+                <td>{{ order.date }}</td>
+                <td>{{ order.supplier }}</td>
+                <td>{{ order.supplierCode }}</td>
+                <td><span class="qty-badge">{{ order.totalQty | number }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="act-btn act-pdf" title="PDF Standard"
+                            (click)="generatePdf(order.orderNumber)"
+                            [disabled]="exporting">
+                      <i data-lucide="file-text"></i>
+                    </button>
+                    <button class="act-btn act-pdf-v" title="PDF Valorisé"
+                            (click)="generatePdfValued(order.orderNumber)"
+                            [disabled]="exporting">
+                      <i data-lucide="file-check"></i>
+                    </button>
+                    <button class="act-btn act-excel" title="Export Excel"
+                            (click)="exportExcelForOrder(order.orderNumber)"
+                            [disabled]="exporting">
+                      <i data-lucide="table"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ Tableau résultats : lignes par commande ══════════════════════════ -->
+      <div class="results-section" *ngIf="receptionLines.length > 0">
+        <div class="results-header">
+          <div class="results-title">
+            <i data-lucide="list"></i>
+            Reception Lines — {{ orderNumber }}
+            <span class="badge">{{ receptionLines.length }}</span>
+          </div>
+          <div class="results-meta">
+            <button class="btn-export-all"
+                    (click)="exportExcelForOrder(orderNumber)"
+                    [disabled]="exporting">
+              <i data-lucide="download"></i> Excel
+            </button>
+            <button class="btn-export-all"
+                    (click)="generatePdf(orderNumber)"
+                    [disabled]="exporting">
+              <i data-lucide="file-text"></i> PDF
+            </button>
+            <button class="btn-export-all"
+                    (click)="generatePdfValued(orderNumber)"
+                    [disabled]="exporting">
+              <i data-lucide="file-check"></i> PDF Valorisé
+            </button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="reception-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>N° Réc.</th>
+                <th>Article</th>
+                <th>Description</th>
+                <th>Qté Cdée</th>
+                <th>Qté Reçue</th>
+                <th>Emplacement</th>
+                <th>Devise</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of receptionLines">
+                <td>{{ line.dateReception }}</td>
+                <td>{{ line.numeroReception }}</td>
+                <td><strong>{{ line.article }}</strong></td>
+                <td>{{ line.description }}</td>
+                <td>{{ line.qteCdee | number }}</td>
+                <td><span class="qty-badge">{{ line.qteRecue | number }}</span></td>
+                <td>{{ line.emplacement }}</td>
+                <td>{{ line.devise }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /search-section -->
+
+    <!-- ── Panneau droit : Preview PDF ────────────────────────────────────── -->
+    <div class="preview-panel" [class.visible]="showPdfPanel">
+      <div class="preview-header">
+        <span class="preview-title">
+          <i data-lucide="file-text"></i> PDF Viewer
+        </span>
+        <!-- pdfLabel (anciennement pdfOrderLabel) -->
+        <span class="preview-order-label">{{ pdfLabel }}</span>
+        <button class="close-preview" (click)="closePdfPanel()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="preview-body">
+        <iframe *ngIf="safePdfUrl" [src]="safePdfUrl" class="pdf-iframe"></iframe>
+        <div class="no-doc" *ngIf="!safePdfUrl">
+          <i data-lucide="file"></i>
+          <p>No Document Selected</p>
+          <span>Generate a PDF or Excel file to preview it here</span>
+          <div class="format-badges">
+            <span class="fmt-badge pdf">PDF</span>
+            <span class="fmt-badge excel">Excel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-footer" *ngIf="safePdfUrl">
+        <button class="btn-download" (click)="downloadPdf()">
+          <i data-lucide="download"></i> Download
+        </button>
+        <button class="btn-open" (click)="openPdfInTab()">
+          <i data-lucide="external-link"></i> Open
+        </button>
+        <span class="generated-label">{{ pdfLabel }}</span>
+      </div>
+    </div>
+
+  </div><!-- /main-layout -->
+</div>
