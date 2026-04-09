@@ -85,35 +85,33 @@ export class StockDashboardComponent implements OnInit, OnDestroy {
   }
 
   private buildKpiCards(): void {
-    if (!this.dashboard) return;
-
-    // Correction du reduce : vérification de l'existence de byWarehouse
-    const totalQty = (this.dashboard.byWarehouse || []).reduce(
-      (s, w) => s + (w.totalQty || 0), 0);
-
-    this.kpiCards = [
-      {
-        label: 'Quantité totale', value: totalQty,
-        unit: 'unités', icon: 'mdi-package-variant',
-        color: '#0D9488', bg: '#F0FDFA'
-      },
-      {
-        label: 'Articles en stock', value: this.dashboard.topItems?.length || 0,
-        unit: 'références', icon: 'mdi-barcode',
-        color: '#2563EB', bg: '#EFF6FF'
-      },
-      {
-        label: 'Entrepôts actifs', value: this.dashboard.byWarehouse?.length || 0,
-        unit: 'sites', icon: 'mdi-warehouse',
-        color: '#7C3AED', bg: '#F5F3FF'
-      },
-      {
-        label: 'Emplacements', value: this.dashboard.byLocation?.length || 0,
-        unit: 'occupés', icon: 'mdi-map-marker',
-        color: '#D97706', bg: '#FFFBEB'
-      },
-    ];
-  }
+  if (!this.dashboard) return;
+  this.kpiCards = [
+    {
+      label: 'Quantité totale',
+      // ✅ utilise totalQty du backend, pas le recalcul Angular
+      value: this.dashboard.totalQty || 0,
+      unit: 'unités', icon: 'mdi-package-variant', color: '#0D9488', bg: '#F0FDFA'
+    },
+    {
+      label: 'Articles en stock',
+      // ✅ utilise totalArticles (vrai nb de codes distincts, pas limité à 10)
+      value: this.dashboard.totalArticles || 0,
+      unit: 'références', icon: 'mdi-barcode', color: '#2563EB', bg: '#EFF6FF'
+    },
+    {
+      label: 'Entrepôts actifs',
+      value: this.dashboard.byWarehouse?.length || 0,   // ✓ déjà correct
+      unit: 'sites', icon: 'mdi-warehouse', color: '#7C3AED', bg: '#F5F3FF'
+    },
+    {
+      label: 'Emplacements',
+      // ✅ utilise totalLocations (vrai nb, pas le top 10)
+      value: this.dashboard.totalLocations || 0,
+      unit: 'occupés', icon: 'mdi-map-marker', color: '#D97706', bg: '#FFFBEB'
+    },
+  ];
+}
 
   private buildCharts(): void {
     if (!this.dashboard) return;

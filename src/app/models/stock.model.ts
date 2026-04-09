@@ -52,6 +52,10 @@ export interface StockDashboard {
   byLocation:  { location:  string; itemCount: number; totalQty: number }[];
   byCategory:  { category:  string; itemCount: number }[];
   topItems:    { itemCode: string; designation: string; totalQty: number; unit: string }[];
+
+  totalQty:       number;   // quantité totale calculée backend
+  totalArticles:  number;   //  nb de codes articles distincts
+  totalLocations: number;   // nb d'emplacements distincts
 }
 
 
