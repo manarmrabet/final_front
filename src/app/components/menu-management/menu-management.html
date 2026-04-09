@@ -37,19 +37,16 @@
           </tr>
         </thead>
         <tbody>
-          <!-- ✅ PERF : track trackByMenuId → Angular réutilise les éléments DOM -->
           @for (item of menus(); track item.menuItemId) {
             <tr>
               <td><span class="row-id">{{ item.menuItemId }}</span></td>
               <td><span class="row-label">{{ item.label }}</span></td>
 
-              <!-- ✅ Icône : CSS class ou Lucide normalisé via pipe -->
               <td>
                 <span class="icon-badge">
                   @if (isCustomCssClass(item.icon || '')) {
                     <i [class]="item.icon"></i>
                   } @else {
-                    <!-- ✅ pipe lucideIcon : normalise + cache → pas de recalcul -->
                     <lucide-angular [name]="item.icon | lucideIcon" size="14"></lucide-angular>
                   }
                   <span class="icon-name-text">{{ item.icon }}</span>
@@ -241,6 +238,60 @@
           </div>
         </div>
 
+        <!-- ══ Toggle Sous-menu — DÉPLACÉ AVANT l'icône ══════════ -->
+        <!-- CORRECTION 1 : Le toggle est maintenant AVANT la section icône  -->
+        <!-- → quand isSubMenu=true, la grille d'icônes affiche déjà         -->
+        <!--   la liste des parents disponibles dans le select en dessous     -->
+        <div class="form-field full-width">
+          <div class="toggle-wrap" [class.active]="isSubMenu">
+            <div class="toggle-info">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="6" y1="3" x2="6" y2="15"/>
+                <circle cx="18" cy="6" r="3"/>
+                <circle cx="6" cy="18" r="3"/>
+                <path d="M18 9a9 9 0 0 1-9 9"/>
+              </svg>
+              <div>
+                <span class="toggle-title">Sous-menu</span>
+                <span class="toggle-desc">Ce menu est un enfant d'un autre menu</span>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="isSubMenu" (change)="onSubMenuToggle()"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- CORRECTION 1 : Select parent visible dès que isSubMenu=true   -->
+        <!-- fonctionne à la fois en mode grille ET en mode icône custom    -->
+        @if (isSubMenu) {
+          <div class="form-field full-width" style="animation: slideDown 0.25s ease">
+            <label class="field-label">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 10 20 15 15 20"/>
+                <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
+              </svg>
+              Menu parent <span class="required">*</span>
+            </label>
+            <select class="field-select" [(ngModel)]="newMenu.parentId">
+              <option [ngValue]="null">-- Sélectionner un parent --</option>
+              @for (m of parentMenuOptions; track m.menuItemId) {
+                <option [ngValue]="m.menuItemId">{{ m.label }}</option>
+              }
+            </select>
+            <!-- Indication visuelle du parent sélectionné -->
+            @if (newMenu.parentId) {
+              <span class="field-hint" style="color: #2563EB; font-weight: 500;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Parent : {{ getParentLabel(newMenu.parentId) }}
+              </span>
+            }
+          </div>
+        }
+
         <!-- ══ Icône ══════════════════════════════════════════════ -->
         <div class="form-field full-width">
           <label class="field-label">
@@ -274,12 +325,10 @@
                    placeholder="Rechercher une icône (ex: home, users…)"/>
 
             <div class="icon-catalog">
-              <!-- ✅ PERF : track trackByCatLabel sur les catégories -->
               @for (cat of filteredCategories; track cat.label) {
                 <div class="icon-catalog-section">
                   <span class="icon-catalog-label">{{ cat.label }}</span>
                   <div class="icon-selector-grid">
-                    <!-- ✅ PERF : track trackByIcon sur les icônes -->
                     @for (icon of cat.icons; track icon) {
                       <div class="icon-item"
                            [class.selected]="newMenu.icon === icon"
@@ -379,46 +428,6 @@
           </span>
         </div>
         <!-- ════════════════════════════════════════════════════ -->
-
-        <!-- Toggle Sous-menu -->
-        <div class="form-field full-width">
-          <div class="toggle-wrap" [class.active]="isSubMenu">
-            <div class="toggle-info">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="6" y1="3" x2="6" y2="15"/>
-                <circle cx="18" cy="6" r="3"/>
-                <circle cx="6" cy="18" r="3"/>
-                <path d="M18 9a9 9 0 0 1-9 9"/>
-              </svg>
-              <div>
-                <span class="toggle-title">Sous-menu</span>
-                <span class="toggle-desc">Ce menu est un enfant d'un autre menu</span>
-              </div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" [(ngModel)]="isSubMenu" (change)="onSubMenuToggle()"/>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-
-        @if (isSubMenu) {
-          <div class="form-field full-width" style="animation: slideDown 0.25s ease">
-            <label class="field-label">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 10 20 15 15 20"/>
-                <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
-              </svg>
-              Menu parent <span class="required">*</span>
-            </label>
-            <select class="field-select" [(ngModel)]="newMenu.parentId">
-              <option [ngValue]="null">-- Sélectionner un parent --</option>
-              @for (m of parentMenuOptions; track m.menuItemId) {
-                <option [ngValue]="m.menuItemId">{{ m.label }}</option>
-              }
-            </select>
-          </div>
-        }
 
       </div>
     </div>

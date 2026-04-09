@@ -98,6 +98,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.expanded.update(c => c === label ? null : label);
   }
 
+  onParentClick(item: MenuItemDTO): void {
+  // 1. Toujours naviguer vers le lien du parent (s'il existe)
+  if (item.link) {
+    this.navigate(item.link);
+  }
+
+  // 2. Toggle l'expansion (même logique que avant)
+  this.toggleExpand(item.label);
+}
+
   isActive(link?: string): boolean {
     if (!link) return false;
     const url = this.activeUrl();

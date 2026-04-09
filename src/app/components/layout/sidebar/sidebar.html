@@ -27,39 +27,43 @@
     <nav class="sidebar-nav">
       @for (item of rootMenus(); track item.menuItemId) {
 
-        <!-- Menu avec enfants -->
-        @if (hasChildren(item)) {
-          <div class="nav-group" [class.active]="isGroupActive(item)">
-            <button class="nav-item"
-              (click)="toggleExpand(item.label)"
-              [class.open]="expanded() === item.label"
-              [class.group-active]="isGroupActive(item)">
-              <span class="nav-icon">
-  <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
-</span>
-              <span class="nav-label">{{ item.label }}</span>
-              <span class="nav-arrow">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2.5">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </span>
-            </button>
+       <!-- Menu avec enfants -->
+@if (hasChildren(item)) {
+  <div class="nav-group" [class.active]="isGroupActive(item)">
 
-            <div class="nav-tooltip">{{ item.label }}</div>
+    <!-- PARENT : maintenant cliquable + toggle -->
+    <button class="nav-item"
+            [class.active]="isActive(item.link)"
+            [class.open]="expanded() === item.label"
+            [class.group-active]="isGroupActive(item)"
+            (click)="onParentClick(item)">
 
-            <div class="nav-children" [class.open]="expanded() === item.label">
-              @for (child of getChildren(item.menuItemId); track child.menuItemId) {
-                <button class="nav-child"
-                  [class.active]="isActive(child.link)"
-                  (click)="navigate(child.link!)">
-                  <span class="child-dot"></span>
-                  <lucide-angular [name]="child.icon || 'circle'" size="16"></lucide-angular>
-                  <span class="child-label">{{ child.label }}</span>
-                </button>
-              }
-            </div>
-          </div>
+      <span class="nav-icon">
+        <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
+      </span>
+      <span class="nav-label">{{ item.label }}</span>
+      <span class="nav-arrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </span>
+    </button>
+
+    <div class="nav-tooltip">{{ item.label }}</div>
+
+    <div class="nav-children" [class.open]="expanded() === item.label">
+      @for (child of getChildren(item.menuItemId); track child.menuItemId) {
+        <button class="nav-child"
+                [class.active]="isActive(child.link)"
+                (click)="navigate(child.link!)">
+          <span class="child-dot"></span>
+          <lucide-angular [name]="child.icon || 'circle'" size="16"></lucide-angular>
+          <span class="child-label">{{ child.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
 
         <!-- Menu simple -->
         } @else {

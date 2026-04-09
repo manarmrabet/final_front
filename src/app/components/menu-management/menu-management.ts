@@ -1,6 +1,6 @@
 import {
-  ChangeDetectionStrategy,   // ✅ PERF : OnPush
-  ChangeDetectorRef,         // ✅ PERF : détection manuelle si besoin
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   inject,
   OnInit,
@@ -21,21 +21,14 @@ import { LucideIconPipe } from '../../pipes/lucide-icon.pipe';
   imports: [CommonModule, FormsModule, LucideAngularModule, LucideIconPipe],
   templateUrl: './menu-management.html',
   styleUrls: ['./menu-management.scss'],
-
-  // ✅ PERF CLEF : OnPush = Angular ne re-rend CE composant que si :
-  //   - un @Input() change de référence
-  //   - un signal() émet une nouvelle valeur
-  //   - un event DOM est déclenché dans le template
-  //   → Élimine les re-renders inutiles à chaque cycle global
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuManagementComponent implements OnInit {
 
   private adminService = inject(AdminService);
   private notifSvc     = inject(DashboardNotification);
-  private cdr          = inject(ChangeDetectorRef); // ✅ PERF : pour forcer au besoin
+  private cdr          = inject(ChangeDetectorRef);
 
-  // ✅ signal() est compatible OnPush : Angular détecte automatiquement les changements
   menus        = signal<MenuItemDTO[]>([]);
   displayModal = false;
   isEditMode   = false;
@@ -56,8 +49,6 @@ export class MenuManagementComponent implements OnInit {
   customIconInput = '';
   iconSearch      = '';
 
-  // ── Catalogue icônes ─────────────────────────────────────────────────────
-  // readonly = référence stable → pas de re-render inutile
   readonly iconCategories: { label: string; icons: string[] }[] = [
     {
       label: 'Navigation',
@@ -129,25 +120,20 @@ export class MenuManagementComponent implements OnInit {
     this.adminService.getAllMenuItems().subscribe({
       next: (res: ApiResponse<MenuItemDTO[]>) => {
         this.menus.set(res.data || []);
-        // ✅ PERF : avec OnPush, on notifie Angular du changement
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Erreur chargement', err)
     });
   }
 
-  // ✅ PERF : trackBy pour @for — évite de re-créer les lignes existantes du tableau
-  // Angular réutilise les éléments DOM dont le trackId n'a pas changé
   trackByMenuId(_index: number, item: MenuItemDTO): number {
     return item.menuItemId ?? _index;
   }
 
-  // ✅ PERF : trackBy pour les catégories d'icônes
   trackByCatLabel(_index: number, cat: { label: string }): string {
     return cat.label;
   }
 
-  // ✅ PERF : trackBy pour les icônes dans une catégorie
   trackByIcon(_index: number, icon: string): string {
     return icon;
   }
@@ -184,6 +170,7 @@ export class MenuManagementComponent implements OnInit {
 
   onSubMenuToggle(): void {
     if (!this.isSubMenu) this.newMenu.parentId = null;
+    this.cdr.markForCheck();
   }
 
   selectIcon(iconName: string): void {
@@ -211,7 +198,6 @@ export class MenuManagementComponent implements OnInit {
     }
   }
 
-  // ✅ Détecte si l'icône est une classe CSS (Feather, MDI…) ou un nom Lucide
   isCustomCssClass(icon: string): boolean {
     if (!icon?.trim()) return false;
     const trimmed     = icon.trim().toLowerCase();
@@ -289,6 +275,8 @@ export class MenuManagementComponent implements OnInit {
     this.customIconInput = '';
   }
 
+  // ── CORRECTION 1 : parentMenuOptions inclut TOUS les menus sans parent
+  // → disponibles dans la grille ET en icône personnalisée
   get parentMenuOptions(): MenuItemDTO[] {
     return this.menus().filter(
       m => m.menuItemId !== this.newMenu.menuItemId && !m.parentId
@@ -299,7 +287,6 @@ export class MenuManagementComponent implements OnInit {
     return this.menus().find(m => m.menuItemId === parentId)?.label ?? `#${parentId}`;
   }
 
-  // ✅ PERF : getter pur — Angular le recalcule uniquement quand iconSearch change
   get filteredCategories(): { label: string; icons: string[] }[] {
     if (!this.iconSearch.trim()) return this.iconCategories;
     const term = this.iconSearch.toLowerCase();

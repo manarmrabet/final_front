@@ -8,4 +8,7 @@ export interface MenuItemDTO {
   isLayout?: boolean;
   createdAt?: string;
   updatedAt?: string;
+
+  children?: MenuItemDTO[];
+  isExpanded?: boolean;
 }
