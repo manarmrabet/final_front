@@ -5,6 +5,7 @@ import { ProductionService }            from '../../services/production/producti
 import { AuthService }                  from '../../services/auth/auth';
 import { Subject, interval }            from 'rxjs';
 import { takeUntil, filter, take }      from 'rxjs/operators';
+import * as XLSX                         from 'xlsx';
 
 export interface ProductionLog {
   id:            number;
@@ -47,22 +48,23 @@ export class ProductionLogComponent implements OnInit, OnDestroy {
 
   logs:   ProductionLog[] = [];
   stats: ProductionStats = {
-  totalOpsToday:  0,
-  totalQtyToday:  0,
-  failedToday:    0,   // ← backend renvoie null, ici on force 0
-  recentLogs:     [],
-  operatorStats:  []
-};
+    totalOpsToday:  0,
+    totalQtyToday:  0,
+    failedToday:    0,
+    recentLogs:     [],
+    operatorStats:  []
+  };
   isLoading   = true;
   autoRefresh = false;
 
-  // Filtres
-  searchTerm     = '';
-  selectedType   = '';
-  selectedStatus = '';
-  selectedSource = '';
-  selectedUser   = '';
-  todayOnly      = false;
+  // ── Filtres ────────────────────────────────────────────────────────────
+  searchTerm      = '';
+  selectedType    = '';
+  selectedStatus  = '';
+  selectedSource  = '';
+  selectedUser    = '';
+  selectedArticle = '';   // ← NOUVEAU filtre article
+  todayOnly       = false;
 
   selectedLog: ProductionLog | null = null;
 
@@ -70,58 +72,48 @@ export class ProductionLogComponent implements OnInit, OnDestroy {
 
   constructor(
     private svc:  ProductionService,
-    private auth: AuthService        // ← injecter AuthService
+    private auth: AuthService
   ) {}
 
-  // ── ngOnInit : attendre que le user soit authentifié ─────────────────────
- ngOnInit(): void {
-  if (localStorage.getItem('token')) {
-    this.loadAll();
-  } else {
-    this.auth.currentUser$.pipe(
-      filter(user => user !== null),
-      take(1),
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.loadAll());
+  ngOnInit(): void {
+    if (localStorage.getItem('token')) {
+      this.loadAll();
+    } else {
+      this.auth.currentUser$.pipe(
+        filter(user => user !== null),
+        take(1),
+        takeUntil(this.destroy$)
+      ).subscribe(() => this.loadAll());
+    }
   }
-}
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // ── Chargement ────────────────────────────────────────────────────────────
-  // ✅ APRÈS — wrapper setTimeout force le chargement hors du cycle CD
-loadAll(): void {
-  this.isLoading = true;
+  // ── Chargement ────────────────────────────────────────────────────────
+  loadAll(): void {
+    this.isLoading = true;
 
-  this.svc.getAllLogs().subscribe({
-    next:  d   => {
-      this.logs      = d || [];
-      this.isLoading = false;
-    },
-    error: err => {
-      console.error('[ProductionLog] logs error:', err);
-      this.logs      = [];
-      this.isLoading = false;
-    }
-  });
+    this.svc.getAllLogs().subscribe({
+      next:  d   => { this.logs = d || []; this.isLoading = false; },
+      error: err => { console.error('[ProductionLog] logs error:', err); this.logs = []; this.isLoading = false; }
+    });
 
-  this.svc.getStats().subscribe({
-    next: s => {
-      // Protéger contre les null du backend
-      this.stats = {
-        totalOpsToday:  s?.totalOpsToday  ?? 0,
-        totalQtyToday:  s?.totalQtyToday  ?? 0,
-        failedToday:    s?.failedToday    ?? 0,   // ← null → 0
-        recentLogs:     s?.recentLogs     ?? [],
-        operatorStats:  s?.operatorStats  ?? []
-      };
-    },
-    error: err => console.error('[ProductionLog] stats error:', err)
-  });
-}
+    this.svc.getStats().subscribe({
+      next: s => {
+        this.stats = {
+          totalOpsToday:  s?.totalOpsToday  ?? 0,
+          totalQtyToday:  s?.totalQtyToday  ?? 0,
+          failedToday:    s?.failedToday    ?? 0,
+          recentLogs:     s?.recentLogs     ?? [],
+          operatorStats:  s?.operatorStats  ?? []
+        };
+      },
+      error: err => console.error('[ProductionLog] stats error:', err)
+    });
+  }
 
   toggleAutoRefresh(): void {
     this.autoRefresh = !this.autoRefresh;
@@ -133,7 +125,7 @@ loadAll(): void {
     }
   }
 
-  // ── KPIs locaux ───────────────────────────────────────────────────────────
+  // ── KPIs locaux ───────────────────────────────────────────────────────
   private isTodayLog(l: ProductionLog): boolean {
     const d = l.createdAt?.slice(0, 10);
     if (!d) return false;
@@ -141,59 +133,111 @@ loadAll(): void {
     return new Date(`${yr}-${mon}-${day}`).toDateString() === new Date().toDateString();
   }
 
-  get todayLogs(): ProductionLog[]  { return this.logs.filter(l => this.isTodayLog(l)); }
+  get todayLogs():      ProductionLog[] { return this.logs.filter(l => this.isTodayLog(l)); }
   get totalOpsToday():  number { return this.todayLogs.filter(l => l.status === 'SUCCESS').length; }
   get totalQtyToday():  number { return this.todayLogs.filter(l => l.status === 'SUCCESS').reduce((a, l) => a + (l.qtyRequested || 0), 0); }
   get failedToday():    number { return this.todayLogs.filter(l => l.status === 'FAILED').length; }
   get lotsVidesToday(): number { return this.todayLogs.filter(l => l.stockVide && l.status === 'SUCCESS').length; }
 
+  // ── Listes distinctes pour les selects ───────────────────────────────
   get uniqueUsers(): string[] {
     return [...new Set(this.logs.map(l => l.userName).filter(u => !!u))];
   }
 
-  // ── Filtre ────────────────────────────────────────────────────────────────
+  // ← NOUVEAU : liste distincte des articles pour le filtre
+  get uniqueArticles(): string[] {
+    return [...new Set(this.logs.map(l => l.itemCode).filter(a => !!a && a !== 'N/A'))].sort();
+  }
+
+  // ── Filtre ────────────────────────────────────────────────────────────
   get filteredLogs(): ProductionLog[] {
     const term  = this.searchTerm.toLowerCase();
-    const today = new Date().toDateString();
 
     return this.logs.filter(l => {
-      const matchSearch  = !term ||
+      const matchSearch   = !term ||
         l.lotCode?.toLowerCase().includes(term)  ||
         l.itemCode?.toLowerCase().includes(term) ||
         l.userName?.toLowerCase().includes(term) ||
         l.warehouse?.toLowerCase().includes(term);
-      const matchType    = !this.selectedType   || l.operationType === this.selectedType;
-      const matchStatus  = !this.selectedStatus || l.status === this.selectedStatus;
-      const matchSource  = !this.selectedSource || l.source === this.selectedSource;
-      const matchUser    = !this.selectedUser   || l.userName === this.selectedUser;
-      const matchToday   = !this.todayOnly || this.isTodayLog(l);
-      return matchSearch && matchType && matchStatus && matchSource && matchUser && matchToday;
+      const matchType     = !this.selectedType    || l.operationType === this.selectedType;
+      const matchStatus   = !this.selectedStatus  || l.status        === this.selectedStatus;
+      const matchSource   = !this.selectedSource  || l.source        === this.selectedSource;
+      const matchUser     = !this.selectedUser    || l.userName      === this.selectedUser;
+      const matchArticle  = !this.selectedArticle || l.itemCode      === this.selectedArticle; // ← NOUVEAU
+      const matchToday    = !this.todayOnly        || this.isTodayLog(l);
+      return matchSearch && matchType && matchStatus && matchSource && matchUser && matchArticle && matchToday;
     });
   }
 
   clearFilters(): void {
-    this.searchTerm = ''; this.selectedType = ''; this.selectedStatus = '';
-    this.selectedSource = ''; this.selectedUser = ''; this.todayOnly = false;
+    this.searchTerm     = '';
+    this.selectedType   = '';
+    this.selectedStatus = '';
+    this.selectedSource = '';
+    this.selectedUser   = '';
+    this.selectedArticle = ''; // ← NOUVEAU
+    this.todayOnly      = false;
   }
 
-  // ── Export CSV ────────────────────────────────────────────────────────────
-  exportCsv(): void {
-    const headers = ['ID','Date','Opérateur','Lot','Article','Magasin',
-                     'Type','Statut','Qty Avant','Qty Sortie','Qty Après','Source','Notes'];
-    const rows = this.filteredLogs.map(l =>
-      [l.id, l.createdAt, l.userName, l.lotCode, l.itemCode, l.warehouse,
-       l.operationType, l.status, l.qtyBefore, l.qtyRequested, l.qtyAfter,
-       l.source, l.notes ?? ''].join(',')
-    );
-    const csv  = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `sorties_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+  // ── Export EXCEL (SheetJS) ────────────────────────────────────────────
+  // Remplace complètement l'export CSV
+  exportExcel(): void {
+    const rows = this.filteredLogs.map(l => ({
+      'ID':           l.id,
+      'Date':         l.createdAt,
+      'Opérateur':    l.userName,
+      'Lot':          l.lotCode,
+      'Article':      l.itemCode,
+      'Magasin':      l.warehouse,
+      'Emplacement':  l.location,
+      'Type':         l.operationType,
+      'Statut':       l.status,
+      'Qté Avant':    l.qtyBefore,
+      'Qté Sortie':   l.qtyRequested,
+      'Qté Après':    l.qtyAfter,
+      'Source':       l.source,
+      'Appareil':     l.deviceInfo ?? '',
+      'Notes':        l.notes      ?? '',
+      'Erreur':       l.errorMessage ?? ''
+    }));
+
+    // Créer le workbook
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Largeurs colonnes automatiques
+    const colWidths = [
+      { wch: 6  },  // ID
+      { wch: 18 },  // Date
+      { wch: 14 },  // Opérateur
+      { wch: 16 },  // Lot
+      { wch: 14 },  // Article
+      { wch: 10 },  // Magasin
+      { wch: 14 },  // Emplacement
+      { wch: 10 },  // Type
+      { wch: 10 },  // Statut
+      { wch: 10 },  // Qté Avant
+      { wch: 10 },  // Qté Sortie
+      { wch: 10 },  // Qté Après
+      { wch: 8  },  // Source
+      { wch: 14 },  // Appareil
+      { wch: 20 },  // Notes
+      { wch: 30 },  // Erreur
+    ];
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sorties Production');
+
+    // Nom du fichier avec date + filtres actifs
+    const dateStr    = new Date().toISOString().slice(0, 10);
+    const articleSuf = this.selectedArticle ? `_${this.selectedArticle}` : '';
+    const typeSuf    = this.selectedType    ? `_${this.selectedType}`    : '';
+    const filename   = `sorties${articleSuf}${typeSuf}_${dateStr}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
   }
 
-  // ── Détail ────────────────────────────────────────────────────────────────
+  // ── Détail ────────────────────────────────────────────────────────────
   openDetail(log: ProductionLog): void  { this.selectedLog = log; }
   closeDetail(): void                   { this.selectedLog = null; }
   trackByLog(_: number, l: ProductionLog): number { return l.id; }

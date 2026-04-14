@@ -17,8 +17,9 @@
               (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
         <i class="bi bi-arrow-repeat" [class.spin]="autoRefresh"></i>
       </button>
-      <button class="btn-outline" (click)="exportCsv()">
-        <i class="bi bi-download"></i> CSV
+      <!-- ✅ EXCEL au lieu de CSV -->
+      <button class="btn-outline" (click)="exportExcel()" title="Exporter en Excel">
+        <i class="bi bi-file-earmark-excel"></i> Excel
       </button>
       <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
         <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
@@ -92,6 +93,7 @@
 
     <!-- ══ FILTRES ═══════════════════════════════════════════════════════ -->
     <div class="filter-bar">
+      <!-- Recherche texte libre -->
       <div class="search-wrap">
         <i class="bi bi-search"></i>
         <input type="text" [(ngModel)]="searchTerm"
@@ -100,6 +102,14 @@
           <i class="bi bi-x"></i>
         </button>
       </div>
+
+      <!-- ✅ NOUVEAU filtre Article -->
+      <select [(ngModel)]="selectedArticle" class="f-sel">
+        <option value="">Tous les articles</option>
+        <option *ngFor="let a of uniqueArticles" [value]="a">{{ a }}</option>
+      </select>
+
+      <!-- Filtres existants inchangés -->
       <select [(ngModel)]="selectedType"   class="f-sel">
         <option value="">Tous les types</option>
         <option value="TOTALE">Totale</option>
@@ -166,7 +176,15 @@
               </div>
             </td>
             <td><code class="lot-tag">{{ l.lotCode }}</code></td>
-            <td><span class="item-txt">{{ l.itemCode }}</span></td>
+            <td>
+              <!-- ✅ Article cliquable — filtre direct au clic -->
+              <span class="item-txt item-link"
+                    (click)="selectedArticle = l.itemCode"
+                    [class.item-active]="selectedArticle === l.itemCode"
+                    title="Filtrer par {{ l.itemCode }}">
+                {{ l.itemCode }}
+              </span>
+            </td>
             <td><span class="wh-pill">{{ l.warehouse }}</span></td>
             <td class="tc">
               <span class="type-pill"
