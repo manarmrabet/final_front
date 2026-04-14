@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuditFilter, AuditLog } from '../../models/audit-log';
+import { AuditFilter, AuditLog, ArchiveFile } from '../../models/audit-log';
 import { PageResponse, ApiResponse } from '../../models/shared';
 import { environment } from '../../../environments/environment';
 
@@ -50,10 +50,9 @@ export class AuditService {
   getConnections(userId: number): Observable<ApiResponse<AuditLog[]>> {
     return this.http.get<ApiResponse<AuditLog[]>>(`${this.API}/user/${userId}/connections`);
   }
-
-  getArchives(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${this.API}/archives`);
-  }
+getArchives(): Observable<ApiResponse<ArchiveFile[]>> {
+  return this.http.get<ApiResponse<ArchiveFile[]>>(`${this.API}/archives`);
+}
 
   downloadArchive(filename: string): Observable<Blob> {
     return this.http.get(`${this.API}/archives/download/${filename}`, {

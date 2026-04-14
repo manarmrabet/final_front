@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe, NgClass } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuditFilter, AuditLog, EventType, Severity } from '../../../models/audit-log';
+import { AuditFilter, AuditLog, ArchiveFile, EventType, Severity } from '../../../models/audit-log';
 import { PageResponse, ApiResponse } from '../../../models/shared';
 import { AuditService } from '../../../services/audit/audit';
 import { LucideAngularModule } from 'lucide-angular';
@@ -24,7 +24,7 @@ export class AuditListComponent implements OnInit {
   selectedLog = signal<AuditLog | null>(null);
 
   // --- Nouveaux signaux pour les archives ---
-  archives = signal<string[]>([]);
+  archives = signal<ArchiveFile[]>([]);
   viewMode = signal<'live' | 'archive'>('live');
 
   filters: AuditFilter = { eventType: '' as any, severity: '' as any, page: 0, size: 20 };
@@ -57,19 +57,21 @@ export class AuditListComponent implements OnInit {
     });
   }
 
-  loadArchives(): void {
-    this.loading.set(true);
-    this.auditService.getArchives().subscribe({
-      next: (res) => {
-        this.archives.set(res.data || []);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Erreur chargement archives', err);
-        this.loading.set(false);
-      }
-    });
-  }
+ loadArchives(): void {
+  this.loading.set(true);
+  this.archives.set([]); // ← vide d'abord pour forcer la détection
+  this.auditService.getArchives().subscribe({
+    next: (res) => {
+      const data = res.data ?? [];
+      this.loading.set(false);        // ← loading AVANT archives
+      this.archives.set([...data]);   // ← spread pour créer un nouveau tableau
+    },
+    error: (err) => {
+      console.error('Erreur chargement archives', err);
+      this.loading.set(false);
+    }
+  });
+}
 
   switchView(mode: 'live' | 'archive'): void {
     this.viewMode.set(mode);
@@ -135,4 +137,11 @@ export class AuditListComponent implements OnInit {
     };
     return map[eventType] ?? '📋';
   }
+
+
+  formatSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' o';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' Mo';
+}
 }

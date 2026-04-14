@@ -17,7 +17,7 @@ export interface AuditLog {
   newValue: string;
   statusCode: number;
   errorMessage: string;
-  stackTrace: string;      
+  stackTrace: string;
   durationMs: number;
   sessionId: string;
   createdAt: string;
@@ -69,3 +69,10 @@ export interface AuditLog {
 }
 
 
+
+export interface ArchiveFile {
+  filename: string;
+  sizeBytes: number;
+  archiveDate: string | null;   // ISO string depuis le backend
+  recordCount: number;
+}
