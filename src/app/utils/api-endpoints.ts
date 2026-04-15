@@ -47,6 +47,7 @@ export const API = {
     ERP: {
       WAREHOUSES: `${BASE}/inventory/erp/warehouses`,
       LOCATIONS: (warehouseCode: string) => `${BASE}/inventory/erp/locations?warehouseCode=${warehouseCode}`,
+      ZONES: (warehouseCode: string) => `${BASE}/inventory/erp/zones?warehouseCode=${warehouseCode}`,
     },
   },
 

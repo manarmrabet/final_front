@@ -1,11 +1,14 @@
+// src/app/components/inventory/inventory.component.ts
+
 import { Component, OnInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
 import { API } from '../../utils/api-endpoints';
 import {
-  InventorySession, CollectLine, CollectTemplate,
-  InventoryReport, ReportLine, CreateSessionRequest, AddCollectLineRequest
+  InventorySession, CollectLine, InventoryReport, ReportLine,
+  CreateSessionRequest, AddCollectLineRequest,
+  COLLECT_FIELDS
 } from '../../models/inventory.model';
 
 declare const feather: any;
@@ -23,6 +26,7 @@ type View = 'sessions' | 'lines' | 'report';
 })
 export class InventoryComponent implements OnInit, AfterViewChecked {
 
+  // ── État global ───────────────────────────────────────────────────────────
   view: View = 'sessions';
   loadingSessions = true;
   loadingLines    = false;
@@ -31,27 +35,44 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
   errorMsg        = '';
   successMsg      = '';
 
-  sessions:        InventorySession[]  = [];
+  // ── Données ───────────────────────────────────────────────────────────────
+  sessions:        InventorySession[] = [];
   selectedSession: InventorySession | null = null;
-  lines:           CollectLine[]       = [];
-  templates:       CollectTemplate[]   = [];
+  lines:           CollectLine[]      = [];
   report:          InventoryReport | null = null;
   reportNotFound   = false;
-  erpWarehouses:   string[]            = [];
 
+  // ── ERP dropdowns ─────────────────────────────────────────────────────────
+  erpWarehouses: string[] = [];
+  erpZones:      string[] = [];
+  loadingZones   = false;
+
+  // ── Modals ────────────────────────────────────────────────────────────────
   showCreate   = false;
-  showTemplate = false;
   showCollect  = false;
   showValidate = false;
 
-  newSession: CreateSessionRequest = { name: '', warehouseCode: '', warehouseLabel: '' };
+  // ── Formulaire création session ───────────────────────────────────────────
+  /** Champs disponibles (fixe) */
+  readonly availableFields = [...COLLECT_FIELDS];
+
+  newSession: CreateSessionRequest = {
+    name: '', warehouseCode: '', warehouseLabel: '', warehouseZone: '', collectFields: []
+  };
+
+  /** État des cases à cocher (field → coché) */
+  fieldChecked: Record<string, boolean> = {
+    ARTICLE:    true,
+    LOT:        true,
+    EMPLACEMENT: false,
+    QUANTITE:   true,
+  };
+
+  // ── Formulaire collecte ───────────────────────────────────────────────────
   collectLoc    = '';
   collectValues: Record<string, string> = {};
-  activeTemplate: CollectTemplate | null = null;
-  tplName   = '';
-  tplFields: string[] = ['ARTICLE', 'LOT', 'QUANTITE'];
-  tplInput  = '';
 
+  // ── Pagination ────────────────────────────────────────────────────────────
   linesPage = 1; linesPageSize = 10;
   rptPage   = 1; rptPageSize   = 15;
   rptFilter: ReportFilter = 'ALL';
@@ -59,12 +80,16 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
 
   private needFeatherRefresh = false;
 
+  // ── Computed ──────────────────────────────────────────────────────────────
   get uniqueLocationsCount(): number {
-    return this.lines.length === 0 ? 0 : new Set(this.lines.map(l => l.locationCode)).size;
+    return this.lines.length === 0
+      ? 0
+      : new Set(this.lines.map(l => l.locationCode)).size;
   }
 
-  get activeTemplateName(): string {
-    return this.activeTemplate?.name || 'Aucun';
+  /** Champs cochés pour la session en cours de création */
+  get checkedFields(): string[] {
+    return this.availableFields.filter(f => this.fieldChecked[f]);
   }
 
   constructor(private svc: InventoryService, private cdr: ChangeDetectorRef) {}
@@ -73,7 +98,6 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     this.loadAll();
   }
 
-  // ─── FIX FEATHER : re-render après chaque changement de DOM ───
   ngAfterViewChecked(): void {
     if (this.needFeatherRefresh) {
       this.needFeatherRefresh = false;
@@ -86,24 +110,20 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     this.cdr.detectChanges();
   }
 
-  // ─── FIX : charger tout en parallèle, pas en séquence ─────────
+  // ════════════════════════════════════════════════════════════════
+  // CHARGEMENT INITIAL
+  // ════════════════════════════════════════════════════════════════
+
   private loadAll(): void {
     this.loadingSessions = true;
-
-    // Templates + warehouses en parallèle (erreurs silencieuses)
-    this.svc.getTemplates().subscribe({
-      next: t => { this.templates = t; this.activeTemplate = t[0] ?? null; this.refreshIcons(); },
-      error: () => { this.templates = []; }
-    });
 
     this.svc.getErpWarehouses().subscribe({
       next: w => { this.erpWarehouses = w; },
       error: () => { this.erpWarehouses = []; }
     });
 
-    // Sessions
     this.svc.getSessions().subscribe({
-      next: (s) => {
+      next: s => {
         this.sessions = s || [];
         this.loadingSessions = false;
         this.refreshIcons();
@@ -120,7 +140,7 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
   loadSessions(): void {
     this.loadingSessions = true;
     this.svc.getSessions().subscribe({
-      next: (s) => {
+      next: s => {
         this.sessions = s || [];
         this.loadingSessions = false;
         this.refreshIcons();
@@ -133,32 +153,82 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  // ====================== SESSIONS ======================
+  // ════════════════════════════════════════════════════════════════
+  // SESSIONS — CRÉATION
+  // ════════════════════════════════════════════════════════════════
+
   openCreate(): void {
-    this.newSession = { name: '', warehouseCode: this.erpWarehouses[0] || '', warehouseLabel: '' };
+    this.newSession = {
+      name: '',
+      warehouseCode: this.erpWarehouses[0] || '',
+      warehouseLabel: '',
+      warehouseZone: '',
+      collectFields: [],
+    };
+    // Réinitialiser les cases à cocher (EMPLACEMENT décoché par défaut)
+    this.fieldChecked = {
+      ARTICLE:    true,
+      LOT:        true,
+      EMPLACEMENT: false,
+      QUANTITE:   true,
+    };
+    this.erpZones = [];
+    if (this.newSession.warehouseCode) {
+      this.loadZones(this.newSession.warehouseCode);
+    }
     this.showCreate = true;
     this.refreshIcons();
   }
 
-  createSession(): void {
-    if (!this.newSession.name?.trim() || !this.newSession.warehouseCode?.trim()) {
-      this.err('Nom et magasin obligatoires'); return;
+  /** Chargé quand le magasin change dans le formulaire */
+  onWarehouseChange(): void {
+    this.newSession.warehouseZone = '';
+    this.erpZones = [];
+    if (this.newSession.warehouseCode) {
+      this.loadZones(this.newSession.warehouseCode);
     }
+  }
+
+  private loadZones(warehouseCode: string): void {
+    this.loadingZones = true;
+    this.svc.getErpZones(warehouseCode).subscribe({
+      next: z => { this.erpZones = z; this.loadingZones = false; this.refreshIcons(); },
+      error: () => { this.erpZones = []; this.loadingZones = false; }
+    });
+  }
+
+  createSession(): void {
+    if (!this.newSession.name?.trim()) {
+      this.err('Le nom de la session est obligatoire'); return;
+    }
+    if (!this.newSession.warehouseCode?.trim()) {
+      this.err('Le magasin est obligatoire'); return;
+    }
+    if (this.checkedFields.length === 0) {
+      this.err('Sélectionnez au moins un champ de collecte'); return;
+    }
+
+    this.newSession.collectFields = this.checkedFields;
     this.saving = true;
+
     this.svc.createSession(this.newSession).subscribe({
       next: s => {
         this.sessions.unshift(s);
         this.showCreate = false;
         this.saving = false;
-        this.ok(`Session "${s.name}" créée`);
+        this.ok(`Session "${s.name}" créée ✅`);
         this.refreshIcons();
       },
       error: e => {
-        this.err(e?.error?.message || 'Erreur création');
+        this.err(e?.error?.message || 'Erreur lors de la création');
         this.saving = false;
       }
     });
   }
+
+  // ════════════════════════════════════════════════════════════════
+  // SESSIONS — VALIDATION
+  // ════════════════════════════════════════════════════════════════
 
   askValidate(s: InventorySession, e?: Event): void {
     e?.stopPropagation();
@@ -191,7 +261,10 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     if (i !== -1) this.sessions[i] = s;
   }
 
-  // ====================== LIGNES ======================
+  // ════════════════════════════════════════════════════════════════
+  // LIGNES
+  // ════════════════════════════════════════════════════════════════
+
   openLines(s: InventorySession): void {
     this.selectedSession = s;
     this.view = 'lines';
@@ -215,26 +288,23 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
   }
 
   openCollectModal(): void {
-    if (!this.activeTemplate) {
-      this.err('Créez d\'abord un template via le bouton "Templates"');
-      return;
-    }
     this.collectLoc = '';
     this.collectValues = {};
-    this.activeTemplate.fields.forEach(f => this.collectValues[f] = '');
+    // Initialiser les valeurs selon les champs de la session
+    (this.selectedSession?.collectFields ?? []).forEach(f => this.collectValues[f] = '');
     this.showCollect = true;
     this.refreshIcons();
   }
 
   addLine(): void {
     if (!this.collectLoc.trim()) { this.err('Emplacement obligatoire'); return; }
-    for (const f of this.activeTemplate!.fields) {
+    for (const f of (this.selectedSession?.collectFields ?? [])) {
       if (!this.collectValues[f]?.trim()) { this.err(`"${f}" obligatoire`); return; }
     }
 
     this.saving = true;
     const req: AddCollectLineRequest = {
-      sessionId: this.selectedSession!.id,
+      sessionId:    this.selectedSession!.id,
       locationCode: this.collectLoc.trim().toUpperCase(),
       locationLabel: '',
       values: { ...this.collectValues }
@@ -246,7 +316,7 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
         this._patchSession({ ...this.selectedSession!, totalLines: this.lines.length });
         this.showCollect = false;
         this.saving = false;
-        this.ok('Ligne ajoutée');
+        this.ok('Ligne ajoutée ✅');
         this.refreshIcons();
       },
       error: e => {
@@ -280,7 +350,10 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     return this.lines.length > 0 ? Object.keys(this.lines[0].values) : [];
   }
 
-  // ====================== RAPPORT ======================
+  // ════════════════════════════════════════════════════════════════
+  // RAPPORT
+  // ════════════════════════════════════════════════════════════════
+
   openReport(s: InventorySession): void {
     this.selectedSession = s;
     this.view = 'report';
@@ -297,9 +370,9 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
         this.loadingReport = false;
         this.refreshIcons();
       },
-      error: (err) => {
+      error: err => {
         const msg = err.error?.message || err.message || '';
-        if (err.status === 404 || msg.includes('RAPPORT_NON_GENERE') || msg.includes('Aucun rapport')) {
+        if (err.status === 404 || msg.includes('Aucun rapport')) {
           this.reportNotFound = true;
         } else {
           this.err('Erreur lors du chargement du rapport');
@@ -319,7 +392,7 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
       next: r => {
         this.report = r;
         this.loadingReport = false;
-        this.ok('Rapport généré avec succès');
+        this.ok('Rapport généré avec succès ✅');
         this.refreshIcons();
       },
       error: e => {
@@ -336,7 +409,9 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
 
   get filteredLines(): ReportLine[] {
     if (!this.report) return [];
-    return this.rptFilter === 'ALL' ? this.report.lines : this.report.lines.filter(l => l.statut === this.rptFilter);
+    return this.rptFilter === 'ALL'
+      ? this.report.lines
+      : this.report.lines.filter(l => l.statut === this.rptFilter);
   }
 
   get pagedReport(): ReportLine[] {
@@ -350,73 +425,35 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
 
   countStatut(f: ReportFilter): number {
     if (!this.report) return 0;
-    return f === 'ALL' ? this.report.lines.length : this.report.lines.filter(l => l.statut === f).length;
+    return f === 'ALL'
+      ? this.report.lines.length
+      : this.report.lines.filter(l => l.statut === f).length;
   }
 
   sClass(s: string): string {
-    const map: any = { CONFORME: 'badge-success', ECART: 'badge-warning', MANQUANT: 'badge-danger', SURPLUS: 'badge-info' };
+    const map: Record<string, string> = {
+      CONFORME: 'badge-success', ECART: 'badge-warning',
+      MANQUANT: 'badge-danger',  SURPLUS: 'badge-info'
+    };
     return map[s] || '';
   }
 
   sIcon(s: string): string {
-    const map: any = { CONFORME: '✅', ECART: '⚠️', MANQUANT: '🔴', SURPLUS: '🟡', ALL: '📋' };
+    const map: Record<string, string> = {
+      CONFORME: '✅', ECART: '⚠️', MANQUANT: '🔴', SURPLUS: '🟡', ALL: '📋'
+    };
     return map[s] || '';
   }
 
-  // ====================== TEMPLATES ======================
-  openTemplateModal(): void {
-    this.tplName = '';
-    this.tplFields = ['ARTICLE', 'LOT', 'QUANTITE'];
-    this.tplInput = '';
-    this.showTemplate = true;
-    this.refreshIcons();
-  }
+  // ════════════════════════════════════════════════════════════════
+  // EXPORT
+  // ════════════════════════════════════════════════════════════════
 
-  addField(): void {
-    const f = this.tplInput.trim().toUpperCase();
-    if (f && !this.tplFields.includes(f)) {
-      this.tplFields.push(f);
-      this.tplInput = '';
-    }
-  }
-
-  removeField(f: string): void {
-    this.tplFields = this.tplFields.filter(x => x !== f);
-  }
-
-  saveTemplate(): void {
-    if (!this.tplName.trim()) { this.err('Nom obligatoire'); return; }
-    this.saving = true;
-    this.svc.createTemplate({ name: this.tplName.trim(), fields: this.tplFields, active: true }).subscribe({
-      next: t => {
-        const i = this.templates.findIndex(x => x.id === t.id);
-        if (i !== -1) this.templates[i] = t; else this.templates.push(t);
-        this.activeTemplate = t;
-        this.showTemplate = false;
-        this.saving = false;
-        this.tplName = '';
-        this.tplFields = ['ARTICLE', 'LOT', 'QUANTITE'];
-        this.ok(`Template "${t.name}" sauvegardé ✅`);
-        this.refreshIcons();
-      },
-      error: e => {
-        this.err(e?.error?.message || 'Erreur template');
-        this.saving = false;
-      }
-    });
-  }
-
-  selectTemplate(t: CollectTemplate): void {
-    this.activeTemplate = t;
-    this.ok('Template actif : ' + t.name);
-  }
-
-  // ====================== EXPORT ======================
   exportCollect(): void {
     if (!this.selectedSession) return;
     this.downloadWithAuth(
       API.INVENTORY.SESSIONS.EXPORT_COLLECT(this.selectedSession.id),
-      `collecte_${this.selectedSession.warehouseCode || this.selectedSession.name || 'session'}.xlsx`
+      `collecte_${this.selectedSession.warehouseCode}.xlsx`
     );
   }
 
@@ -424,15 +461,14 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     if (!this.selectedSession) return;
     this.downloadWithAuth(
       API.INVENTORY.SESSIONS.EXPORT_REPORT(this.selectedSession.id),
-      `rapport_detaille_${this.selectedSession.name || this.selectedSession.id}.xlsx`
+      `rapport_${this.selectedSession.name}.xlsx`
     );
   }
 
   private downloadWithAuth(url: string, filename: string): void {
-    const token = localStorage.getItem('token') ||
-                  localStorage.getItem('jwt') ||
-                  sessionStorage.getItem('token');
-
+    const token = localStorage.getItem('token')
+               || localStorage.getItem('jwt')
+               || sessionStorage.getItem('token');
     if (!token) { this.err('Vous devez être connecté pour exporter'); return; }
 
     fetch(url, {
@@ -442,14 +478,12 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       }
     })
-    .then(async response => {
-      if (!response.ok) {
-        const text = await response.text().catch(() => '');
-        if (response.status === 403) throw new Error('Accès refusé (403)');
-        if (response.status === 404) throw new Error('Endpoint non trouvé (404)');
-        throw new Error(`Erreur ${response.status}: ${text}`);
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Erreur ${res.status}: ${text}`);
       }
-      return response.blob();
+      return res.blob();
     })
     .then(blob => {
       const link = document.createElement('a');
@@ -459,16 +493,15 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      this.ok('Fichier téléchargé avec succès');
+      this.ok('Fichier téléchargé ✅');
     })
-    .catch(err => {
-      console.error('Download error:', err);
-      this.err(err.message || 'Erreur lors du téléchargement');
-    });
+    .catch(err => this.err(err.message || 'Erreur téléchargement'));
   }
 
-  // ====================== NAVIGATION ======================
-  // FIX : back() ne recharge plus les sessions si déjà en mémoire
+  // ════════════════════════════════════════════════════════════════
+  // NAVIGATION
+  // ════════════════════════════════════════════════════════════════
+
   back(): void {
     this.view = 'sessions';
     this.selectedSession = null;
@@ -478,13 +511,13 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     this.errorMsg = '';
     this.successMsg = '';
     this.refreshIcons();
-    // Recharger uniquement si liste vide
-    if (this.sessions.length === 0) {
-      this.loadSessions();
-    }
+    if (this.sessions.length === 0) this.loadSessions();
   }
 
-  // ====================== HELPERS ======================
+  // ════════════════════════════════════════════════════════════════
+  // HELPERS UI
+  // ════════════════════════════════════════════════════════════════
+
   get statusLabel(): Record<string, string> {
     return { EN_COURS: 'En cours', VALIDEE: 'Validée', CLOTUREE: 'Clôturée' };
   }
@@ -497,10 +530,33 @@ export class InventoryComponent implements OnInit, AfterViewChecked {
     return ['QUANTITE', 'QTE'].includes(f.toUpperCase());
   }
 
+  /** Label lisible pour un champ de collecte */
+  fieldLabel(f: string): string {
+    const labels: Record<string, string> = {
+      ARTICLE:    'Article (t_item)',
+      LOT:        'Lot (t_clot)',
+      EMPLACEMENT: 'Emplacement (t_loca)',
+      QUANTITE:   'Quantité (t_qhnd)',
+    };
+    return labels[f] ?? f;
+  }
+
+  /** Description courte pour les cases à cocher */
+  fieldDesc(f: string): string {
+    const desc: Record<string, string> = {
+      ARTICLE:    'Code article ERP',
+      LOT:        'Numéro de lot',
+      EMPLACEMENT: 'Code emplacement',
+      QUANTITE:   'Quantité comptée',
+    };
+    return desc[f] ?? '';
+  }
+
   fmtDate(d?: string): string {
     if (!d) return '—';
     return new Date(d).toLocaleDateString('fr-FR', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
   }
 

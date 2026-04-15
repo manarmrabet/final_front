@@ -6,24 +6,17 @@ import { BehaviorSubject, Observable, shareReplay, tap, catchError } from 'rxjs'
 import { map } from 'rxjs/operators';
 import {
   TransferRequest, TransferResponse, TransferDashboard,
-  ErpArticle, ErpStock, TransferSearchParams
+  ErpArticle, ErpStock, ErpLocation, TransferSearchParams
 } from '../../models/transfer.model';
 import { environment } from '../../../environments/environment';
 
-// ─── Types de réponse backend ─────────────────────────────────────────────
+// ─── Types internes ───────────────────────────────────────────────────────────
 interface ApiResponse<T> {
   success: boolean;
   message: string;
   data:    T;
 }
 
-/**
- * PagedResponse — correspond exactement au record Java PagedResponse<T>
- * Structure : { content, page, size, totalElements, totalPages, first, last }
- *
- * FIX : avant on utilisait Page<T> Spring qui ne se sérialisait pas bien
- * et causait le blocage sur "Chargement..." côté Angular.
- */
 export interface PagedResponse<T> {
   content:       T[];
   page:          number;
@@ -39,10 +32,14 @@ export class TransferService {
 
   private readonly api = environment.baseUrl;
 
-  // ─── Cache articles ERP (shareReplay = 1 requête HTTP par code) ──────────
+  // ─── Cache articles ERP ───────────────────────────────────────────────────
   private articleCache = new Map<string, Observable<ErpArticle>>();
 
-  // ─── État dashboard partagé ───────────────────────────────────────────────
+  // ─── Cache emplacements ERP ───────────────────────────────────────────────
+  // Évite les appels répétés lors du scan des emplacements destination
+  private locationCache = new Map<string, Observable<ErpLocation>>();
+
+  // ─── État dashboard ───────────────────────────────────────────────────────
   private dashboardSubject = new BehaviorSubject<TransferDashboard | null>(null);
   dashboard$ = this.dashboardSubject.asObservable();
 
@@ -70,7 +67,6 @@ export class TransferService {
     );
   }
 
-  /** Liste paginée — lit PagedResponse<TransferResponse> */
   getAll(page = 0, size = 20): Observable<PagedResponse<TransferResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.http.get<ApiResponse<PagedResponse<TransferResponse>>>(
@@ -78,7 +74,6 @@ export class TransferService {
     ).pipe(map(r => r.data));
   }
 
-  /** Recherche avec filtres — lit PagedResponse<TransferResponse> */
   search(params: TransferSearchParams): Observable<PagedResponse<TransferResponse>> {
     let p = new HttpParams()
       .set('page', params.page ?? 0)
@@ -88,7 +83,6 @@ export class TransferService {
     if (params.location) p = p.set('location', params.location);
     if (params.from)     p = p.set('from',     params.from);
     if (params.to)       p = p.set('to',       params.to);
-
     return this.http.get<ApiResponse<PagedResponse<TransferResponse>>>(
       `${this.api}/api/transfers/search`, { params: p }
     ).pipe(map(r => r.data));
@@ -134,18 +128,15 @@ export class TransferService {
   // DONNÉES ERP
   // ═════════════════════════════════════════════════════════════════════════
 
-  /** Cache par code article — évite les appels répétés pour le même article */
+  /** Cache par code article */
   getArticleByCode(code: string): Observable<ErpArticle> {
     if (!this.articleCache.has(code)) {
       const req$ = this.http.get<ApiResponse<ErpArticle>>(
-        `${this.api}/api/erp/articles/${code}`
+        `${this.api}/api/transfers/erp/articles/${code}`
       ).pipe(
         map(r => r.data),
         shareReplay(1),
-        catchError(err => {
-          this.articleCache.delete(code);
-          throw err;
-        })
+        catchError(err => { this.articleCache.delete(code); throw err; })
       );
       this.articleCache.set(code, req$);
     }
@@ -154,20 +145,85 @@ export class TransferService {
 
   searchArticles(query: string): Observable<ErpArticle[]> {
     return this.http.get<ApiResponse<ErpArticle[]>>(
-      `${this.api}/api/erp/articles/search`,
+      `${this.api}/api/transfers/erp/articles/search`,
       { params: new HttpParams().set('q', query) }
     ).pipe(map(r => r.data));
   }
 
   getStockByItem(itemCode: string): Observable<ErpStock[]> {
     return this.http.get<ApiResponse<ErpStock[]>>(
-      `${this.api}/api/erp/stock/item/${itemCode}`
+      `${this.api}/api/transfers/erp/stock/item/${itemCode}`
     ).pipe(map(r => r.data));
   }
 
   getStockByLocation(location: string): Observable<ErpStock[]> {
     return this.http.get<ApiResponse<ErpStock[]>>(
-      `${this.api}/api/erp/stock/location/${location}`
+      `${this.api}/api/transfers/erp/stock/location/${location}`
     ).pipe(map(r => r.data));
+  }
+
+  /**
+   * Récupère le stock par numéro de lot (t_clot).
+   * Retourne t_qhnd — jamais t_qblk.
+   */
+  getStockByLot(lotNumber: string): Observable<ErpStock[]> {
+    const encoded = encodeURIComponent(lotNumber.trim());
+    return this.http.get<ApiResponse<ErpStock[]>>(
+      `${this.api}/api/transfers/erp/stock/lot/${encoded}`
+    ).pipe(map(r => r.data));
+  }
+
+  /**
+   * Récupère les informations d'un emplacement depuis dbo_twhwmd300310.
+   *
+   * CORRECTION : utilise le nouveau ErpLocationDTO (exists + active depuis twhwmd300310).
+   * Cache mis en place pour éviter les appels répétés lors du scan destination.
+   *
+   * Retourne :
+   *   - locationCode, warehouseCode (t_cwar fiable)
+   *   - active (t_strt + t_oclo), exists (présence dans twhwmd300310)
+   */
+  getLocationInfo(locationCode: string): Observable<ErpLocation> {
+    const encoded = encodeURIComponent(locationCode.trim());
+    if (!this.locationCache.has(locationCode)) {
+      const req$ = this.http.get<ApiResponse<ErpLocation>>(
+        `${this.api}/api/transfers/erp/location/${encoded}`
+      ).pipe(
+        map(r => r.data),
+        shareReplay(1),
+        catchError(err => { this.locationCache.delete(locationCode); throw err; })
+      );
+      this.locationCache.set(locationCode, req$);
+    }
+    return this.locationCache.get(locationCode)!;
+  }
+
+  /** Vide le cache des emplacements (utile après un mouvement) */
+  clearLocationCache(): void {
+    this.locationCache.clear();
+  }
+
+  /** Vide le cache des articles */
+  clearArticleCache(): void {
+    this.articleCache.clear();
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Affiche "Magasin / Emplacement" en utilisant les champs du backend.
+   */
+  getLocationParts(
+    warehouse: string | null | undefined,
+    location:  string | null | undefined
+  ): { warehouse: string; emplacement: string } {
+    const wh  = warehouse?.trim() || '—';
+    const loc = location?.trim()  || '';
+    if (loc && loc.toUpperCase() !== wh.toUpperCase()) {
+      return { warehouse: wh, emplacement: loc };
+    }
+    return { warehouse: wh, emplacement: '—' };
   }
 }

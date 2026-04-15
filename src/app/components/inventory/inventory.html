@@ -13,28 +13,33 @@
           <span *ngIf="view === 'lines'">{{ selectedSession?.name }}</span>
           <span *ngIf="view === 'report'">Rapport — {{ selectedSession?.name }}</span>
         </h1>
-        <p *ngIf="view === 'sessions'">
-          {{ sessions.length }} session(s) • Template actif :
-          <strong>{{ activeTemplate?.name || 'Aucun' }}</strong>
-        </p>
+        <p *ngIf="view === 'sessions'">{{ sessions.length }} session(s)</p>
         <p *ngIf="view !== 'sessions'">
           Magasin <strong>{{ selectedSession?.warehouseCode }}</strong>
-          <span *ngIf="selectedSession?.warehouseLabel"> — {{ selectedSession?.warehouseLabel }}</span>
-          &nbsp;<span [class]="'badge-st ' + statusClass[selectedSession?.status || '']">{{ statusLabel[selectedSession?.status || ''] }}</span>
+          <ng-container *ngIf="selectedSession?.warehouseLabel">
+            &nbsp;— {{ selectedSession?.warehouseLabel }}
+          </ng-container>
+          <ng-container *ngIf="selectedSession?.warehouseZone">
+            &nbsp;· Zone <strong>{{ selectedSession?.warehouseZone }}</strong>
+          </ng-container>
+          &nbsp;<span [class]="'badge-st ' + statusClass[selectedSession?.status || '']">
+            {{ statusLabel[selectedSession?.status || ''] }}
+          </span>
         </p>
       </div>
     </div>
     <div class="inv-hd__r">
       <ng-container *ngIf="view === 'sessions'">
-        <button class="btn btn-ghost" (click)="showTemplate = true"><i data-feather="settings"></i> Templates</button>
-        <button class="btn btn-primary" (click)="openCreate()"><i data-feather="plus"></i> Nouvelle session</button>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i data-feather="plus"></i> Nouvelle session
+        </button>
       </ng-container>
       <ng-container *ngIf="view === 'lines'">
         <button *ngIf="selectedSession?.status === 'EN_COURS'" class="btn btn-primary" (click)="openCollectModal()">
           <i data-feather="plus-circle"></i> Ajouter
         </button>
         <button *ngIf="selectedSession?.status === 'EN_COURS'" class="btn btn-warning" (click)="askValidate(selectedSession!)">
-          <i data-feather="check-square"></i> Terminer collecte
+          <i data-feather="check-square"></i> Terminer
         </button>
         <button class="btn btn-ghost" (click)="exportCollect()" *ngIf="lines.length > 0">
           <i data-feather="download"></i>
@@ -52,52 +57,69 @@
   </div>
 
   <!-- ══════════ MESSAGES ════════════════════════════════════ -->
-  <div class="toast err" *ngIf="errorMsg"><i data-feather="alert-circle"></i>{{ errorMsg }}<button (click)="errorMsg=''">×</button></div>
-  <div class="toast ok"  *ngIf="successMsg"><i data-feather="check-circle"></i>{{ successMsg }}</div>
-
- <!-- ══════════ VUE SESSIONS ════════════════════════════════ -->
-<ng-container *ngIf="view === 'sessions'">
-
-  <!-- Spinner uniquement au premier chargement -->
-  <div class="spinner-center" *ngIf="loadingSessions && sessions.length === 0">
-    <div class="spinner-blue"></div>
-    <p>Chargement des sessions...</p>
+  <div class="toast err" *ngIf="errorMsg">
+    <i data-feather="alert-circle"></i>{{ errorMsg }}
+    <button (click)="errorMsg=''">×</button>
+  </div>
+  <div class="toast ok" *ngIf="successMsg">
+    <i data-feather="check-circle"></i>{{ successMsg }}
   </div>
 
-  <!-- Alert template manquant -->
-  <div class="alert-info" *ngIf="!loadingSessions && templates.length === 0">
-    <i data-feather="alert-triangle"></i>
-    Aucun template.
-    <button class="btn btn-sm btn-ghost" (click)="showTemplate = true">Créer →</button>
-  </div>
+  <!-- ══════════ VUE SESSIONS ════════════════════════════════ -->
+  <ng-container *ngIf="view === 'sessions'">
+    <div class="spinner-center" *ngIf="loadingSessions && sessions.length === 0">
+      <div class="spinner-blue"></div>
+      <p>Chargement des sessions...</p>
+    </div>
 
-  <!-- Liste sessions -->
-  <div class="empty" *ngIf="!loadingSessions && sessions.length === 0">
-    <i data-feather="inbox"></i>
-    <p>Aucune session. Créez-en une pour démarrer.</p>
-    <button class="btn btn-primary" (click)="openCreate()"><i data-feather="plus"></i> Créer une session</button>
-  </div>
+    <div class="empty" *ngIf="!loadingSessions && sessions.length === 0">
+      <i data-feather="inbox"></i>
+      <p>Aucune session. Créez-en une pour démarrer.</p>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i data-feather="plus"></i> Créer une session
+      </button>
+    </div>
 
     <div class="sessions-grid" *ngIf="sessions.length > 0">
       <div class="s-card" *ngFor="let s of sessions">
         <div class="s-card__top">
           <div>
             <div class="s-card__name">{{ s.name }}</div>
-            <div class="s-card__meta"><i data-feather="database"></i> {{ s.warehouseCode }}<span *ngIf="s.warehouseLabel"> — {{ s.warehouseLabel }}</span></div>
+            <div class="s-card__meta">
+              <i data-feather="database"></i>
+              {{ s.warehouseCode }}
+              <span *ngIf="s.warehouseLabel"> — {{ s.warehouseLabel }}</span>
+              <span *ngIf="s.warehouseZone" class="zone-badge">
+                <i data-feather="map-pin"></i> {{ s.warehouseZone }}
+              </span>
+            </div>
           </div>
           <span [class]="'badge-st ' + statusClass[s.status]">{{ statusLabel[s.status] }}</span>
         </div>
+
+        <!-- Champs de collecte de la session -->
+        <div class="s-card__fields">
+          <span class="field-chip" *ngFor="let f of s.collectFields">{{ f }}</span>
+        </div>
+
         <div class="s-card__info">
           <span><i data-feather="layers"></i> {{ s.totalLines }} lignes</span>
           <span><i data-feather="user"></i> {{ s.createdBy }}</span>
           <span><i data-feather="clock"></i> {{ fmtDate(s.createdAt) }}</span>
         </div>
+
         <div class="s-card__btns">
-          <button class="btn btn-sm btn-ghost" (click)="openLines(s)"><i data-feather="list"></i> Collecte</button>
-          <button class="btn btn-sm btn-primary" *ngIf="s.status === 'VALIDEE' || s.status === 'CLOTUREE'" (click)="openReport(s)">
+          <button class="btn btn-sm btn-ghost" (click)="openLines(s)">
+            <i data-feather="list"></i> Collecte
+          </button>
+          <button class="btn btn-sm btn-primary"
+                  *ngIf="s.status === 'VALIDEE' || s.status === 'CLOTUREE'"
+                  (click)="openReport(s)">
             <i data-feather="bar-chart-2"></i> Rapport
           </button>
-          <button class="btn btn-sm btn-warning" *ngIf="s.status === 'EN_COURS'" (click)="askValidate(s, $event)">
+          <button class="btn btn-sm btn-warning"
+                  *ngIf="s.status === 'EN_COURS'"
+                  (click)="askValidate(s, $event)">
             <i data-feather="check"></i> Terminer
           </button>
         </div>
@@ -107,7 +129,6 @@
 
   <!-- ══════════ VUE LIGNES ══════════════════════════════════ -->
   <ng-container *ngIf="view === 'lines'">
-
     <div class="spinner-center" *ngIf="loadingLines">
       <div class="spinner-blue"></div><p>Chargement de la collecte...</p>
     </div>
@@ -116,12 +137,19 @@
       <div class="collect-banner" *ngIf="selectedSession?.status === 'EN_COURS'">
         <i data-feather="info"></i>
         Scannez depuis le <strong>mobile</strong> ou ajoutez via <strong>Ajouter</strong>.
-        Cliquez <strong>Terminer collecte</strong> quand vous avez fini.
+        Champs actifs :
+        <strong>{{ selectedSession?.collectFields?.join(', ') }}</strong>
       </div>
 
       <div class="collect-stats" *ngIf="lines.length > 0">
-        <div class="c-stat"><span class="c-stat__v">{{ lines.length }}</span><span class="c-stat__l">Lignes</span></div>
-<div class="c-stat"><span class="c-stat__v">{{ uniqueLocationsCount }}</span><span class="c-stat__l">Emplacements</span></div>
+        <div class="c-stat">
+          <span class="c-stat__v">{{ lines.length }}</span>
+          <span class="c-stat__l">Lignes</span>
+        </div>
+        <div class="c-stat">
+          <span class="c-stat__v">{{ uniqueLocationsCount }}</span>
+          <span class="c-stat__l">Emplacements</span>
+        </div>
       </div>
 
       <div class="empty small" *ngIf="lines.length === 0">
@@ -156,7 +184,9 @@
                 <td class="muted">{{ l.scannedBy }}</td>
                 <td class="muted">{{ fmtDate(l.scannedAt) }}</td>
                 <td *ngIf="selectedSession?.status === 'EN_COURS'">
-                  <button class="del-btn" (click)="delLine(l.id)"><i data-feather="trash-2"></i></button>
+                  <button class="del-btn" (click)="delLine(l.id)">
+                    <i data-feather="trash-2"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -168,22 +198,25 @@
 
   <!-- ══════════ VUE RAPPORT ════════════════════════════════ -->
   <ng-container *ngIf="view === 'report'">
-
     <div class="spinner-center" *ngIf="loadingReport">
-      <div class="spinner-blue"></div><p>{{ reportNotFound ? 'Génération...' : 'Chargement...' }}</p>
+      <div class="spinner-blue"></div>
+      <p>{{ reportNotFound ? 'Génération...' : 'Chargement...' }}</p>
     </div>
 
-    <!-- Rapport pas encore généré -->
     <div class="rpt-cta" *ngIf="!loadingReport && reportNotFound">
       <div style="font-size:3rem">📊</div>
       <h3>Rapport non généré</h3>
-      <p>Comparez la collecte avec le stock ERP du magasin <strong>{{ selectedSession?.warehouseCode }}</strong>.</p>
+      <p>Comparez la collecte avec le stock ERP
+         <strong>{{ selectedSession?.warehouseCode }}</strong>
+         <ng-container *ngIf="selectedSession?.warehouseZone">
+           — Zone <strong>{{ selectedSession?.warehouseZone }}</strong>
+         </ng-container>.
+      </p>
       <button class="btn btn-primary btn-lg" (click)="generateReport()">
         <i data-feather="zap"></i> Générer le rapport
       </button>
     </div>
 
-    <!-- Rapport disponible -->
     <ng-container *ngIf="!loadingReport && report">
       <div class="kpis">
         <div class="kpi"><div class="kpi-v">{{ report.totalErp }}</div><div class="kpi-l">Lignes ERP</div></div>
@@ -196,8 +229,11 @@
 
       <div class="rpt-bar">
         <div class="ftabs">
-          <button *ngFor="let f of rptFilters" [class]="'ftab'+(rptFilter===f?' active':'')" (click)="setFilter(f)">
-            {{ sIcon(f) }} {{ f==='ALL'?'Tous':f }} <span class="fcnt">{{ countStatut(f) }}</span>
+          <button *ngFor="let f of rptFilters"
+                  [class]="'ftab'+(rptFilter===f?' active':'')"
+                  (click)="setFilter(f)">
+            {{ sIcon(f) }} {{ f==='ALL'?'Tous':f }}
+            <span class="fcnt">{{ countStatut(f) }}</span>
           </button>
         </div>
         <div class="pgn" *ngIf="rptTotalPages > 1">
@@ -244,27 +280,115 @@
   </ng-container>
 </div>
 
-<!-- ══════════ MODAL : CRÉER SESSION ══════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL : CRÉER SESSION
+     Nouveau formulaire : zone + cases à cocher pour les champs
+════════════════════════════════════════════════════════════════ -->
 <div class="overlay" *ngIf="showCreate">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="mhd"><h3>Nouvelle session</h3><button class="mclose" (click)="showCreate=false">×</button></div>
-    <div class="mbody">
-      <div class="field"><label>Nom *</label>
-        <input [(ngModel)]="newSession.name" class="inp" placeholder="Ex: Inventaire Juin 2025" autofocus (keyup.enter)="createSession()"/></div>
-      <div class="field"><label>Magasin ERP (t_cwar) *</label>
-        <select [(ngModel)]="newSession.warehouseCode" class="inp">
-          <option value="" disabled>-- Choisir --</option>
-          <option *ngFor="let w of erpWarehouses" [value]="w">{{ w }}</option>
-        </select>
-        <small>Source : dbo_twhinr1401200</small></div>
-      <div class="field"><label>Libellé magasin</label>
-        <input [(ngModel)]="newSession.warehouseLabel" class="inp" placeholder="Ex: Magasin principal"/></div>
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="mhd">
+      <h3><i data-feather="plus-circle"></i> Nouvelle session d'inventaire</h3>
+      <button class="mclose" (click)="showCreate=false">×</button>
     </div>
+
+    <div class="mbody">
+
+      <!-- Nom -->
+      <div class="field">
+        <label>Nom de la session *</label>
+        <input [(ngModel)]="newSession.name"
+               class="inp"
+               placeholder="Ex: Inventaire Juin 2025"
+               autofocus
+               (keyup.enter)="createSession()"/>
+      </div>
+
+      <!-- Magasin + Libellé côte à côte -->
+      <div class="field-row">
+        <div class="field">
+          <label>Magasin ERP (t_cwar) *</label>
+          <select [(ngModel)]="newSession.warehouseCode"
+                  class="inp"
+                  (ngModelChange)="onWarehouseChange()">
+            <option value="" disabled>— Choisir —</option>
+            <option *ngFor="let w of erpWarehouses" [value]="w">{{ w }}</option>
+          </select>
+          <small>Source : dbo_twhinr1401200</small>
+        </div>
+        <div class="field">
+          <label>Libellé magasin</label>
+          <input [(ngModel)]="newSession.warehouseLabel"
+                 class="inp"
+                 placeholder="Ex: Magasin principal"/>
+        </div>
+      </div>
+
+      <!-- Zone ERP -->
+      <div class="field">
+        <label>
+          Zone ERP (t_zone)
+          <span class="lh">— optionnel, restreint l'inventaire à une zone</span>
+        </label>
+        <div *ngIf="!newSession.warehouseCode" class="inp-placeholder">
+          Sélectionnez d'abord un magasin
+        </div>
+        <ng-container *ngIf="newSession.warehouseCode">
+          <div *ngIf="loadingZones" class="zones-loading">
+            <span class="sp-sm"></span> Chargement des zones...
+          </div>
+          <ng-container *ngIf="!loadingZones">
+            <select *ngIf="erpZones.length > 0"
+                    [(ngModel)]="newSession.warehouseZone"
+                    class="inp">
+              <option value="">— Toutes les zones —</option>
+              <option *ngFor="let z of erpZones" [value]="z">{{ z }}</option>
+            </select>
+            <div *ngIf="erpZones.length === 0" class="no-zones">
+              <i data-feather="info"></i>
+              Aucune zone configurée pour ce magasin
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+
+      <!-- Champs de collecte -->
+      <div class="field">
+        <label>Champs à collecter *</label>
+        <p class="field-hint">Cochez les informations que l'opérateur devra saisir lors de l'inventaire.</p>
+        <div class="collect-fields-grid">
+          <label *ngFor="let f of availableFields"
+                 [class]="'field-check-card' + (fieldChecked[f] ? ' checked' : '')"
+                 (click)="fieldChecked[f] = !fieldChecked[f]">
+            <div class="fcc-check">
+              <svg *ngIf="fieldChecked[f]" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="fcc-body">
+              <span class="fcc-name">{{ f }}</span>
+              <span class="fcc-desc">{{ fieldDesc(f) }}</span>
+            </div>
+          </label>
+        </div>
+        <small *ngIf="checkedFields.length === 0" class="err-hint">
+          ⚠️ Sélectionnez au moins un champ
+        </small>
+        <small *ngIf="checkedFields.length > 0" class="ok-hint">
+          {{ checkedFields.length }} champ(s) sélectionné(s) : {{ checkedFields.join(', ') }}
+        </small>
+      </div>
+
+    </div><!-- /mbody -->
+
     <div class="mft">
       <button class="btn btn-ghost" (click)="showCreate=false">Annuler</button>
-      <button class="btn btn-primary" (click)="createSession()" [disabled]="saving||!newSession.name?.trim()||!newSession.warehouseCode?.trim()">
-        <span *ngIf="saving" class="sp"></span><i *ngIf="!saving" data-feather="check"></i>
-        {{ saving ? 'Création...' : 'Créer' }}
+      <button class="btn btn-primary"
+              (click)="createSession()"
+              [disabled]="saving || !newSession.name?.trim() || !newSession.warehouseCode?.trim() || checkedFields.length === 0">
+        <span *ngIf="saving" class="sp"></span>
+        <i *ngIf="!saving" data-feather="check"></i>
+        {{ saving ? 'Création...' : 'Créer la session' }}
       </button>
     </div>
   </div>
@@ -273,21 +397,33 @@
 <!-- ══════════ MODAL : AJOUTER LIGNE ══════════════════════════ -->
 <div class="overlay" *ngIf="showCollect">
   <div class="modal" (click)="$event.stopPropagation()">
-    <div class="mhd"><h3>Ajouter une ligne</h3><button class="mclose" (click)="showCollect=false">×</button></div>
+    <div class="mhd">
+      <h3>Ajouter une ligne</h3>
+      <button class="mclose" (click)="showCollect=false">×</button>
+    </div>
     <div class="mbody">
-      <div class="hint"><i data-feather="info"></i>Template : <strong>{{ activeTemplate?.name }}</strong></div>
-      <div class="field"><label>Emplacement (t_loca) *</label>
-        <input [(ngModel)]="collectLoc" class="inp upper" placeholder="Ex: A-01"/></div>
-      <div class="field" *ngFor="let f of activeTemplate?.fields">
-        <label>{{ f }}<span class="lh" *ngIf="f==='ARTICLE'"> → t_item</span><span class="lh" *ngIf="f==='LOT'"> → t_clot</span></label>
-        <input [(ngModel)]="collectValues[f]" [type]="isNum(f)?'number':'text'" class="inp"
-               [placeholder]="isNum(f)?'0':'Saisir...'" (keyup.enter)="addLine()"/>
+      <div class="hint">
+        <i data-feather="info"></i>
+        Champs actifs :
+        <strong>{{ selectedSession?.collectFields?.join(', ') }}</strong>
+      </div>
+      <div class="field">
+        <label>Emplacement (t_loca) *</label>
+        <input [(ngModel)]="collectLoc" class="inp upper" placeholder="Ex: A-01"/>
+      </div>
+      <div class="field" *ngFor="let f of selectedSession?.collectFields">
+        <label>{{ fieldLabel(f) }}</label>
+        <input [(ngModel)]="collectValues[f]"
+               [type]="isNum(f) ? 'number' : 'text'"
+               class="inp"
+               [placeholder]="isNum(f) ? '0' : 'Saisir...'"
+               (keyup.enter)="addLine()"/>
       </div>
     </div>
     <div class="mft">
       <button class="btn btn-ghost" (click)="showCollect=false">Annuler</button>
       <button class="btn btn-primary" (click)="addLine()" [disabled]="saving">
-        <span *ngIf="saving" class="sp"></span>{{ saving?'Ajout...':'Ajouter' }}
+        <span *ngIf="saving" class="sp"></span>{{ saving ? 'Ajout...' : 'Ajouter' }}
       </button>
     </div>
   </div>
@@ -296,12 +432,18 @@
 <!-- ══════════ MODAL : VALIDER SESSION ════════════════════════ -->
 <div class="overlay" *ngIf="showValidate">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
-    <div class="mhd"><h3>Terminer la collecte ?</h3><button class="mclose" (click)="showValidate=false">×</button></div>
+    <div class="mhd">
+      <h3>Terminer la collecte ?</h3>
+      <button class="mclose" (click)="showValidate=false">×</button>
+    </div>
     <div class="mbody">
       <div class="validate-box">
         <div class="vb-icon">⚠️</div>
         <p>Session : <strong>{{ selectedSession?.name }}</strong></p>
-        <p class="muted-p">Après confirmation, aucune ligne ne pourra être ajoutée.<br>Vous pourrez ensuite générer le rapport ERP.</p>
+        <p class="muted-p">
+          Après confirmation, aucune ligne ne pourra être ajoutée.<br>
+          Vous pourrez ensuite générer le rapport ERP.
+        </p>
         <div class="vb-stats">
           <span><i data-feather="layers"></i> {{ selectedSession?.totalLines }} lignes</span>
         </div>
@@ -310,47 +452,8 @@
     <div class="mft">
       <button class="btn btn-ghost" (click)="showValidate=false">Annuler</button>
       <button class="btn btn-warning" (click)="confirmValidate()" [disabled]="saving">
-        <span *ngIf="saving" class="sp"></span>{{ saving?'Validation...':'Confirmer' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MODAL : TEMPLATES ══════════════════════════════ -->
-<div class="overlay" *ngIf="showTemplate">
-  <div class="modal modal-lg" (click)="$event.stopPropagation()">
-    <div class="mhd"><h3>Templates de collecte</h3><button class="mclose" (click)="showTemplate=false">×</button></div>
-    <div class="mbody">
-      <div class="hint"><i data-feather="help-circle"></i>
-        Le template définit les champs à scanner : <code>ARTICLE</code> (t_item), <code>LOT</code> (t_clot), <code>QUANTITE</code>.
-      </div>
-      <div *ngIf="templates.length > 0" style="margin-bottom:16px">
-        <p class="slbl">Templates existants</p>
-        <div *ngFor="let t of templates" class="trow" [class.trow-active]="activeTemplate?.id===t.id" (click)="activeTemplate=t; ok('Template actif : '+t.name)">
-          <div><strong>{{ t.name }}</strong><span *ngIf="activeTemplate?.id===t.id" class="act-badge">Actif</span></div>
-          <div class="chips"><span class="chip" *ngFor="let f of t.fields">{{ f }}</span></div>
-        </div>
-        <hr class="sep"/>
-      </div>
-      <p class="slbl">Créer / modifier</p>
-      <div class="field"><label>Nom *</label>
-        <input [(ngModel)]="tplName" class="inp" placeholder="Ex: Standard BAAN"/>
-        <small>Si le nom existe, il sera mis à jour.</small></div>
-      <div class="field"><label>Champs</label>
-        <div class="chips edit-chips">
-          <span class="chip rem" *ngFor="let f of tplFields">{{ f }}<button (click)="removeField(f)">×</button></span>
-        </div>
-        <div class="add-row">
-          <input [(ngModel)]="tplInput" class="inp" placeholder="Nouveau champ..." (keyup.enter)="addField()"/>
-          <button class="btn btn-ghost btn-sm" (click)="addField()">+</button>
-        </div>
-        <small>⚠️ Gardez <code>ARTICLE</code>, <code>LOT</code>, <code>QUANTITE</code> pour la comparaison ERP.</small>
-      </div>
-    </div>
-    <div class="mft">
-      <button class="btn btn-ghost" (click)="showTemplate=false">Fermer</button>
-      <button class="btn btn-primary" (click)="saveTemplate()" [disabled]="saving||!tplName.trim()">
-        <span *ngIf="saving" class="sp"></span>{{ saving?'Sauvegarde...':'Sauvegarder' }}
+        <span *ngIf="saving" class="sp"></span>
+        {{ saving ? 'Validation...' : 'Confirmer' }}
       </button>
     </div>
   </div>
