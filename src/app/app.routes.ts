@@ -98,11 +98,18 @@ export const routes: Routes = [
         path: 'reception',
         loadComponent: () => import('./components/reception/reception').then(m => m.ReceptionComponent)
       },
+      {
+        path:'etiquette',
+        loadComponent:()=>import('./components/etiquette/etiquette').then(m=>m.EtiquetteComponent)
+
+        },
 
       {
         path: '**',
         loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)
-      }
+      },
+
+
     ]
   },
 

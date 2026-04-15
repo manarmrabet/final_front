@@ -1,0 +1,76 @@
+// src/app/components/etiquette/etiquette.component.scss
+.etiquette-page {
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    color: #1a3a6b;
+
+    i   { font-size: 1.4rem; }
+    h2  { margin: 0; font-size: 1.3rem; font-weight: 700; }
+  }
+
+  // ── Carte formulaire ─────────────────────────────────────────────
+  .search-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    margin-bottom: 1.5rem;
+
+    .form-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #555;
+        .hint { font-weight: 400; color: #999; }
+      }
+
+      input { width: 220px; }
+      &.narrow input { width: 90px; }
+    }
+  }
+
+  // ── Section PDF ──────────────────────────────────────────────────
+  .pdf-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    overflow: hidden;
+
+    .pdf-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: #eef2fb;
+      border-bottom: 1px solid #d0dcf5;
+      font-size: 0.9rem;
+
+      .success-icon { color: #22c55e; margin-right: 6px; }
+    }
+
+    .pdf-frame {
+      width:  100%;
+      height: 75vh;
+      border: none;
+      display: block;
+    }
+  }
+}

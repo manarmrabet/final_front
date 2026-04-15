@@ -1,0 +1,75 @@
+<!-- src/app/components/etiquette/etiquette.component.html -->
+<div class="etiquette-page">
+
+  <div class="page-header">
+    <i class="pi pi-tag"></i>
+    <h2>Génération d'Étiquettes — COFAT TUNIS</h2>
+  </div>
+
+  <!-- ── Formulaire ────────────────────────────────────────────── -->
+  <div class="search-card">
+    <div class="form-row">
+
+      <div class="field">
+        <label>N° Commande (RCNO) *</label>
+        <input pInputText
+               [(ngModel)]="orderNumber"
+               placeholder="ex: 0000001234"
+               class="p-inputtext-sm" />
+      </div>
+
+      <div class="field narrow">
+        <label>De <span class="hint">(0 = toutes)</span></label>
+        <input pInputText type="number"
+               [(ngModel)]="start" min="0"
+               class="p-inputtext-sm" />
+      </div>
+
+      <div class="field narrow">
+        <label>À</label>
+        <input pInputText type="number"
+               [(ngModel)]="end" min="0"
+               class="p-inputtext-sm" />
+      </div>
+
+      <button pButton
+              label="Générer le PDF"
+              icon="pi pi-file-pdf"
+              [loading]="loading"
+              (click)="generate()">
+      </button>
+    </div>
+
+    <!-- Message d'erreur -->
+    <p-message *ngIf="error"
+               severity="error"
+               [text]="error"
+               styleClass="mt-3 w-full">
+    </p-message>
+  </div>
+
+  <!-- ── Résultat : preview + download ─────────────────────────── -->
+  <div class="pdf-section" *ngIf="pdfSafe">
+
+    <div class="pdf-toolbar">
+      <span>
+        <i class="pi pi-check-circle success-icon"></i>
+        Étiquettes générées pour <strong>{{ orderNumber }}</strong>
+      </span>
+      <button pButton
+              label="Télécharger"
+              icon="pi pi-download"
+              class="p-button-outlined p-button-sm"
+              (click)="download()">
+      </button>
+    </div>
+
+    <!-- Preview inline — "inline" dans Content-Disposition côté back -->
+    <iframe [src]="pdfSafe"
+            class="pdf-frame"
+            type="application/pdf">
+    </iframe>
+
+  </div>
+
+</div>
