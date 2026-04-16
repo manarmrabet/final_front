@@ -1,75 +1,125 @@
-<!-- src/app/components/etiquette/etiquette.component.html -->
-<div class="etiquette-page">
+<!-- etiquette.component.html -->
+<div class="etiquette-shell">
 
-  <div class="page-header">
-    <i class="pi pi-tag"></i>
-    <h2>Génération d'Étiquettes — COFAT TUNIS</h2>
-  </div>
-
-  <!-- ── Formulaire ────────────────────────────────────────────── -->
-  <div class="search-card">
-    <div class="form-row">
-
-      <div class="field">
-        <label>N° Commande (RCNO) *</label>
-        <input pInputText
-               [(ngModel)]="orderNumber"
-               placeholder="ex: 0000001234"
-               class="p-inputtext-sm" />
-      </div>
-
-      <div class="field narrow">
-        <label>De <span class="hint">(0 = toutes)</span></label>
-        <input pInputText type="number"
-               [(ngModel)]="start" min="0"
-               class="p-inputtext-sm" />
-      </div>
-
-      <div class="field narrow">
-        <label>À</label>
-        <input pInputText type="number"
-               [(ngModel)]="end" min="0"
-               class="p-inputtext-sm" />
-      </div>
-
-      <button pButton
-              label="Générer le PDF"
-              icon="pi pi-file-pdf"
-              [loading]="loading"
-              (click)="generate()">
-      </button>
+  <!-- ── Sidebar brand strip ── -->
+  <aside class="brand-strip">
+    <div class="brand-logo">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">CWMS</span>
     </div>
+    <div class="brand-divider"></div>
+    <div class="brand-sub">COFAT<br>TUNIS</div>
+  </aside>
 
-    <!-- Message d'erreur -->
-    <p-message *ngIf="error"
-               severity="error"
-               [text]="error"
-               styleClass="mt-3 w-full">
-    </p-message>
-  </div>
+  <!-- ── Main content ── -->
+  <main class="main-content">
 
-  <!-- ── Résultat : preview + download ─────────────────────────── -->
-  <div class="pdf-section" *ngIf="pdfSafe">
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <p class="header-eyebrow">Warehouse Management System</p>
+        <h1 class="header-title">
+          Génération d'<em>Étiquettes</em>
+        </h1>
+        <p class="header-sub">Réception · Code 128 · RCNO → PDF</p>
+      </div>
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        ERP Live
+      </div>
+    </header>
 
-    <div class="pdf-toolbar">
-      <span>
-        <i class="pi pi-check-circle success-icon"></i>
-        Étiquettes générées pour <strong>{{ orderNumber }}</strong>
-      </span>
-      <button pButton
-              label="Télécharger"
-              icon="pi pi-download"
-              class="p-button-outlined p-button-sm"
-              (click)="download()">
-      </button>
-    </div>
+    <!-- ── Form card ── -->
+    <section class="form-card">
+      <div class="form-card-inner">
 
-    <!-- Preview inline — "inline" dans Content-Disposition côté back -->
-    <iframe [src]="pdfSafe"
-            class="pdf-frame"
-            type="application/pdf">
-    </iframe>
+        <div class="field-group">
+          <!-- RCNO -->
+          <div class="field field--primary">
+            <label class="field-label">
+              <span class="label-icon">⬡</span>
+              N° Commande <span class="required">*</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                [(ngModel)]="orderNumber"
+                placeholder="ex : 0000001234"
+                class="field-input"
+                [class.field-input--error]="!!error"
+                (keydown.enter)="generate()"
+              />
+              <span class="input-suffix">RCNO</span>
+            </div>
+          </div>
 
-  </div>
+          <!-- Range -->
+          <div class="field field--range">
+            <label class="field-label">
+              <span class="label-icon">↔</span>
+              Plage <span class="hint">(0 = toutes)</span>
+            </label>
+            <div class="range-inputs">
+              <input [(ngModel)]="start" type="number" min="0"
+                     class="field-input field-input--num" placeholder="De" />
+              <span class="range-sep">→</span>
+              <input [(ngModel)]="end" type="number" min="0"
+                     class="field-input field-input--num" placeholder="À" />
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button
+          class="btn-generate"
+          [class.btn-generate--loading]="loading"
+          [disabled]="loading"
+          (click)="generate()"
+        >
+          <span class="btn-inner" *ngIf="!loading">
+            <span class="btn-icon">⎙</span>
+            Générer le PDF
+          </span>
+          <span class="btn-inner" *ngIf="loading">
+            <span class="spinner"></span>
+            Génération…
+          </span>
+        </button>
+
+      </div>
+
+      <!-- Error -->
+      <div class="error-bar" *ngIf="error">
+        <span class="error-icon">⚠</span>
+        {{ error }}
+      </div>
+    </section>
+
+    <!-- ── Result panel ── -->
+    <section class="result-panel" *ngIf="pdfSafe" [@fadeIn]>
+
+      <div class="result-header">
+        <div class="result-meta">
+          <span class="result-check">✓</span>
+          <div>
+            <p class="result-title">PDF généré avec succès</p>
+            <p class="result-sub">RCNO <strong>{{ orderNumber }}</strong> · {{ labelCount }} étiquette(s)</p>
+          </div>
+        </div>
+        <button class="btn-download" (click)="download()">
+          <span>↓</span> Télécharger
+        </button>
+      </div>
+
+      <div class="pdf-viewport">
+        <iframe
+          [src]="pdfSafe"
+          class="pdf-frame"
+          type="application/pdf">
+        </iframe>
+      </div>
+
+    </section>
+
+  </main>
 
 </div>

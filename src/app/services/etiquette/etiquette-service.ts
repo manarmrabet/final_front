@@ -1,26 +1,25 @@
+// etiquette-service.ts
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable }  from '@angular/core';
+import { Observable }  from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class EtiquetteService {
 
   private readonly base = `${environment.baseUrl}/api/Etiquettepdf`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   /**
-   * Appel direct du endpoint du rapport §2.1
-   * start=0 & end=0 → toutes les étiquettes (rapport §2.3)
+   * GET /api/Etiquettepdf/{rcno}/{start}/{end}/{username}
+   * start=0 && end=0 → toutes les étiquettes de la commande
    */
   generateEtiquette(
-    orderEtiquette: string,
-    start = 0,
-    end   = 0,
-    username = 'system'
+    orderEtiquette : string,
+    start          : number = 0,
+    end            : number = 0,
+    username       : string = 'system'
   ): Observable<Blob> {
     const url = `${this.base}/${orderEtiquette}/${start}/${end}/${username}`;
     return this.http.get(url, { responseType: 'blob' });
