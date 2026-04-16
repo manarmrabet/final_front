@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners,LOCALE_ID, provideZonelessChangeDetection,importProvidersFrom } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './interceptors/jwt-interceptor';
 // Locale française — corrige NG0701 "Missing locale data for fr"
@@ -63,6 +64,7 @@ import { tokenExpirationInterceptor } from './interceptors/tokenexpiration';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAnimationsAsync(),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
