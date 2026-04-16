@@ -4,7 +4,7 @@ import { lockGuard } from './guards/lock-guard';
 import { TransferManagementComponent } from './components/transfer/transfer';
 import { StockConsultationComponent } from './components/stock-consultation/stock-consultation';
 import { StockDashboardComponent } from './components/stock-dashboard/stock-dashboard';
-import { ProductionLogResolver } from './components/resolvers/production-log.resolver';
+import { ProductionLogResolver } from './resolvers/production-log.resolver';
 export const routes: Routes = [
 
 
