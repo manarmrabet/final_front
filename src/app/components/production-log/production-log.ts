@@ -6,6 +6,7 @@ import { AuthService }                  from '../../services/auth/auth';
 import { Subject, interval }            from 'rxjs';
 import { takeUntil, filter, take }      from 'rxjs/operators';
 import * as XLSX                         from 'xlsx';
+import { ActivatedRoute } from '@angular/router';
 
 export interface ProductionLog {
   id:            number;
@@ -72,20 +73,37 @@ export class ProductionLogComponent implements OnInit, OnDestroy {
 
   constructor(
     private svc:  ProductionService,
-    private auth: AuthService
+    private auth: AuthService,
+    private route: ActivatedRoute
   ) {}
 
+
+
   ngOnInit(): void {
-    if (localStorage.getItem('token')) {
-      this.loadAll();
-    } else {
-      this.auth.currentUser$.pipe(
-        filter(user => user !== null),
-        take(1),
-        takeUntil(this.destroy$)
-      ).subscribe(() => this.loadAll());
-    }
-  }
+  // ✅ Les logs arrivent déjà résolus, pas d'attente
+  this.route.data.subscribe(data => {
+    this.logs      = data['logs'] ?? [];
+    this.isLoading = false;
+  });
+
+  // Stats séparément (légères, pas bloquantes)
+  this.loadStats();
+}
+
+private loadStats(): void {
+  this.svc.getStats().subscribe({
+    next:  s   => {
+      this.stats = {
+        totalOpsToday: s?.totalOpsToday ?? 0,
+        totalQtyToday: s?.totalQtyToday ?? 0,
+        failedToday:   s?.failedToday   ?? 0,
+        recentLogs:    s?.recentLogs    ?? [],
+        operatorStats: s?.operatorStats ?? []
+      };
+    },
+    error: err => console.error('[ProductionLog] stats error:', err)
+  });
+}
 
   ngOnDestroy(): void {
     this.destroy$.next();

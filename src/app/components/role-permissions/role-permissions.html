@@ -44,7 +44,7 @@
           </div>
 
           <div class="rc-actions">
-            <button class="btn-delete-role" 
+            <button class="btn-delete-role"
                     (click)="$event.stopPropagation(); openDeleteModal(role)">
               <lucide-angular name="trash-2" size="16"></lucide-angular>
             </button>
@@ -159,8 +159,8 @@
       <form class="modal-form" (ngSubmit)="createRole()">
         <div class="form-group">
           <label for="roleName">Nom du rôle</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="roleName"
             [(ngModel)]="newRoleName"
             name="roleName"
@@ -171,7 +171,7 @@
 
         <div class="form-group">
           <label for="roleDescription">Description</label>
-          <textarea 
+          <textarea
             id="roleDescription"
             [(ngModel)]="newRoleDescription"
             name="roleDescription"
@@ -198,7 +198,7 @@
 @if (showDeleteModal()) {
   <div class="modal-overlay" (click)="closeDeleteModal()">
     <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
-      
+
       <div class="modal-header danger-header">
         <div class="modal-title">
           <lucide-angular name="alert-triangle" size="22"></lucide-angular>
