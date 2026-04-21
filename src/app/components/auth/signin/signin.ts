@@ -55,25 +55,25 @@ export class SigninComponent implements OnInit {
         this.router.navigate(['/app/dashboard']);
       },
       error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
+      this.loading.set(false);
 
-        // --- CORRECTION ICI ---
-        // On récupère le message envoyé par le backend (AuthController)
-        // Si err.error est une chaîne (ResponseEntity.body("...")), on l'affiche.
-        // Sinon, on cherche une propriété .message ou on met un message par défaut.
+      let message = 'Une erreur est survenue. Veuillez réessayer.';
 
-        let message = 'Une erreur est survenue. Veuillez réessayer.';
+      if (err.status === 401) {
+        // Cas des identifiants incorrects + calcul tentatives restantes
+        // Comme votre backend fait .body(errorMessage), err.error contient la String
+        message = typeof err.error === 'string' ? err.error : 'Identifiants incorrects.';
+      }
+      else if (err.status === 403) {
+        // Cas du compte bloqué (FORBIDDEN)
+        message = typeof err.error === 'string' ? err.error : 'Ce compte est bloqué.';
+      }
+      else if (err.status === 0) {
+        message = 'Serveur inaccessible. Vérifiez votre connexion.';
+      }
 
-        if (err.status === 401 || err.status === 403) {
-            // Le backend renvoie soit une String brute, soit un objet avec un champ message
-            message = (typeof err.error === 'string') ? err.error : (err.error?.message || 'Identifiants incorrects.');
-        } else if (err.status === 0) {
-            message = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
-        }
-
-        this.errorMsg.set(message);
-        // -----------------------
-      },
+      this.errorMsg.set(message);
+          },
     });
   }
 }

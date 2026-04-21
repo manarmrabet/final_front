@@ -1,72 +1,67 @@
 <div class="auth-page">
-  <div class="auth-page-wrapper">
-    <div class="auth-card">
+  <div class="auth-card">
 
-      <div class="auth-left">
-        <div class="auth-overlay"></div>
-        <div class="dots-pattern"></div>
-        <div class="left-content">
-          <div class="auth-brand">
-            <div class="brand-header">
-              <div class="brand-logo-box"></div>
-              <span class="brand-text">COFAT <span>WMS</span></span>
-            </div>
-            <div class="brand-bar"></div>
-          </div>
-
-          <div class="auth-quote">
-            <div class="quote-marks">“</div>
-            <p class="quote-body">
-              Optimisez votre chaîne logistique avec notre solution intelligente de gestion d'entrepôt en temps réel.
-            </p>
-          </div>
-        </div>
+    <div class="logo-header">
+      <div class="brand-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
       </div>
-
-      <div class="auth-right">
-        <div class="right-content">
-          <div class="form-header">
-            <h5>Welcome Back !</h5>
-            <p>Connectez-vous pour accéder à COFAT.</p>
-          </div>
-
-          <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
-            <div class="form-group">
-              <label>Nom d'utilisateur</label>
-              <input
-                type="text"
-                class="form-input"
-                placeholder="Ex: admin_cofat"
-                formControlName="username"
-              />
-            </div>
-
-            <div class="form-group">
-              <div style="display: flex; justify-content: space-between;">
-                <label>Mot de passe</label>
-                <a href="#" style="font-size: 0.8rem; color: #0061ff; text-decoration: none;">Oublié ?</a>
-              </div>
-              <div class="input-pw-wrap">
-                <input
-                  [type]="showPwd() ? 'text' : 'password'"
-                  class="form-input"
-                  placeholder="••••••••"
-                  formControlName="password"
-                />
-                <button type="button" class="eye-btn" (click)="showPwd.set(!showPwd())">
-                  <svg *ngIf="!showPwd()" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  <svg *ngIf="showPwd()" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </button>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-signin" [disabled]="loading() || form.invalid">
-              {{ loading() ? 'Chargement...' : 'Se connecter' }}
-            </button>
-          </form>
-        </div>
-      </div>
-
+      <h1 class="brand-name">COFAT WMS</h1>
+      <p class="subtitle">Gérez vos données efficacement</p>
     </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        <div class="input-group">
+          <span class="input-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </span>
+          <input type="text" class="form-input" placeholder="Entrez votre nom d'utilisateur" formControlName="username">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <div class="input-group">
+          <span class="input-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </span>
+          <input [type]="showPwd() ? 'text' : 'password'" class="form-input" placeholder="Entrez votre mot de passe" formControlName="password">
+          <button type="button" class="eye-btn-style" (click)="showPwd.set(!showPwd())" style="position: absolute; right: 12px; background: none; border: none; color: #94a3b8; cursor: pointer;">
+             <svg *ngIf="!showPwd()" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+             <svg *ngIf="showPwd()" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="password-options">
+        <label class="remember-me">
+          <input type="checkbox"> Se souvenir de moi
+        </label>
+        <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+      </div>
+
+      <button type="submit" class="btn-signin" [disabled]="loading() || form.invalid">
+        {{ loading() ? 'Connexion...' : 'Se connecter' }}
+      </button>
+
+      <div *ngIf="errorMsg()" [class]="errorMsg().includes('bloqué') ? 'alert-blocked' : 'alert-error'">
+  <div class="alert-content">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ errorMsg() }}</span>
+  </div>
+</div>
+
+      <div class="admin-contact">
+        Besoin d'un compte ? <a href="#">Contactez l'administrateur</a>
+      </div>
+
+      <p class="copyright">© 2026 COFAT WMS. Tous droits réservés.</p>
+    </form>
   </div>
 </div>
