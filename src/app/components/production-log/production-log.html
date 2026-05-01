@@ -1,31 +1,38 @@
 <div class="page-wrap">
 
   <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <div class="header-left">
-      <div class="header-icon"><i class="bi bi-arrow-up-circle"></i></div>
-      <div>
-        <h1 class="page-title">Sorties Production</h1>
-        <p class="page-subtitle">
-          Historique complet · {{ logs.length }} opérations
-          <span class="live-dot" *ngIf="autoRefresh" title="Actualisation auto"></span>
-        </p>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn-icon" [class.btn-active]="autoRefresh"
-              (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
-        <i class="bi bi-arrow-repeat" [class.spin]="autoRefresh"></i>
-      </button>
-      <!-- ✅ EXCEL au lieu de CSV -->
-      <button class="btn-outline" (click)="exportExcel()" title="Exporter en Excel">
-        <i class="bi bi-file-earmark-excel"></i> Excel
-      </button>
-      <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
-        <i class="bi bi-arrow-clockwise" [class.spin]="isLoading"></i> Actualiser
-      </button>
+
+<div class="page-header">
+  <div class="header-left">
+    <!-- Changement pour pi-upload ou pi-external-link pour symboliser une "Sortie" -->
+    <div class="header-icon"><i class="pi pi-sign-out"></i></div>
+    <div>
+      <h1 class="page-title">Sorties Production</h1>
+      <p class="page-subtitle">
+        Historique complet · {{ logs.length }} opérations
+        <span class="live-dot" *ngIf="autoRefresh" title="Actualisation auto"></span>
+      </p>
     </div>
   </div>
+
+  <div class="header-actions">
+    <!-- Actualisation auto (Sync) -->
+    <button class="btn-icon" [class.btn-active]="autoRefresh"
+            (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
+      <i class="pi pi-sync" [class.spin]="autoRefresh"></i>
+    </button>
+
+    <!-- Export EXCEL -->
+    <button class="btn-outline" (click)="exportExcel()" title="Exporter en Excel">
+      <i class="pi pi-file-excel"></i> Excel
+    </button>
+
+    <!-- Bouton Actualiser -->
+    <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
+      <i class="pi pi-refresh" [class.spin]="isLoading"></i> Actualiser
+    </button>
+  </div>
+</div>
 
   <!-- ══ SKELETONS ════════════════════════════════════════════════════════ -->
   <ng-container *ngIf="isLoading">
@@ -213,7 +220,10 @@
             </td>
             <td class="tc">
               <button class="btn-detail" (click)="openDetail(l)">
-                <i class="bi bi-eye"></i>
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
               </button>
             </td>
           </tr>

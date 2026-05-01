@@ -16,42 +16,41 @@ export class HomeComponent implements OnInit, OnDestroy {
   private timer: any;
 
   stats = [
-    { value: '107M+', label: 'Unités gérées',     icon: 'mdi-package-variant'   },
-    { value: '3 697', label: 'Pages de stock',     icon: 'mdi-database'          },
-    { value: '8',     label: 'Entrepôts actifs',   icon: 'mdi-warehouse'         },
-    { value: '100%',  label: 'Temps réel ERP',     icon: 'mdi-lightning-bolt'    },
-  ];
-
+  { label: 'Unités gérées', value: '107M+', icon: 'pi-box' },
+  { label: 'Pages de stock', value: '3 697', icon: 'pi-file' },
+  { label: 'Entrepôts actifs', value: '8', icon: 'pi-building' },
+  { label: 'Temps réel ERP', value: '100%', icon: 'pi-sync' }
+];
   features = [
-    {
-      icon:  'mdi-chart-box-outline',
-      title: 'Dashboard Inventaire',
-      desc:  'Visualisez en temps réel la répartition de vos stocks par entrepôt, catégorie et emplacement.',
-      color: '#0D9488',
-      bg:    '#F0FDFA',
-    },
-    {
-      icon:  'mdi-barcode-scan',
-      title: 'Consultation Stock',
-      desc:  'Recherchez instantanément un article ou un lot. Obtenez coordonnées, quantités et statut.',
-      color: '#2563EB',
-      bg:    '#EFF6FF',
-    },
-    {
-      icon:  'mdi-swap-horizontal',
-      title: 'Gestion des Transferts',
-      desc:  'Planifiez, validez et tracez chaque mouvement de marchandise entre emplacements.',
-      color: '#7C3AED',
-      bg:    '#F5F3FF',
-    },
-    {
-      icon:  'mdi-shield-check-outline',
-      title: 'Contrôle d\'accès',
-      desc:  'Rôles, permissions et audit trail complet. Chaque action est tracée et horodatée.',
-      color: '#D97706',
-      bg:    '#FFFBEB',
-    },
-  ];
+  {
+    title: 'Dashboard Inventaire',
+    desc: 'Visualisez en temps réel la répartition de vos stocks...',
+    icon: 'pi-chart-bar',
+    bg: 'rgba(52, 211, 153, 0.1)',
+    color: '#34d399'
+  },
+  {
+    title: 'Consultation Stock',
+    desc: 'Recherchez instantanément un article ou un lot...',
+    icon: 'pi-search',
+    bg: 'rgba(96, 165, 250, 0.1)',
+    color: '#60a5fa'
+  },
+  {
+    title: 'Gestion des Transferts',
+    desc: 'Planifiez, validez et tracez chaque mouvement...',
+    icon: 'pi-directions',
+    bg: 'rgba(167, 139, 250, 0.1)',
+    color: '#a78bfa'
+  },
+  {
+    title: "Contrôle d'accès",
+    desc: 'Rôles, permissions et audit trail complet...',
+    icon: 'pi-shield',
+    bg: 'rgba(251, 191, 36, 0.1)',
+    color: '#fbbf24'
+  }
+];
 
   constructor(private router: Router) {}
 

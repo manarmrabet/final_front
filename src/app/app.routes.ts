@@ -117,6 +117,15 @@ export const routes: Routes = [
     ]
   },
 
+{
+        path: 'anomaly-dashboard',
+        canActivate: [authGuard, lockGuard],
+        loadComponent: () =>
+          import('./features/anomaly-dashboard/anomaly-dashboard.component')
+            .then(m => m.AnomalyDashboardComponent),
+        title: 'Détection Anomalies ML',
+        data: { roles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+      },
   {
     path: 'not-found',
     loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)

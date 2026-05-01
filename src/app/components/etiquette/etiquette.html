@@ -1,125 +1,155 @@
-<!-- etiquette.component.html -->
-<div class="etiquette-shell">
+<!-- etiquette.component.html
+     COFAT · CWMS — Génération d'Étiquettes
+     Style : Identique au tableau de bord Premium (Geist + PrimeIcons)
+-->
+<div class="etq-wrapper">
 
-  <!-- ── Sidebar brand strip ── -->
-  <aside class="brand-strip">
-    <div class="brand-logo">
-      <span class="brand-icon">◈</span>
-      <span class="brand-name">CWMS</span>
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+  <header class="etq-header">
+    <div class="etq-header__left">
+      <div class="etq-header__icon">
+        <i class="pi pi-tag"></i>
+      </div>
+      <div class="etq-header__titles">
+        <h1 class="etq-header__title">Génération d'<span class="etq-header__title-em">Étiquettes</span></h1>
+        <p class="etq-header__sub">
+          <span class="etq-header__sub-dot"></span>
+          COFAT · Code 128 · RCNO → PDF
+        </p>
+      </div>
     </div>
-    <div class="brand-divider"></div>
-    <div class="brand-sub">COFAT<br>TUNIS</div>
-  </aside>
 
-  <!-- ── Main content ── -->
-  <main class="main-content">
+    <div class="etq-header__right">
+      <div class="live-wrap">
 
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-left">
-        <p class="header-eyebrow">Warehouse Management System</p>
-        <h1 class="header-title">
-          Génération d'<em>Étiquettes</em>
-        </h1>
-        <p class="header-sub">Réception · Code 128 · RCNO → PDF</p>
+        <span class="live-time">
+          <i class="pi pi-clock"></i>
+          {{ today | date:'HH:mm · dd/MM/yyyy' }}
+        </span>
       </div>
-      <div class="header-badge">
-        <span class="badge-dot"></span>
-        ERP Live
+    </div>
+  </header>
+
+  <!-- ══ BODY ════════════════════════════════════════════════════════════════ -->
+  <div class="etq-body">
+
+    <!-- ── Carte formulaire ─────────────────────────────────────────────── -->
+    <div class="etq-card fade-in etq-delay-0">
+      <div class="etq-card__header">
+        <div class="etq-card__header-left">
+          <div class="etq-chart-icon etq-chart-icon--blue">
+            <i class="pi pi-barcode"></i>
+          </div>
+          <div>
+            <h3>Paramètres de génération</h3>
+            <p>Numéro RCNO et plage d'étiquettes</p>
+          </div>
+        </div>
+        <span class="etq-badge badge-blue">
+          <i class="pi pi-database"></i>
+          Code 128
+        </span>
       </div>
-    </header>
 
-    <!-- ── Form card ── -->
-    <section class="form-card">
-      <div class="form-card-inner">
+      <div class="etq-card__body">
+        <div class="etq-form-row">
 
-        <div class="field-group">
-          <!-- RCNO -->
-          <div class="field field--primary">
-            <label class="field-label">
-              <span class="label-icon">⬡</span>
-              N° Commande <span class="required">*</span>
+          <!-- N° Commande -->
+          <div class="etq-field etq-field--grow">
+            <label class="etq-label">
+              <i class="pi pi-hashtag"></i>
+              N° Commande <span class="etq-required">*</span>
             </label>
-            <div class="input-wrap">
+            <div class="etq-input-wrap">
               <input
                 [(ngModel)]="orderNumber"
                 placeholder="ex : 0000001234"
-                class="field-input"
-                [class.field-input--error]="!!error"
+                class="etq-input"
+                [class.etq-input--error]="!!error"
                 (keydown.enter)="generate()"
               />
-              <span class="input-suffix">RCNO</span>
+              <span class="etq-input-tag">RCNO</span>
             </div>
+            <p class="etq-hint">Format ERP : numéro de réception à 10 chiffres</p>
           </div>
 
-          <!-- Range -->
-          <div class="field field--range">
-            <label class="field-label">
-              <span class="label-icon">↔</span>
-              Plage <span class="hint">(0 = toutes)</span>
+          <!-- Plage -->
+          <div class="etq-field">
+            <label class="etq-label">
+              <i class="pi pi-arrows-h"></i>
+              Plage <span class="etq-hint-inline">(0 = toutes)</span>
             </label>
-            <div class="range-inputs">
-              <input [(ngModel)]="start" type="number" min="0"
-                     class="field-input field-input--num" placeholder="De" />
-              <span class="range-sep">→</span>
-              <input [(ngModel)]="end" type="number" min="0"
-                     class="field-input field-input--num" placeholder="À" />
+            <div class="etq-range">
+              <input
+                [(ngModel)]="start"
+                type="number" min="0"
+                class="etq-input etq-input--num"
+                placeholder="De"
+              />
+              <span class="etq-range-sep"><i class="pi pi-arrow-right"></i></span>
+              <input
+                [(ngModel)]="end"
+                type="number" min="0"
+                class="etq-input etq-input--num"
+                placeholder="À"
+              />
             </div>
           </div>
+
+          <!-- Bouton -->
+          <div class="etq-field etq-field--action">
+            <label class="etq-label etq-label--ghost">&nbsp;</label>
+            <button
+              class="etq-btn-primary"
+              [class.etq-btn-primary--loading]="loading"
+              [disabled]="loading || !orderNumber"
+              (click)="generate()"
+            >
+              <ng-container *ngIf="!loading">
+                <i class="pi pi-print"></i>
+                Générer le PDF
+              </ng-container>
+              <ng-container *ngIf="loading">
+                <span class="etq-spinner"></span>
+                Génération…
+              </ng-container>
+            </button>
+          </div>
+
         </div>
 
-        <!-- CTA -->
-        <button
-          class="btn-generate"
-          [class.btn-generate--loading]="loading"
-          [disabled]="loading"
-          (click)="generate()"
-        >
-          <span class="btn-inner" *ngIf="!loading">
-            <span class="btn-icon">⎙</span>
-            Générer le PDF
-          </span>
-          <span class="btn-inner" *ngIf="loading">
-            <span class="spinner"></span>
-            Génération…
-          </span>
-        </button>
-
+        <!-- Barre d'erreur -->
+        <div class="etq-error-bar" *ngIf="error">
+          <i class="pi pi-exclamation-triangle"></i>
+          {{ error }}
+        </div>
       </div>
+    </div>
 
-      <!-- Error -->
-      <div class="error-bar" *ngIf="error">
-        <span class="error-icon">⚠</span>
-        {{ error }}
-      </div>
-    </section>
+    <!-- ── Résultat PDF ──────────────────────────────────────────────────── -->
+    <div class="etq-card etq-card--result fade-in" *ngIf="pdfSafe" [@fadeIn]>
 
-    <!-- ── Result panel ── -->
-    <section class="result-panel" *ngIf="pdfSafe" [@fadeIn]>
-
-      <div class="result-header">
-        <div class="result-meta">
-          <span class="result-check">✓</span>
+      <div class="etq-card__header etq-card__header--success">
+        <div class="etq-card__header-left">
+          <div class="etq-result-check">
+            <i class="pi pi-check"></i>
+          </div>
           <div>
-            <p class="result-title">PDF généré avec succès</p>
-            <p class="result-sub">RCNO <strong>{{ orderNumber }}</strong> · {{ labelCount }} étiquette(s)</p>
+            <h3>PDF généré avec succès</h3>
+            <p>RCNO <strong>{{ orderNumber }}</strong> · {{ labelCount }} étiquette(s)</p>
           </div>
         </div>
-        <button class="btn-download" (click)="download()">
-          <span>↓</span> Télécharger
+        <button class="etq-btn-download" (click)="download()">
+          <i class="pi pi-download"></i>
+          Télécharger
         </button>
       </div>
 
-      <div class="pdf-viewport">
-        <iframe
-          [src]="pdfSafe"
-          class="pdf-frame"
-          type="application/pdf">
-        </iframe>
+      <div class="etq-pdf-wrap">
+        <iframe [src]="pdfSafe" class="etq-pdf-frame" type="application/pdf"></iframe>
       </div>
 
-    </section>
+    </div>
 
-  </main>
-
+  </div><!-- /etq-body -->
 </div>

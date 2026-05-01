@@ -5,7 +5,12 @@
     <div class="card-header">
       <div class="header-left">
         <div class="header-icon">
-          <lucide-angular name="ShieldCheck" size="22"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/shield-check.svg"
+            width="22" height="22"
+            alt="shield-check"
+            class="lucide-img lucide-img--primary"
+          />
         </div>
         <div>
           <h5 class="page-card-title">Rôles & Permissions</h5>
@@ -20,7 +25,12 @@
         </div>
 
         <button class="btn-new-role" (click)="openCreateRoleModal()">
-          <lucide-angular name="plus" size="18"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/plus.svg"
+            width="18" height="18"
+            alt="plus"
+            class="lucide-img lucide-img--white"
+          />
           <span>Nouveau rôle</span>
         </button>
       </div>
@@ -46,10 +56,20 @@
           <div class="rc-actions">
             <button class="btn-delete-role"
                     (click)="$event.stopPropagation(); openDeleteModal(role)">
-              <lucide-angular name="trash-2" size="16"></lucide-angular>
+              <img
+                src="https://unpkg.com/lucide-static@latest/icons/trash-2.svg"
+                width="16" height="16"
+                alt="supprimer"
+                class="lucide-img lucide-img--danger"
+              />
             </button>
             <div class="rc-arrow">
-              <lucide-angular name="chevron-right" size="16"></lucide-angular>
+              <img
+                src="https://unpkg.com/lucide-static@latest/icons/chevron-right.svg"
+                width="16" height="16"
+                alt=""
+                class="lucide-img"
+              />
             </div>
           </div>
 
@@ -63,12 +83,22 @@
 
         <div class="config-panel-head">
           <div class="config-panel-title">
-            <lucide-angular name="sliders" size="16"></lucide-angular>
+            <img
+              src="https://unpkg.com/lucide-static@latest/icons/sliders.svg"
+              width="16" height="16"
+              alt=""
+              class="lucide-img lucide-img--primary"
+            />
             Permissions —
             <strong>{{ getSelectedRoleName() }}</strong>
           </div>
           <button class="config-panel-close" (click)="onRoleChange(undefined)">
-            <lucide-angular name="x" size="15"></lucide-angular>
+            <img
+              src="https://unpkg.com/lucide-static@latest/icons/x.svg"
+              width="15" height="15"
+              alt="fermer"
+              class="lucide-img"
+            />
           </button>
         </div>
 
@@ -106,7 +136,23 @@
               <div class="menu-card-left">
                 <div class="menu-card-icon"
                   [class.active]="menu.menuItemId !== undefined && selectedMenuIds().includes(menu.menuItemId)">
-                  <lucide-angular [name]="menu.icon || 'menu'" size="18"></lucide-angular>
+
+                  <!--
+                    CORRECTION : <lucide-angular> remplacé par <img> CDN.
+                    Si l'icône contient un espace → classe CSS (feather, mdi…).
+                    Sinon → nom Lucide chargé depuis unpkg.
+                  -->
+                  @if (menu.icon && menu.icon.includes(' ')) {
+                    <i [class]="menu.icon" style="font-size:18px;line-height:1"></i>
+                  } @else {
+                    <img
+                      [src]="'https://unpkg.com/lucide-static@latest/icons/' + (menu.icon || 'menu') + '.svg'"
+                      width="18" height="18"
+                      [alt]="menu.icon || 'menu'"
+                      class="lucide-img lucide-img--inherit"
+                      onerror="this.style.display='none'"
+                    />
+                  }
                 </div>
                 <div class="menu-card-info">
                   <span class="menu-card-label">{{ menu.label }}</span>
@@ -148,11 +194,21 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title">
-          <lucide-angular name="shield-plus" size="20"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/shield-plus.svg"
+            width="20" height="20"
+            alt=""
+            class="lucide-img lucide-img--primary"
+          />
           Créer un nouveau rôle
         </div>
         <button class="modal-close" (click)="closeCreateRoleModal()">
-          <lucide-angular name="x" size="20"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/x.svg"
+            width="20" height="20"
+            alt="fermer"
+            class="lucide-img"
+          />
         </button>
       </div>
 
@@ -185,7 +241,12 @@
             Annuler
           </button>
           <button type="submit" class="btn-create" [disabled]="!newRoleName()?.trim()">
-            <lucide-angular name="plus" size="18"></lucide-angular>
+            <img
+              src="https://unpkg.com/lucide-static@latest/icons/plus.svg"
+              width="18" height="18"
+              alt=""
+              class="lucide-img lucide-img--white"
+            />
             Créer le rôle
           </button>
         </div>
@@ -201,25 +262,40 @@
 
       <div class="modal-header danger-header">
         <div class="modal-title">
-          <lucide-angular name="alert-triangle" size="22"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/alert-triangle.svg"
+            width="22" height="22"
+            alt=""
+            class="lucide-img lucide-img--danger"
+          />
           Supprimer le rôle
         </div>
         <button class="modal-close" (click)="closeDeleteModal()">
-          <lucide-angular name="x" size="20"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/x.svg"
+            width="20" height="20"
+            alt="fermer"
+            class="lucide-img"
+          />
         </button>
       </div>
 
       <div class="modal-body">
-  <p>Êtes-vous sûr de vouloir supprimer le rôle <strong>"{{ roleToDelete()?.roleName }}"</strong> ?</p>
-  <p class="warning-text">Cette action est irréversible. Toutes les permissions associées seront supprimées.</p>
-</div>
+        <p>Êtes-vous sûr de vouloir supprimer le rôle <strong>"{{ roleToDelete()?.roleName }}"</strong> ?</p>
+        <p class="warning-text">Cette action est irréversible. Toutes les permissions associées seront supprimées.</p>
+      </div>
 
       <div class="modal-footer">
         <button type="button" class="btn-cancel" (click)="closeDeleteModal()">
           Annuler
         </button>
         <button type="button" class="btn-delete" (click)="confirmDeleteRole()">
-          <lucide-angular name="trash-2" size="18"></lucide-angular>
+          <img
+            src="https://unpkg.com/lucide-static@latest/icons/trash-2.svg"
+            width="18" height="18"
+            alt=""
+            class="lucide-img lucide-img--white"
+          />
           Oui, supprimer le rôle
         </button>
       </div>

@@ -1,141 +1,177 @@
 <div class="dashboard-wrapper fade-in">
   <div class="container-fluid px-0">
 
-    <!-- HEADER ──────────────────────────────────────────────────────────
-         CORRECTION : structure sémantique __left / __right
-         Les deux groupes restent sur la même ligne grâce au flex du .db-header
-         Les icônes ont un font-size explicite dans le SCSS → s'affichent
-    ──────────────────────────────────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════════════════
+         HEADER
+    ══════════════════════════════════════════════════════ -->
     <div class="db-header mb-4">
-
       <div class="db-header__left">
         <div class="db-header__icon">
-          <i class="mdi mdi-chart-box-outline"></i>
+          <i class="pi pi-box"></i>
         </div>
-        <div>
+        <div class="db-header__titles">
           <h1 class="db-header__title">Tableau de Bord Inventaire</h1>
-          <p class="db-header__sub">COFAT — Suivi temps réel des stocks ERP</p>
+          <p class="db-header__sub">
+            <span class="db-header__sub-dot"></span>
+            COFAT — Suivi temps réel des stocks ERP
+          </p>
         </div>
       </div>
 
       <div class="db-header__right">
         <div class="live-wrap" *ngIf="lastRefresh">
-          <div class="live-badge">
-            <span class="live-dot"></span>SQL Server Live
-          </div>
-          <span class="live-time">Relevé : {{ lastRefresh | date:'HH:mm:ss' }}</span>
+
+          <span class="live-time">
+            <i class="pi pi-clock"></i>
+            {{ lastRefresh | date:'HH:mm:ss' }}
+          </span>
         </div>
         <button class="btn-refresh" (click)="loadDashboard()" [disabled]="loading">
-          <i class="mdi" [ngClass]="loading ? 'mdi-loading mdi-spin' : 'mdi-sync'"></i>
+          <i class="pi" [ngClass]="loading ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
           {{ loading ? 'Sync...' : 'Actualiser' }}
         </button>
       </div>
-
     </div>
 
-    <!-- CTA BANNER ──────────────────────────────────────────────────────
-         CORRECTION : même structure __left pour garder icône + texte alignés
-    ──────────────────────────────────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════════════════
+         CTA BANNER
+    ══════════════════════════════════════════════════════ -->
     <div class="cta-banner mb-4">
-
+      <div class="cta-banner__decoration">
+        <span class="deco-circle deco-1"></span>
+        <span class="deco-circle deco-2"></span>
+        <span class="deco-circle deco-3"></span>
+      </div>
       <div class="cta-banner__left">
         <div class="cta-icon">
-          <i class="mdi mdi-magnify-scan"></i>
+          <i class="pi pi-search-plus"></i>
         </div>
         <div>
           <h3>Analyse détaillée par article ou par lot</h3>
           <p>Emplacements précis, quantités disponibles, statut de chaque ligne.</p>
         </div>
       </div>
-
       <a [routerLink]="['/app/stock/consultation']" class="btn-cta">
-        Consulter <i class="mdi mdi-arrow-right"></i>
+        <span>Consulter</span>
+        <i class="pi pi-arrow-right"></i>
       </a>
-
     </div>
 
-    <!-- LOADER ──────────────────────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════════════════
+         LOADER
+    ══════════════════════════════════════════════════════ -->
     <div *ngIf="loading" class="loader-overlay">
-      <div class="spinner-ring"></div>
-      <p>Récupération des stocks...</p>
+      <div class="loader-ring">
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <p>Récupération des stocks en cours…</p>
     </div>
 
-    <!-- ERREUR ──────────────────────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════════════════
+         ERREUR
+    ══════════════════════════════════════════════════════ -->
     <div *ngIf="error"
-         class="alert alert-danger d-flex align-items-center gap-2 rounded-3 border-0 mb-4">
-      <i class="mdi mdi-alert-circle fs-5"></i>{{ error }}
+         class="alert-error mb-4">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error }}</span>
     </div>
 
     <ng-container *ngIf="!loading && dashboard">
 
-      <!-- KPI CARDS ─────────────────────────────────────────────────── -->
-      <div class="kpi-grid mb-4">
+      <!-- ══════════════════════════════════════════════════
+           KPI CARDS
+      ══════════════════════════════════════════════════ -->
+      <div class="kpi-grid mb-5">
 
-        <div class="kpi-card kpi-delay-0 fade-in" style="--kpi-accent:#0D9488">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <div class="kpi-icon" style="background:#F0FDFA;color:#0D9488">
-              <i class="mdi mdi-package-variant"></i>
+        <div class="kpi-card kpi-delay-0 fade-in" data-accent="#0D9488">
+          <div class="kpi-card__top">
+            <div class="kpi-icon kpi-icon--teal">
+              <i class="pi pi-box"></i>
             </div>
-            <span class="erp-tag">ERP</span>
+            <span class="erp-tag">
+              <i class="pi pi-database"></i> ERP
+            </span>
           </div>
           <p class="kpi-label">Quantité totale</p>
-          <div class="d-flex align-items-baseline gap-1">
-            <span class="kpi-value">{{ kpiCards[0]?.value | number:'1.0-0' }} </span>
+          <div class="kpi-bottom">
+            <span class="kpi-value">{{ kpiCards[0]?.value | number:'1.0-0' }}</span>
             <span class="kpi-unit">unités</span>
           </div>
+          <div class="kpi-bar" style="--bar-color:#0D9488"></div>
         </div>
 
-        <div class="kpi-card kpi-delay-1 fade-in" style="--kpi-accent:#2563EB">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <div class="kpi-icon" style="background:#EFF6FF;color:#2563EB">
-              <i class="mdi mdi-barcode"></i>
+        <div class="kpi-card kpi-delay-1 fade-in" data-accent="#2563EB">
+          <div class="kpi-card__top">
+            <div class="kpi-icon kpi-icon--blue">
+              <i class="pi pi-barcode"></i>
             </div>
-            <span class="erp-tag">ERP</span>
+            <span class="erp-tag">
+              <i class="pi pi-database"></i> ERP
+            </span>
           </div>
           <p class="kpi-label">Articles en stock</p>
-          <div class="d-flex align-items-baseline gap-1">
-            <span class="kpi-value">{{ kpiCards[1]?.value | number:'1.0-0' }} </span>
+          <div class="kpi-bottom">
+            <span class="kpi-value">{{ kpiCards[1]?.value | number:'1.0-0' }}</span>
             <span class="kpi-unit">références</span>
           </div>
+          <div class="kpi-bar" style="--bar-color:#2563EB"></div>
         </div>
 
-        <div class="kpi-card kpi-delay-2 fade-in" style="--kpi-accent:#7C3AED">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <div class="kpi-icon" style="background:#F5F3FF;color:#7C3AED">
-              <i class="mdi mdi-warehouse"></i>
+        <div class="kpi-card kpi-delay-2 fade-in" data-accent="#7C3AED">
+          <div class="kpi-card__top">
+            <div class="kpi-icon kpi-icon--purple">
+              <i class="pi pi-building"></i>
             </div>
-            <span class="erp-tag">ERP</span>
+            <span class="erp-tag">
+              <i class="pi pi-database"></i> ERP
+            </span>
           </div>
           <p class="kpi-label">Entrepôts actifs</p>
-          <div class="d-flex align-items-baseline gap-1">
-            <span class="kpi-value">{{ kpiCards[2]?.value | number:'1.0-0' }} </span>
+          <div class="kpi-bottom">
+            <span class="kpi-value">{{ kpiCards[2]?.value | number:'1.0-0' }}</span>
             <span class="kpi-unit">sites</span>
           </div>
+          <div class="kpi-bar" style="--bar-color:#7C3AED"></div>
         </div>
 
-        <div class="kpi-card kpi-delay-3 fade-in" style="--kpi-accent:#D97706">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <div class="kpi-icon" style="background:#FFFBEB;color:#D97706">
-              <i class="mdi mdi-map-marker"></i>
+        <div class="kpi-card kpi-delay-3 fade-in" data-accent="#D97706">
+          <div class="kpi-card__top">
+            <div class="kpi-icon kpi-icon--amber">
+              <i class="pi pi-map-marker"></i>
             </div>
-            <span class="erp-tag">ERP</span>
+            <span class="erp-tag">
+              <i class="pi pi-database"></i> ERP
+            </span>
           </div>
           <p class="kpi-label">Emplacements</p>
-          <div class="d-flex align-items-baseline gap-1">
-            <span class="kpi-value">{{ kpiCards[3]?.value | number:'1.0-0' }} </span>
+          <div class="kpi-bottom">
+            <span class="kpi-value">{{ kpiCards[3]?.value | number:'1.0-0' }}</span>
             <span class="kpi-unit">occupés</span>
           </div>
+          <div class="kpi-bar" style="--bar-color:#D97706"></div>
         </div>
 
       </div>
 
-      <!-- GRAPHIQUES ligne 1 ─────────────────────────────────────────── -->
-      <div class="row g-3 mb-3">
+      <!-- ══════════════════════════════════════════════════
+           GRAPHIQUES LIGNE 1
+      ══════════════════════════════════════════════════ -->
+      <div class="row g-4 mb-4">
         <div class="col-xl-8">
           <div class="chart-card h-100">
-            <div class="chart-card__header d-flex align-items-center justify-content-between">
-              <h3><span class="chart-dot" style="background:#0D9488"> </span>Répartition par Entrepôt</h3>
-              <span class="chart-badge badge-teal">Quantités </span>
+            <div class="chart-card__header">
+              <div class="chart-card__header-left">
+                <span class="chart-icon chart-icon--teal">
+                  <i class="pi pi-chart-bar"></i>
+                </span>
+                <div>
+                  <h3>Répartition par Entrepôt</h3>
+                  <p>Distribution des quantités par site</p>
+                </div>
+              </div>
+              <span class="chart-badge badge-teal">
+                <i class="pi pi-chart-bar"></i> Quantités
+              </span>
             </div>
             <div class="chart-card__body">
               <div class="chart-container"><canvas id="warehouseChart"></canvas></div>
@@ -144,24 +180,44 @@
         </div>
         <div class="col-xl-4">
           <div class="chart-card h-100">
-            <div class="chart-card__header d-flex align-items-center justify-content-between">
-              <h3><span class="chart-dot" style="background:#7C3AED"> </span>Segments</h3>
+            <div class="chart-card__header">
+              <div class="chart-card__header-left">
+                <span class="chart-icon chart-icon--purple">
+                  <i class="pi pi-chart-pie"></i>
+                </span>
+                <div>
+                  <h3>Segments</h3>
+                  <p>Catégories de stock</p>
+                </div>
+              </div>
               <span class="chart-badge badge-purple">SF · PF · PR</span>
             </div>
-            <div class="chart-card__body d-flex align-items-center justify-content-center">
+            <div class="chart-card__body chart-card__body--centered">
               <div class="chart-container-donut"><canvas id="categoryChart"></canvas></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- GRAPHIQUES ligne 2 ─────────────────────────────────────────── -->
-      <div class="row g-3">
+      <!-- ══════════════════════════════════════════════════
+           GRAPHIQUES LIGNE 2
+      ══════════════════════════════════════════════════ -->
+      <div class="row g-4">
         <div class="col-xl-7">
           <div class="chart-card h-100">
-            <div class="chart-card__header d-flex align-items-center justify-content-between">
-              <h3><span class="chart-dot" style="background:#2563EB"> </span>Occupation Zones</h3>
-              <span class="chart-badge badge-blue">Top 10</span>
+            <div class="chart-card__header">
+              <div class="chart-card__header-left">
+                <span class="chart-icon chart-icon--blue">
+                  <i class="pi pi-sliders-h"></i>
+                </span>
+                <div>
+                  <h3>Occupation Zones</h3>
+                  <p>Top 10 zones par quantité</p>
+                </div>
+              </div>
+              <span class="chart-badge badge-blue">
+                <i class="pi pi-star-fill"></i> Top 10
+              </span>
             </div>
             <div class="chart-card__body">
               <div class="chart-container"><canvas id="locationChart"></canvas></div>
@@ -170,15 +226,27 @@
         </div>
         <div class="col-xl-5">
           <div class="chart-card h-100">
-            <div class="chart-card__header d-flex align-items-center justify-content-between">
-              <h3><span class="chart-dot" style="background:#D97706"></span>Top 10 Valorisation</h3>
-              <span class="chart-badge badge-amber">Stock Réel</span>
+            <div class="chart-card__header">
+              <div class="chart-card__header-left">
+                <span class="chart-icon chart-icon--amber">
+                  <i class="pi pi-list"></i>
+                </span>
+                <div>
+                  <h3>Top 10 Valorisation</h3>
+                  <p>Articles les plus stockés</p>
+                </div>
+              </div>
+              <span class="chart-badge badge-amber">
+                <i class="pi pi-verified"></i> Stock Réel
+              </span>
             </div>
             <div class="table-scroll">
               <table class="top-table">
                 <thead>
                   <tr>
-                    <th>Rang</th><th>Article</th><th class="text-end">Quantité</th>
+                    <th><i class="pi pi-hashtag"></i> Rang</th>
+                    <th><i class="pi pi-tag"></i> Article</th>
+                    <th class="text-end"><i class="pi pi-sort-amount-down"></i> Quantité</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -188,11 +256,17 @@
                       <span class="rank-badge"
                             [class.rank-1]="i===0" [class.rank-2]="i===1"
                             [class.rank-3]="i===2" [class.rank-n]="i>2">
-                        {{ i + 1 }}
+                        <i *ngIf="i===0" class="pi pi-crown"></i>
+                        <i *ngIf="i===1" class="pi pi-star-fill"></i>
+                        <i *ngIf="i===2" class="pi pi-star"></i>
+                        <span *ngIf="i>2">{{ i + 1 }}</span>
                       </span>
                     </td>
                     <td>
-                      <div class="item-code">{{ item.itemCode }}</div>
+                      <div class="item-code">
+                        <i class="pi pi-barcode"></i>
+                        {{ item.itemCode }}
+                      </div>
                       <div class="item-name text-truncate">{{ item.designation || '—' }}</div>
                     </td>
                     <td class="text-end">

@@ -1,187 +1,262 @@
-<!-- reception.html — Design moderne industriel-précision -->
-<div class="rcpt-page">
+<!-- reception.component.html
+     COFAT · CWMS — Reception Management
+     Style : Identique au tableau de bord Premium (Geist + PrimeIcons)
+-->
+<div class="rcpt-wrapper">
 
-  <!-- ══ Header élégant ════════════════════════════════════════════════════ -->
-  <div class="rcpt-header">
-    <div class="header-left">
-      <div class="header-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
-        </svg>
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+  <header class="rcpt-header">
+    <div class="rcpt-header__left">
+      <div class="rcpt-header__icon">
+        <i class="pi pi-truck"></i>
       </div>
-      <div>
-        <h1 class="header-title">Reception Management</h1>
-        <span class="header-sub">Bons de réception · Export PDF & Excel</span>
+      <div class="rcpt-header__titles">
+        <h1 class="rcpt-header__title">Reception Management</h1>
+        <p class="rcpt-header__sub">
+          <span class="rcpt-header__sub-dot"></span>
+          Bons de réception · Export PDF &amp; Excel
+        </p>
       </div>
     </div>
-    <div class="header-stats" *ngIf="hasResults">
-      <div class="stat-pill">
-        <span class="stat-num">{{ receptionOrders.length || receptionLines.length }}</span>
-        <span class="stat-lbl">résultats</span>
+
+    <div class="rcpt-header__right">
+      <div class="live-wrap" *ngIf="hasResults">
+        <span class="rcpt-stat-pill">
+          <i class="pi pi-list"></i>
+          <span class="rcpt-stat-num">{{ receptionOrders.length || receptionLines.length }}</span>
+          <span class="rcpt-stat-lbl">résultats</span>
+        </span>
+      </div>
+      <div class="live-wrap">
+
+        <span class="live-time">
+          <i class="pi pi-clock"></i>
+          {{ today | date:'HH:mm · dd/MM/yyyy' }}
+        </span>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ══ Erreur ════════════════════════════════════════════════════════════ -->
-  <div class="rcpt-error" *ngIf="errorMessage" (click)="dismissError()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <!-- ══ ERREUR ══════════════════════════════════════════════════════════════ -->
+  <div class="rcpt-alert-error" *ngIf="errorMessage" (click)="dismissError()">
+    <i class="pi pi-exclamation-triangle"></i>
     <span>{{ errorMessage }}</span>
-    <button class="err-close">✕</button>
+    <button class="rcpt-err-close"><i class="pi pi-times"></i></button>
   </div>
 
-  <!-- ══ Layout ════════════════════════════════════════════════════════════ -->
+  <!-- ══ BODY ════════════════════════════════════════════════════════════════ -->
   <div class="rcpt-body" [class.pdf-open]="showPdfPanel">
 
-    <!-- ── Colonne gauche ─────────────────────────────────────────────────── -->
+    <!-- ── COLONNE GAUCHE ────────────────────────────────────────────────── -->
     <div class="rcpt-left">
 
-      <!-- Tabs -->
-      <div class="mode-switch">
-        <button class="ms-btn" [class.active]="searchMode === 'ORDER'"
+      <!-- Mode switch -->
+      <div class="rcpt-mode-switch">
+        <button class="rcpt-ms-btn" [class.active]="searchMode === 'ORDER'"
                 (click)="setSearchMode('ORDER')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <i class="pi pi-list"></i>
           Par commande
         </button>
-        <button class="ms-btn" [class.active]="searchMode === 'DATE_RANGE'"
+        <button class="rcpt-ms-btn" [class.active]="searchMode === 'DATE_RANGE'"
                 (click)="setSearchMode('DATE_RANGE')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <i class="pi pi-calendar"></i>
           Par date
         </button>
       </div>
 
-      <!-- ── Formulaire ORDER ──────────────────────────────────────────── -->
-      <div class="search-card" *ngIf="searchMode === 'ORDER'">
-        <label class="field-label">Numéro de commande</label>
-        <div class="field-row">
-          <div class="field-wrap">
-            <input class="field-input" type="text"
-                   [(ngModel)]="orderNumber"
-                   placeholder="PO0000050"
-                   (keyup.enter)="searchByOrder()" />
-            <button class="field-clear" *ngIf="orderNumber" (click)="orderNumber=''">✕</button>
+      <!-- ── Carte recherche ORDER ──────────────────────────────────────── -->
+      <div class="rcpt-card fade-in rcpt-delay-0" *ngIf="searchMode === 'ORDER'">
+        <div class="rcpt-card__header">
+          <div class="rcpt-card__header-left">
+            <div class="rcpt-chart-icon rcpt-chart-icon--blue">
+              <i class="pi pi-search"></i>
+            </div>
+            <div>
+              <h3>Recherche par commande</h3>
+              <p>Numéro de commande ERP</p>
+            </div>
           </div>
+          <span class="rcpt-badge badge-blue">
+            <i class="pi pi-database"></i>
+            ERP
+          </span>
         </div>
-        <p class="field-hint">Format ERP : PO suivi de 7 chiffres</p>
 
-        <div class="action-row">
-          <button class="btn-primary" (click)="searchByOrder()" [disabled]="loading||!orderNumber">
-            <span class="btn-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            Rechercher
-          </button>
-          <button class="btn-outline-green" (click)="exportExcelForOrder(orderNumber)"
-                  [disabled]="!orderNumber||exporting">
-            <span class="btn-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </span>
-            Excel
-          </button>
+        <div class="rcpt-card__body">
+          <div class="rcpt-field">
+            <label class="rcpt-label">
+              <i class="pi pi-hashtag"></i>
+              Numéro de commande <span class="rcpt-required">*</span>
+            </label>
+            <div class="rcpt-input-wrap">
+              <input
+                class="rcpt-input"
+                type="text"
+                [(ngModel)]="orderNumber"
+                placeholder="PO0000050"
+                (keyup.enter)="searchByOrder()"
+              />
+              <button class="rcpt-input-clear" *ngIf="orderNumber" (click)="orderNumber=''">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <p class="rcpt-hint">Format ERP : PO suivi de 7 chiffres</p>
+          </div>
+
+          <div class="rcpt-action-row">
+            <button class="rcpt-btn-primary" (click)="searchByOrder()"
+                    [disabled]="loading || !orderNumber">
+              <ng-container *ngIf="!loading">
+                <i class="pi pi-search"></i> Rechercher
+              </ng-container>
+              <ng-container *ngIf="loading">
+                <span class="rcpt-spinner"></span> Chargement…
+              </ng-container>
+            </button>
+            <button class="rcpt-btn-success" (click)="exportExcelForOrder(orderNumber)"
+                    [disabled]="!orderNumber || exporting">
+              <i class="pi pi-file-excel"></i> Excel
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- ── Formulaire DATE RANGE ─────────────────────────────────────── -->
-      <div class="search-card" *ngIf="searchMode === 'DATE_RANGE'">
-        <div class="date-grid">
-          <div class="date-field">
-            <label class="field-label">Date début</label>
-            <input class="field-input" type="date" [(ngModel)]="startDateIso" />
-            <span class="date-preview">{{ startDateDisplay }}</span>
+      <!-- ── Carte recherche DATE_RANGE ─────────────────────────────────── -->
+      <div class="rcpt-card fade-in rcpt-delay-0" *ngIf="searchMode === 'DATE_RANGE'">
+        <div class="rcpt-card__header">
+          <div class="rcpt-card__header-left">
+            <div class="rcpt-chart-icon rcpt-chart-icon--teal">
+              <i class="pi pi-calendar-range"></i>
+            </div>
+            <div>
+              <h3>Recherche par période</h3>
+              <p>Sélectionnez une plage de dates</p>
+            </div>
           </div>
-          <div class="date-sep">→</div>
-          <div class="date-field">
-            <label class="field-label">Date fin</label>
-            <input class="field-input" type="date" [(ngModel)]="endDateIso" />
-            <span class="date-preview">{{ endDateDisplay }}</span>
-          </div>
+          <span class="rcpt-badge badge-teal">
+            <i class="pi pi-calendar"></i>
+            Période
+          </span>
         </div>
 
-        <!-- Quick chips -->
-        <div class="chip-row">
-          <button *ngFor="let r of quickRanges" class="chip" (click)="applyQuickRange(r.key)">
-            {{ r.label }}
-          </button>
-          <button class="chip chip-ghost" (click)="startDateIso='';endDateIso=''">Effacer</button>
-        </div>
+        <div class="rcpt-card__body">
+          <div class="rcpt-date-grid">
+            <div class="rcpt-field">
+              <label class="rcpt-label"><i class="pi pi-calendar"></i> Date début</label>
+              <input class="rcpt-input" type="date" [(ngModel)]="startDateIso" />
+              <span class="rcpt-date-preview">{{ startDateDisplay }}</span>
+            </div>
+            <div class="rcpt-date-sep"><i class="pi pi-arrow-right"></i></div>
+            <div class="rcpt-field">
+              <label class="rcpt-label"><i class="pi pi-calendar"></i> Date fin</label>
+              <input class="rcpt-input" type="date" [(ngModel)]="endDateIso" />
+              <span class="rcpt-date-preview">{{ endDateDisplay }}</span>
+            </div>
+          </div>
 
-        <div class="action-row">
-          <button class="btn-primary"
-                  (click)="searchByDateRange()"
-                  [disabled]="loading||!startDateIso||!endDateIso">
-            <span class="btn-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            Rechercher
-          </button>
-          <button class="btn-outline-green" (click)="exportExcel()"
-                  [disabled]="!hasResults||exporting">
-            <span class="btn-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </span>
-            Export Excel
-          </button>
+          <!-- Chips rapides -->
+          <div class="rcpt-chip-row">
+            <button *ngFor="let r of quickRanges" class="rcpt-chip" (click)="applyQuickRange(r.key)">
+              {{ r.label }}
+            </button>
+            <button class="rcpt-chip rcpt-chip--clear" (click)="startDateIso=''; endDateIso=''">
+              <i class="pi pi-times"></i> Effacer
+            </button>
+          </div>
+
+          <div class="rcpt-action-row">
+            <button class="rcpt-btn-primary" (click)="searchByDateRange()"
+                    [disabled]="loading || !startDateIso || !endDateIso">
+              <ng-container *ngIf="!loading">
+                <i class="pi pi-search"></i> Rechercher
+              </ng-container>
+              <ng-container *ngIf="loading">
+                <span class="rcpt-spinner"></span> Chargement…
+              </ng-container>
+            </button>
+            <button class="rcpt-btn-success" (click)="exportExcel()"
+                    [disabled]="!hasResults || exporting">
+              <i class="pi pi-download"></i> Export Excel
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Actions secondaires -->
-      <div class="secondary-row">
-        <button class="btn-ghost" (click)="clearAll()">↺ Tout effacer</button>
-        <button class="btn-ghost accent" (click)="loadExample()">⚡ Exemple</button>
+      <div class="rcpt-secondary-row">
+        <button class="rcpt-btn-ghost" (click)="clearAll()">
+          <i class="pi pi-refresh"></i> Tout effacer
+        </button>
+        <button class="rcpt-btn-ghost rcpt-btn-ghost--accent" (click)="loadExample()">
+          <i class="pi pi-bolt"></i> Exemple
+        </button>
       </div>
 
-      <!-- Loading -->
-      <div class="loading-bar" *ngIf="loading">
-        <div class="loading-track"><div class="loading-fill"></div></div>
+      <!-- Loading bar -->
+      <div class="rcpt-loading-bar" *ngIf="loading">
+        <div class="rcpt-loading-track"><div class="rcpt-loading-fill"></div></div>
         <span>Chargement en cours…</span>
       </div>
 
-      <!-- Empty -->
-      <div class="empty-state" *ngIf="hasSearched && !loading && !hasResults">
-        <div class="empty-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <!-- État vide -->
+      <div class="rcpt-empty" *ngIf="hasSearched && !loading && !hasResults">
+        <div class="rcpt-empty__icon">
+          <i class="pi pi-inbox"></i>
         </div>
-        <p>Aucun résultat</p>
-        <span>Modifiez vos critères de recherche</span>
+        <p class="rcpt-empty__title">Aucun résultat</p>
+        <span class="rcpt-empty__sub">Modifiez vos critères de recherche</span>
       </div>
 
-      <!-- ══ Tableau : par date ═══════════════════════════════════════════ -->
-      <div class="results-wrap" *ngIf="receptionOrders.length > 0">
-        <div class="results-bar">
-          <div class="results-info">
-            <span class="results-count">{{ receptionOrders.length }}</span>
-            <span class="results-label">réceptions</span>
-            <span class="results-range">· {{ startDateDisplay }} → {{ endDateDisplay }}</span>
+      <!-- ══ Tableau par date ══════════════════════════════════════════════ -->
+      <div class="rcpt-card fade-in rcpt-delay-1" *ngIf="receptionOrders.length > 0">
+        <div class="rcpt-card__header">
+          <div class="rcpt-card__header-left">
+            <div class="rcpt-chart-icon rcpt-chart-icon--purple">
+              <i class="pi pi-table"></i>
+            </div>
+            <div>
+              <h3>Résultats — {{ receptionOrders.length }} réceptions</h3>
+              <p>{{ startDateDisplay }} → {{ endDateDisplay }}</p>
+            </div>
           </div>
-          <button class="btn-sm-blue" (click)="exportExcel()" [disabled]="exporting">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Tout exporter
+          <button class="rcpt-btn-sm-blue" (click)="exportExcel()" [disabled]="exporting">
+            <i class="pi pi-download"></i> Tout exporter
           </button>
         </div>
 
-        <div class="tbl-scroll">
+        <div class="rcpt-table-scroll">
           <table class="rcpt-table">
             <thead>
               <tr>
-                <th>Commande</th>
-                <th>Date</th>
-                <th>Fournisseur</th>
-                <th>Code</th>
-                <th class="right">Qté</th>
+                <th><i class="pi pi-hashtag"></i> Commande</th>
+                <th><i class="pi pi-calendar"></i> Date</th>
+                <th><i class="pi pi-building"></i> Fournisseur</th>
+                <th><i class="pi pi-tag"></i> Code</th>
+                <th class="right"><i class="pi pi-box"></i> Qté</th>
                 <th class="center">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let o of receptionOrders">
-                <td class="mono">{{ o.orderNumber }}</td>
+                <td class="mono bold-blue">{{ o.orderNumber }}</td>
                 <td>{{ o.date }}</td>
-                <td class="supplier-cell" [title]="o.supplier">{{ o.supplier }}</td>
+                <td class="cell-truncate" [title]="o.supplier">{{ o.supplier }}</td>
                 <td class="mono small">{{ o.supplierCode }}</td>
-                <td class="right"><span class="qty-tag">{{ o.totalQty | number }}</span></td>
+                <td class="right"><span class="rcpt-qty-tag">{{ o.totalQty | number }}</span></td>
                 <td class="center">
-                  <div class="acts">
-                    <button class="act pdf"   title="PDF Standard"  (click)="generatePdf(o.orderNumber)"      [disabled]="exporting">PDF</button>
-                    <button class="act pdfv"  title="PDF Valorisé"  (click)="generatePdfValued(o.orderNumber)" [disabled]="exporting">PDF+</button>
-                    <button class="act xls"   title="Excel"         (click)="exportExcelForOrder(o.orderNumber)" [disabled]="exporting">XLS</button>
+                  <div class="rcpt-acts">
+                    <button class="rcpt-act rcpt-act--pdf"   title="PDF Standard"
+                            (click)="generatePdf(o.orderNumber)"      [disabled]="exporting">
+                      <i class="pi pi-file-pdf"></i> PDF
+                    </button>
+                    <button class="rcpt-act rcpt-act--pdfv"  title="PDF Valorisé"
+                            (click)="generatePdfValued(o.orderNumber)" [disabled]="exporting">
+                      <i class="pi pi-file-pdf"></i> PDF+
+                    </button>
+                    <button class="rcpt-act rcpt-act--xls"   title="Excel"
+                            (click)="exportExcelForOrder(o.orderNumber)" [disabled]="exporting">
+                      <i class="pi pi-file-excel"></i> XLS
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -190,20 +265,26 @@
         </div>
       </div>
 
-      <!-- ══ Tableau : par commande ══════════════════════════════════════ -->
-      <div class="results-wrap" *ngIf="receptionLines.length > 0">
-        <div class="results-bar">
-          <div class="results-info">
-            <span class="results-count">{{ receptionLines.length }}</span>
-            <span class="results-label">lignes · {{ orderNumber }}</span>
+      <!-- ══ Tableau par commande ══════════════════════════════════════════ -->
+      <div class="rcpt-card fade-in rcpt-delay-1" *ngIf="receptionLines.length > 0">
+        <div class="rcpt-card__header">
+          <div class="rcpt-card__header-left">
+            <div class="rcpt-chart-icon rcpt-chart-icon--blue">
+              <i class="pi pi-list"></i>
+            </div>
+            <div>
+              <h3>{{ receptionLines.length }} lignes · {{ orderNumber }}</h3>
+              <p>Détail des lignes de réception</p>
+            </div>
           </div>
-          <div class="acts">
-            <button class="act pdf"   (click)="generatePdf(orderNumber)"       [disabled]="exporting">PDF</button>
-            <button class="act pdfv"  (click)="generatePdfValued(orderNumber)" [disabled]="exporting">PDF+</button>
-            <button class="act xls"   (click)="exportExcelForOrder(orderNumber)"[disabled]="exporting">XLS</button>
+          <div class="rcpt-acts">
+            <button class="rcpt-act rcpt-act--pdf"  (click)="generatePdf(orderNumber)"        [disabled]="exporting"><i class="pi pi-file-pdf"></i> PDF</button>
+            <button class="rcpt-act rcpt-act--pdfv" (click)="generatePdfValued(orderNumber)"  [disabled]="exporting"><i class="pi pi-file-pdf"></i> PDF+</button>
+            <button class="rcpt-act rcpt-act--xls"  (click)="exportExcelForOrder(orderNumber)" [disabled]="exporting"><i class="pi pi-file-excel"></i> XLS</button>
           </div>
         </div>
-        <div class="tbl-scroll">
+
+        <div class="rcpt-table-scroll">
           <table class="rcpt-table">
             <thead>
               <tr>
@@ -221,10 +302,10 @@
               <tr *ngFor="let l of receptionLines">
                 <td>{{ l.dateReception }}</td>
                 <td class="mono small">{{ l.numeroReception }}</td>
-                <td class="mono">{{ l.article }}</td>
-                <td class="desc-cell" [title]="l.description">{{ l.description }}</td>
+                <td class="mono bold-blue">{{ l.article }}</td>
+                <td class="cell-truncate cell-muted" [title]="l.description">{{ l.description }}</td>
                 <td class="right">{{ l.qteCdee | number }}</td>
-                <td class="right"><span class="qty-tag">{{ l.qteRecue | number }}</span></td>
+                <td class="right"><span class="rcpt-qty-tag">{{ l.qteRecue | number }}</span></td>
                 <td class="small">{{ l.emplacement }}</td>
                 <td class="small">{{ l.devise }}</td>
               </tr>
@@ -235,37 +316,37 @@
 
     </div><!-- /rcpt-left -->
 
-    <!-- ── Panneau PDF ─────────────────────────────────────────────────────── -->
-    <div class="pdf-panel" [class.open]="showPdfPanel">
-      <div class="pdf-topbar">
-        <div class="pdf-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <!-- ── PANNEAU PDF ───────────────────────────────────────────────────── -->
+    <aside class="rcpt-pdf-panel" [class.open]="showPdfPanel">
+      <div class="rcpt-pdf-topbar">
+        <div class="rcpt-pdf-title">
+          <i class="pi pi-file-pdf"></i>
           Aperçu PDF
         </div>
-        <span class="pdf-ref">{{ pdfLabel }}</span>
-        <button class="pdf-close" (click)="closePdfPanel()">✕</button>
+        <span class="rcpt-pdf-ref">{{ pdfLabel }}</span>
+        <button class="rcpt-pdf-close" (click)="closePdfPanel()">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
-      <div class="pdf-body">
-        <iframe *ngIf="safePdfUrl" [src]="safePdfUrl" class="pdf-frame"></iframe>
-        <div class="pdf-empty" *ngIf="!safePdfUrl">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div class="rcpt-pdf-body">
+        <iframe *ngIf="safePdfUrl" [src]="safePdfUrl" class="rcpt-pdf-frame"></iframe>
+        <div class="rcpt-pdf-empty" *ngIf="!safePdfUrl">
+          <i class="pi pi-file-pdf rcpt-pdf-empty__icon"></i>
           <p>Aucun document sélectionné</p>
-          <span>Générer un PDF pour le prévisualiser ici</span>
+          <span>Générez un PDF pour le prévisualiser ici</span>
         </div>
       </div>
 
-      <div class="pdf-footer" *ngIf="safePdfUrl">
-        <button class="btn-pdf-dl" (click)="downloadPdf()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Télécharger
+      <div class="rcpt-pdf-footer" *ngIf="safePdfUrl">
+        <button class="rcpt-btn-success rcpt-btn-success--full" (click)="downloadPdf()">
+          <i class="pi pi-download"></i> Télécharger
         </button>
-        <button class="btn-pdf-open" (click)="openPdfInTab()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Ouvrir
+        <button class="rcpt-btn-ghost rcpt-btn-ghost--full" (click)="openPdfInTab()">
+          <i class="pi pi-external-link"></i> Ouvrir
         </button>
       </div>
-    </div>
+    </aside>
 
   </div><!-- /rcpt-body -->
 </div>

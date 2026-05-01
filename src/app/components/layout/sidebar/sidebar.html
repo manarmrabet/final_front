@@ -27,43 +27,68 @@
     <nav class="sidebar-nav">
       @for (item of rootMenus(); track item.menuItemId) {
 
-       <!-- Menu avec enfants -->
-@if (hasChildren(item)) {
-  <div class="nav-group" [class.active]="isGroupActive(item)">
+        <!-- Menu avec enfants -->
+        @if (hasChildren(item)) {
+          <div class="nav-group" [class.active]="isGroupActive(item)">
 
-    <!-- PARENT : maintenant cliquable + toggle -->
-    <button class="nav-item"
-            [class.active]="isActive(item.link)"
-            [class.open]="expanded() === item.label"
-            [class.group-active]="isGroupActive(item)"
-            (click)="onParentClick(item)">
+            <button class="nav-item"
+                    [class.active]="isActive(item.link)"
+                    [class.open]="expanded() === item.label"
+                    [class.group-active]="isGroupActive(item)"
+                    (click)="onParentClick(item)">
 
-      <span class="nav-icon">
-        <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
-      </span>
-      <span class="nav-label">{{ item.label }}</span>
-      <span class="nav-arrow">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </span>
-    </button>
+              <span class="nav-icon">
+                <!--
+                  CORRECTION : <lucide-angular> remplacé par <img> CDN.
+                  Si l'icône contient un espace → classe CSS (feather, mdi…).
+                  Sinon → SVG Lucide chargé depuis unpkg.
+                  onerror : fallback sur l'icône "menu" si le nom n'existe pas.
+                -->
+                @if (item.icon && item.icon.includes(' ')) {
+                  <i [class]="item.icon" class="sidebar-icon-css"></i>
+                } @else {
+                  <img
+                    [src]="'https://unpkg.com/lucide-static@latest/icons/' + (item.icon || 'menu') + '.svg'"
+                    width="20" height="20"
+                    [alt]="item.label"
+                    class="lucide-img"
+                    onerror="this.src='https://unpkg.com/lucide-static@latest/icons/menu.svg'"
+                  />
+                }
+              </span>
+              <span class="nav-label">{{ item.label }}</span>
+              <span class="nav-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </button>
 
-    <div class="nav-tooltip">{{ item.label }}</div>
+            <div class="nav-tooltip">{{ item.label }}</div>
 
-    <div class="nav-children" [class.open]="expanded() === item.label">
-      @for (child of getChildren(item.menuItemId); track child.menuItemId) {
-        <button class="nav-child"
-                [class.active]="isActive(child.link)"
-                (click)="navigate(child.link!)">
-          <span class="child-dot"></span>
-          <lucide-angular [name]="child.icon || 'circle'" size="16"></lucide-angular>
-          <span class="child-label">{{ child.label }}</span>
-        </button>
-      }
-    </div>
-  </div>
+            <div class="nav-children" [class.open]="expanded() === item.label">
+              @for (child of getChildren(item.menuItemId); track child.menuItemId) {
+                <button class="nav-child"
+                        [class.active]="isActive(child.link)"
+                        (click)="navigate(child.link!)">
+                  <span class="child-dot"></span>
+                  @if (child.icon && child.icon.includes(' ')) {
+                    <i [class]="child.icon" class="sidebar-icon-css sidebar-icon-css--sm"></i>
+                  } @else {
+                    <img
+                      [src]="'https://unpkg.com/lucide-static@latest/icons/' + (child.icon || 'circle') + '.svg'"
+                      width="16" height="16"
+                      [alt]="child.label"
+                      class="lucide-img"
+                      onerror="this.src='https://unpkg.com/lucide-static@latest/icons/circle.svg'"
+                    />
+                  }
+                  <span class="child-label">{{ child.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
 
         <!-- Menu simple -->
         } @else {
@@ -72,8 +97,18 @@
               [class.active]="isActive(item.link)"
               (click)="navigate(item.link!)">
               <span class="nav-icon">
-  <lucide-angular [name]="item.icon || 'menu'" size="20"></lucide-angular>
-</span>
+                @if (item.icon && item.icon.includes(' ')) {
+                  <i [class]="item.icon" class="sidebar-icon-css"></i>
+                } @else {
+                  <img
+                    [src]="'https://unpkg.com/lucide-static@latest/icons/' + (item.icon || 'menu') + '.svg'"
+                    width="20" height="20"
+                    [alt]="item.label"
+                    class="lucide-img"
+                    onerror="this.src='https://unpkg.com/lucide-static@latest/icons/menu.svg'"
+                  />
+                }
+              </span>
               <span class="nav-label">{{ item.label }}</span>
             </button>
             <div class="nav-tooltip">{{ item.label }}</div>

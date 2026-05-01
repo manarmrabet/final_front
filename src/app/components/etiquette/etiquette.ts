@@ -24,6 +24,9 @@ import { EtiquetteService } from '../../services/etiquette/etiquette-service';
 })
 export class EtiquetteComponent implements OnDestroy {
 
+  // ── Propriété requise par le template (live-time) ─────────────────
+  today = new Date();
+
   // ── Form state ───────────────────────────────────────────────────
   orderNumber = '';
   start       = 0;

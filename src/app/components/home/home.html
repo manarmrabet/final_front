@@ -4,31 +4,30 @@
        NAVBAR
   ══════════════════════════════════════════════════════════════ -->
   <nav class="home-nav">
-    <div class="nav-inner">
-      <div class="nav-brand">
-        <div class="brand-icon">
-          <i class="mdi mdi-warehouse"></i>
-        </div>
-        <div class="brand-text">
-          <span class="brand-name">COFAT</span>
-          <span class="brand-tag">WMS</span>
-        </div>
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <i class="pi pi-box"></i>
       </div>
-
-      <div class="nav-center d-none d-lg-flex">
-        <a href="#features" class="nav-link-item">Fonctionnalités</a>
-        <a href="#stats"    class="nav-link-item">Performances</a>
-        <a href="#about"    class="nav-link-item">À propos</a>
-      </div>
-
-      <div class="nav-actions">
-
-        <button class="btn-login" (click)="goToLogin()">
-          <i class="mdi mdi-login me-2"></i>Se connecter
-        </button>
+      <div class="brand-text">
+        <span class="brand-name">COFAT</span>
+        <span class="brand-tag">WMS</span>
       </div>
     </div>
-  </nav>
+
+    <div class="nav-center d-none d-lg-flex">
+      <a href="#features" class="nav-link-item">Fonctionnalités</a>
+      <a href="#stats"    class="nav-link-item">Performances</a>
+      <a href="#about"    class="nav-link-item">À propos</a>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn-login" (click)="goToLogin()">
+        <i class="pi pi-sign-in me-2"></i>Se connecter
+      </button>
+    </div>
+  </div>
+</nav>
 
   <!-- ══════════════════════════════════════════════════════════
        HERO
@@ -87,16 +86,17 @@
        STATS
   ══════════════════════════════════════════════════════════════ -->
   <section class="stats-section" id="stats">
-    <div class="stats-inner">
-      <div class="stat-item" *ngFor="let s of stats">
-        <div class="stat-icon">
-          <i class="mdi" [class]="s.icon"></i>
-        </div>
-        <div class="stat-value">{{ s.value }}</div>
-        <div class="stat-label">{{ s.label }}</div>
+  <div class="stats-inner">
+    <div class="stat-item" *ngFor="let s of stats">
+      <div class="stat-icon">
+        <!-- Remplacement de mdi par pi -->
+        <i class="pi" [ngClass]="s.icon"></i>
       </div>
+      <div class="stat-value">{{ s.value }}</div>
+      <div class="stat-label">{{ s.label }}</div>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- ══════════════════════════════════════════════════════════
        FEATURES
@@ -114,18 +114,20 @@
       </div>
 
       <div class="features-grid">
-        <div class="feature-card" *ngFor="let f of features; let i = index"
-             [class]="'feature-card--' + i">
-          <div class="feature-icon" [style.background]="f.bg" [style.color]="f.color">
-            <i class="mdi" [class]="f.icon"></i>
-          </div>
-          <h3 class="feature-title">{{ f.title }}</h3>
-          <p class="feature-desc">{{ f.desc }}</p>
-          <div class="feature-arrow" [style.color]="f.color">
-            <i class="mdi mdi-arrow-right"></i>
-          </div>
-        </div>
-      </div>
+  <div class="feature-card" *ngFor="let f of features; let i = index"
+       [class]="'feature-card--' + i">
+    <div class="feature-icon" [style.background]="f.bg" [style.color]="f.color">
+      <!-- Remplacement de mdi par pi -->
+      <i class="pi" [ngClass]="f.icon"></i>
+    </div>
+    <h3 class="feature-title">{{ f.title }}</h3>
+    <p class="feature-desc">{{ f.desc }}</p>
+    <div class="feature-arrow" [style.color]="f.color">
+      <!-- Icône de flèche PrimeIcons -->
+      <i class="pi pi-arrow-right"></i>
+    </div>
+  </div>
+</div>
 
     </div>
   </section>
@@ -151,9 +153,9 @@
   <footer class="home-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <div class="brand-icon brand-icon--sm">
-          <i class="mdi mdi-warehouse"></i>
-        </div>
+        <div class="brand-icon">
+        <i class="pi pi-box"></i>
+      </div>
         <span>COFAT WMS</span>
       </div>
       <p class="footer-copy">© {{ currentYear }} COFAT — Warehouse Management System</p>

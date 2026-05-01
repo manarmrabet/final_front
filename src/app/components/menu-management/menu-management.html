@@ -1,3 +1,10 @@
+<!-- Ajout du CDN Material Symbols dans le head de votre index.html :
+     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+     Pour les icônes Lucide dans la grille, on utilise désormais un <img> via unpkg CDN.
+     La logique TypeScript reste IDENTIQUE — seul le rendu des icônes change.
+-->
+
 <div class="container-fluid py-4">
   <div class="card">
 
@@ -47,7 +54,14 @@
                   @if (isCustomCssClass(item.icon || '')) {
                     <i [class]="item.icon"></i>
                   } @else {
-                    <lucide-angular [name]="item.icon | lucideIcon" size="14"></lucide-angular>
+                    <!-- Rendu via unpkg CDN pour Lucide -->
+                    <img
+                      [src]="'https://unpkg.com/lucide-static@latest/icons/' + (item.icon | lucideIcon) + '.svg'"
+                      width="14" height="14"
+                      [alt]="item.icon"
+                      class="lucide-img"
+                      onerror="this.style.display='none'"
+                    />
                   }
                   <span class="icon-name-text">{{ item.icon }}</span>
                 </span>
@@ -194,9 +208,15 @@
         <div class="preview-content">
           <div class="preview-icon-wrap">
             @if (isCustomCssClass(newMenu.icon || '')) {
-              <i [class]="newMenu.icon"></i>
+              <i [class]="newMenu.icon" style="font-size:20px"></i>
             } @else {
-              <lucide-angular [name]="newMenu.icon | lucideIcon" size="20"></lucide-angular>
+              <img
+                [src]="'https://unpkg.com/lucide-static@latest/icons/' + (newMenu.icon | lucideIcon) + '.svg'"
+                width="20" height="20"
+                [alt]="newMenu.icon"
+                class="lucide-img lucide-img--primary"
+                onerror="this.style.display='none'"
+              />
             }
           </div>
           <div class="preview-info">
@@ -238,10 +258,7 @@
           </div>
         </div>
 
-        <!-- ══ Toggle Sous-menu — DÉPLACÉ AVANT l'icône ══════════ -->
-        <!-- CORRECTION 1 : Le toggle est maintenant AVANT la section icône  -->
-        <!-- → quand isSubMenu=true, la grille d'icônes affiche déjà         -->
-        <!--   la liste des parents disponibles dans le select en dessous     -->
+        <!-- Toggle Sous-menu -->
         <div class="form-field full-width">
           <div class="toggle-wrap" [class.active]="isSubMenu">
             <div class="toggle-info">
@@ -263,8 +280,6 @@
           </div>
         </div>
 
-        <!-- CORRECTION 1 : Select parent visible dès que isSubMenu=true   -->
-        <!-- fonctionne à la fois en mode grille ET en mode icône custom    -->
         @if (isSubMenu) {
           <div class="form-field full-width" style="animation: slideDown 0.25s ease">
             <label class="field-label">
@@ -280,7 +295,6 @@
                 <option [ngValue]="m.menuItemId">{{ m.label }}</option>
               }
             </select>
-            <!-- Indication visuelle du parent sélectionné -->
             @if (newMenu.parentId) {
               <span class="field-hint" style="color: #2563EB; font-weight: 500;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -308,18 +322,24 @@
             <button type="button" class="icon-mode-tab"
                     [class.active]="iconMode === 'grid'"
                     (click)="switchIconMode('grid')">
-              <lucide-angular name="grid" size="13"></lucide-angular>
+              <!-- Icône grille via SVG inline -->
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
               Bibliothèque
             </button>
             <button type="button" class="icon-mode-tab"
                     [class.active]="iconMode === 'custom'"
                     (click)="switchIconMode('custom')">
-              <lucide-angular name="pencil" size="13"></lucide-angular>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+              </svg>
               Nom personnalisé
             </button>
           </div>
 
-          <!-- MODE GRILLE -->
+          <!-- MODE GRILLE — icônes rendues via <img> unpkg CDN -->
           @if (iconMode === 'grid') {
             <input class="field-input" [(ngModel)]="iconSearch"
                    placeholder="Rechercher une icône (ex: home, users…)"/>
@@ -334,7 +354,20 @@
                            [class.selected]="newMenu.icon === icon"
                            (click)="selectIcon(icon)"
                            [title]="icon">
-                        <lucide-angular [name]="icon | lucideIcon" size="20"></lucide-angular>
+                        <!--
+                          CORRECTION PRINCIPALE :
+                          On charge le SVG Lucide directement depuis unpkg CDN.
+                          Le pipe | lucideIcon convertit "layout-dashboard" → "layout-dashboard"
+                          (kebab-case) comme attendu par lucide-static.
+                          onerror masque l'image si le nom n'existe pas.
+                        -->
+                        <img
+                          [src]="'https://unpkg.com/lucide-static@latest/icons/' + (icon | lucideIcon) + '.svg'"
+                          width="20" height="20"
+                          [alt]="icon"
+                          class="lucide-img"
+                          onerror="this.style.display='none'"
+                        />
                         <span class="icon-item-name">{{ icon }}</span>
                       </div>
                     }
@@ -344,11 +377,16 @@
 
               @if (filteredCategories.length === 0) {
                 <div class="icon-no-result">
-                  <lucide-angular name="search-x" size="28"></lucide-angular>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
                   <p>Aucune icône trouvée pour <strong>"{{ iconSearch }}"</strong></p>
                   <button type="button" class="btn-switch-custom"
                           (click)="switchIconMode('custom')">
-                    <lucide-angular name="pencil" size="14"></lucide-angular>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
                     Utiliser ce nom comme icône personnalisée
                   </button>
                 </div>
@@ -361,7 +399,9 @@
             <div class="custom-icon-wrap">
 
               <div class="custom-icon-hint">
-                <lucide-angular name="info" size="14"></lucide-angular>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
                 <span>
                   Entrez un nom Lucide, Feather ou toute classe CSS.<br>
                   Exemples :
@@ -381,13 +421,27 @@
                      [class.has-icon]="customIconInput.trim()">
                   @if (customIconInput.trim()) {
                     @if (isCustomCssClass(customIconInput)) {
-                      <i [class]="customIconInput.trim()"></i>
+                      <i [class]="customIconInput.trim()" style="font-size:22px;line-height:1"></i>
                     } @else {
-                      <lucide-angular [name]="customIconInput.trim() | lucideIcon"
-                                      size="24"></lucide-angular>
+                      <!-- Rendu via CDN pour le custom Lucide aussi -->
+                      <img
+                        [src]="'https://unpkg.com/lucide-static@latest/icons/' + (customIconInput.trim() | lucideIcon) + '.svg'"
+                        width="24" height="24"
+                        [alt]="customIconInput"
+                        class="lucide-img lucide-img--primary"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+                      />
+                      <!-- Fallback si l'icône n'existe pas -->
+                      <svg style="display:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>
+                      </svg>
                     }
                   } @else {
-                    <lucide-angular name="image-off" size="20"></lucide-angular>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <line x1="3" y1="9" x2="21" y2="9"/>
+                      <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
                   }
                 </div>
               </div>
@@ -397,10 +451,14 @@
                      [class.css]="isCustomCssClass(customIconInput)"
                      [class.lucide]="!isCustomCssClass(customIconInput)">
                   @if (isCustomCssClass(customIconInput)) {
-                    <lucide-angular name="code-2" size="12"></lucide-angular>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                    </svg>
                     Classe CSS — rendu via <code>&lt;i class="..."&gt;</code>
                   } @else {
-                    <lucide-angular name="zap" size="12"></lucide-angular>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
                     Icône Lucide — rendu natif
                   }
                 </div>
@@ -415,9 +473,16 @@
           @if (newMenu.icon) {
             <div class="selected-icon-preview">
               @if (isCustomCssClass(newMenu.icon)) {
-                <i [class]="newMenu.icon" style="font-size:16px"></i>
+                <i [class]="newMenu.icon" style="font-size:16px;vertical-align:middle;margin:0 6px"></i>
               } @else {
-                <lucide-angular [name]="newMenu.icon | lucideIcon" size="16"></lucide-angular>
+                <img
+                  [src]="'https://unpkg.com/lucide-static@latest/icons/' + (newMenu.icon | lucideIcon) + '.svg'"
+                  width="16" height="16"
+                  [alt]="newMenu.icon"
+                  class="lucide-img"
+                  style="vertical-align:middle;margin:0 6px"
+                  onerror="this.style.display='none'"
+                />
               }
               Icône active : <code>{{ newMenu.icon }}</code>
             </div>

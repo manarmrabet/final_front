@@ -1,3 +1,4 @@
+// reception.component.ts
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule }                  from '@angular/common';
 import { FormsModule }                   from '@angular/forms';
@@ -14,6 +15,9 @@ import { ReceptionLine, ReceptionOrder, SearchMode } from '../../models/receptio
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReceptionComponent implements OnInit, OnDestroy {
+
+  // ── Propriété requise par le template (live-time) ─────────────────
+  today = new Date();
 
   searchMode: SearchMode = 'ORDER';
 

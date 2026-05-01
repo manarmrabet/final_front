@@ -10,6 +10,62 @@ $sidebar-w       : 250px;
 $sidebar-w-hover : 70px;
 $transition      : .25s cubic-bezier(.4,0,.2,1);
 
+// ══════════════════════════════════════════════════════════
+// LUCIDE-IMG — icônes SVG chargées via CDN (balise <img>)
+//
+// Sur fond sombre (#0d2b6e), on doit rendre les SVG en blanc.
+// filter: brightness(0) invert(1) = noir → blanc pur.
+// On module l'opacité pour l'état muted / actif.
+// ══════════════════════════════════════════════════════════
+.lucide-img {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  // Blanc à 50 % (état par défaut = muted)
+  filter: brightness(0) invert(1);
+  opacity: .50;
+  transition: opacity $transition, filter $transition;
+}
+
+// Icônes classes CSS (feather, mdi…) sur fond sombre
+.sidebar-icon-css {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,.50);
+  transition: color $transition;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &--sm { font-size: .88rem; }
+}
+
+// ── États des nav-item → propagation aux icônes ───────────
+
+// Hover : icône plus visible
+.nav-item:hover {
+  .lucide-img      { opacity: .90; }
+  .sidebar-icon-css { color: rgba(255,255,255,.90); }
+}
+
+// Actif / group-active : icône pleinement blanche
+.nav-item.active,
+.nav-item.group-active {
+  .lucide-img       { opacity: 1; }
+  .sidebar-icon-css { color: #fff; }
+}
+
+// Nav-child hover
+.nav-child:hover {
+  .lucide-img       { opacity: .90; }
+  .sidebar-icon-css { color: rgba(255,255,255,.90); }
+}
+
+// Nav-child actif
+.nav-child.active {
+  .lucide-img       { opacity: 1; }
+  .sidebar-icon-css { color: #fff; }
+}
+
 // ── Sidebar ───────────────────────────────────────────────
 .sidebar {
   position: fixed;
@@ -162,6 +218,7 @@ $transition      : .25s cubic-bezier(.4,0,.2,1);
     &:nth-child(3) { animation-delay: .4s; }
   }
 }
+
 @keyframes pulse {
   0%, 100% { opacity: .3; transform: scale(.8); }
   50%       { opacity: 1;  transform: scale(1.1); }
