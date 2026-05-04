@@ -1,242 +1,393 @@
 <div class="page-wrap">
 
-  <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
-
-<div class="page-header">
-  <div class="header-left">
-    <!-- Changement pour pi-upload ou pi-external-link pour symboliser une "Sortie" -->
-    <div class="header-icon"><i class="pi pi-sign-out"></i></div>
-    <div>
-      <h1 class="page-title">Sorties Production</h1>
-      <p class="page-subtitle">
-        Historique complet · {{ logs.length }} opérations
-        <span class="live-dot" *ngIf="autoRefresh" title="Actualisation auto"></span>
-      </p>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <!-- Actualisation auto (Sync) -->
-    <button class="btn-icon" [class.btn-active]="autoRefresh"
-            (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
-      <i class="pi pi-sync" [class.spin]="autoRefresh"></i>
-    </button>
-
-    <!-- Export EXCEL -->
-    <button class="btn-outline" (click)="exportExcel()" title="Exporter en Excel">
-      <i class="pi pi-file-excel"></i> Excel
-    </button>
-
-    <!-- Bouton Actualiser -->
-    <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
-      <i class="pi pi-refresh" [class.spin]="isLoading"></i> Actualiser
-    </button>
-  </div>
-</div>
-
-  <!-- ══ SKELETONS ════════════════════════════════════════════════════════ -->
-  <ng-container *ngIf="isLoading">
-    <div class="kpi-grid">
-      <div class="kpi-skel" *ngFor="let i of [1,2,3,4]"></div>
-    </div>
-  </ng-container>
-
-  <ng-container *ngIf="!isLoading">
-
-    <!-- ══ KPI ══════════════════════════════════════════════════════════ -->
-    <div class="kpi-grid">
-      <div class="kpi blue">
-        <i class="bi bi-arrow-up-circle kpi-icon"></i>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ totalOpsToday }}</span>
-          <span class="kpi-lbl">Sorties aujourd'hui</span>
-          <span class="kpi-sub">opérations réussies</span>
-        </div>
+  <!-- ══ HEADER UNIFIÉ ════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="pi pi-sign-out"></i>
       </div>
-      <div class="kpi teal">
-        <i class="bi bi-layers kpi-icon"></i>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ totalQtyToday | number }}</span>
-          <span class="kpi-lbl">Quantité sortie</span>
-          <span class="kpi-sub">unités aujourd'hui</span>
-        </div>
-      </div>
-      <div class="kpi green">
-        <i class="bi bi-archive kpi-icon"></i>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ lotsVidesToday }}</span>
-          <span class="kpi-lbl">Lots vidés</span>
-          <span class="kpi-sub">sorties totales</span>
-        </div>
-      </div>
-      <div class="kpi red" [class.kpi-alert]="failedToday > 0">
-        <i class="bi bi-exclamation-triangle kpi-icon"></i>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ failedToday }}</span>
-          <span class="kpi-lbl">Erreurs</span>
-          <span class="kpi-sub">opérations échouées</span>
-        </div>
+      <div>
+        <h1 class="page-title">Sorties Production</h1>
+        <p class="page-subtitle" *ngIf="activeView === 'realtime'">
+          Historique complet · {{ logs.length }} opérations
+          <span class="live-dot" *ngIf="autoRefresh" title="Actualisation auto"></span>
+        </p>
+        <p class="page-subtitle" *ngIf="activeView === 'archives'">
+          {{ totalArchiveFiles }} fichier(s) archivé(s) · {{ totalArchiveLines }} enregistrement(s)
+        </p>
       </div>
     </div>
 
-    <!-- ══ OPÉRATEURS ═══════════════════════════════════════════════════ -->
-    <div class="section-card" *ngIf="stats?.operatorStats?.length">
-      <div class="section-hd">
-        <h3>Activité des Opérateurs</h3>
-        <span class="badge-count">{{ stats.operatorStats.length }} opérateur(s)</span>
-      </div>
-      <div class="ops-grid">
-        <div class="op-card" *ngFor="let op of stats.operatorStats; let i = index">
-          <div class="op-rank">#{{ i + 1 }}</div>
-          <div class="op-av">{{ op.userName?.charAt(0)?.toUpperCase() || 'U' }}</div>
-          <div class="op-info">
-            <span class="op-name">{{ op.userName }}</span>
-            <span class="op-meta">{{ op.nbOps }} ops · {{ op.totalQty | number }} unités</span>
-          </div>
-          <div class="op-badge">{{ op.nbOps }}</div>
-        </div>
-      </div>
-    </div>
+    <div class="header-actions">
 
-    <!-- ══ FILTRES ═══════════════════════════════════════════════════════ -->
-    <div class="filter-bar">
-      <!-- Recherche texte libre -->
-      <div class="search-wrap">
-        <i class="bi bi-search"></i>
-        <input type="text" [(ngModel)]="searchTerm"
-               placeholder="Lot, article, magasin, opérateur..." class="search-in">
-        <button *ngIf="searchTerm" class="clear-x" (click)="searchTerm=''">
-          <i class="bi bi-x"></i>
+      <!--
+        ✅ ONGLETS — même UX que la page Audit
+        Deux boutons toggle qui switchent la vue sans changer de route.
+        PrimeIcons utilisés : pi-clock, pi-folder-open
+      -->
+      <div class="view-tabs">
+        <button class="tab-btn"
+                [class.tab-active]="activeView === 'realtime'"
+                (click)="switchView('realtime')">
+          <i class="pi pi-clock"></i>
+          Temps réel
+        </button>
+        <button class="tab-btn"
+                [class.tab-active]="activeView === 'archives'"
+                (click)="switchView('archives')">
+          <i class="pi pi-folder-open"></i>
+          Archives CSV
         </button>
       </div>
 
-      <!-- ✅ NOUVEAU filtre Article -->
-      <select [(ngModel)]="selectedArticle" class="f-sel">
-        <option value="">Tous les articles</option>
-        <option *ngFor="let a of uniqueArticles" [value]="a">{{ a }}</option>
-      </select>
+      <!-- Actions contextuelles — changent selon l'onglet actif -->
 
-      <!-- Filtres existants inchangés -->
-      <select [(ngModel)]="selectedType"   class="f-sel">
-        <option value="">Tous les types</option>
-        <option value="TOTALE">Totale</option>
-        <option value="PARTIELLE">Partielle</option>
-      </select>
-      <select [(ngModel)]="selectedStatus" class="f-sel">
-        <option value="">Tous statuts</option>
-        <option value="SUCCESS">Succès</option>
-        <option value="FAILED">Échec</option>
-      </select>
-      <select [(ngModel)]="selectedSource" class="f-sel">
-        <option value="">Toutes sources</option>
-        <option value="MOBILE">Mobile</option>
-        <option value="WEB">Web</option>
-      </select>
-      <select [(ngModel)]="selectedUser"   class="f-sel">
-        <option value="">Tous opérateurs</option>
-        <option *ngFor="let u of uniqueUsers" [value]="u">{{ u }}</option>
-      </select>
-      <label class="toggle-lbl">
-        <input type="checkbox" [(ngModel)]="todayOnly"> Aujourd'hui
-      </label>
-      <button class="btn-sm" (click)="clearFilters()">
-        <i class="bi bi-x-circle"></i> Réinitialiser
-      </button>
-      <span class="res-count">{{ filteredLogs.length }} résultat(s)</span>
+      <!-- ── Actions Temps réel ── -->
+      <ng-container *ngIf="activeView === 'realtime'">
+        <button class="btn-icon" [class.btn-active]="autoRefresh"
+                (click)="toggleAutoRefresh()" title="Actualisation auto 30s">
+          <i class="pi pi-sync" [class.spin]="autoRefresh"></i>
+        </button>
+        <button class="btn-outline" (click)="exportExcel()" title="Exporter en Excel">
+          <i class="pi pi-file-excel"></i> Excel
+        </button>
+        <button class="btn-primary" (click)="loadAll()" [disabled]="isLoading">
+          <i class="pi pi-refresh" [class.spin]="isLoading"></i> Actualiser
+        </button>
+      </ng-container>
+
+      <!-- ── Actions Archives ── -->
+      <ng-container *ngIf="activeView === 'archives'">
+        <button class="btn-outline" (click)="refreshArchives()" [disabled]="archivesLoading">
+          <i class="pi pi-refresh" [class.spin]="archivesLoading"></i> Actualiser
+        </button>
+        <button class="btn-trigger" (click)="triggerArchive()" [disabled]="triggering">
+          <i class="pi pi-bolt" [class.spin]="triggering"></i>
+          {{ triggering ? 'Archivage...' : 'Déclencher archivage' }}
+        </button>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       VUE TEMPS RÉEL
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeView === 'realtime'">
+
+    <!-- Skeletons -->
+    <ng-container *ngIf="isLoading">
+      <div class="kpi-grid">
+        <div class="kpi-skel" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi blue">
+          <i class="pi pi-arrow-up-right kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ totalOpsToday }}</span>
+            <span class="kpi-lbl">Sorties aujourd'hui</span>
+            <span class="kpi-sub">opérations réussies</span>
+          </div>
+        </div>
+        <div class="kpi teal">
+          <i class="pi pi-box kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ totalQtyToday | number }}</span>
+            <span class="kpi-lbl">Quantité sortie</span>
+            <span class="kpi-sub">unités aujourd'hui</span>
+          </div>
+        </div>
+        <div class="kpi green">
+          <i class="pi pi-inbox kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ lotsVidesToday }}</span>
+            <span class="kpi-lbl">Lots vidés</span>
+            <span class="kpi-sub">sorties totales</span>
+          </div>
+        </div>
+        <div class="kpi red" [class.kpi-alert]="failedToday > 0">
+          <i class="pi pi-exclamation-triangle kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ failedToday }}</span>
+            <span class="kpi-lbl">Erreurs</span>
+            <span class="kpi-sub">opérations échouées</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opérateurs -->
+      <div class="section-card" *ngIf="stats?.operatorStats?.length">
+        <div class="section-hd">
+          <h3>Activité des Opérateurs</h3>
+          <span class="badge-count">{{ stats.operatorStats.length }} opérateur(s)</span>
+        </div>
+        <div class="ops-grid">
+          <div class="op-card" *ngFor="let op of stats.operatorStats; let i = index">
+            <div class="op-rank">#{{ i + 1 }}</div>
+            <div class="op-av">{{ op.userName?.charAt(0)?.toUpperCase() || 'U' }}</div>
+            <div class="op-info">
+              <span class="op-name">{{ op.userName }}</span>
+              <span class="op-meta">{{ op.nbOps }} ops · {{ op.totalQty | number }} unités</span>
+            </div>
+            <div class="op-badge">{{ op.nbOps }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <i class="pi pi-search"></i>
+          <input type="text" [(ngModel)]="searchTerm"
+                 placeholder="Lot, article, magasin, opérateur..." class="search-in">
+          <button *ngIf="searchTerm" class="clear-x" (click)="searchTerm=''">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        <select [(ngModel)]="selectedArticle" class="f-sel">
+          <option value="">Tous les articles</option>
+          <option *ngFor="let a of uniqueArticles" [value]="a">{{ a }}</option>
+        </select>
+        <select [(ngModel)]="selectedType" class="f-sel">
+          <option value="">Tous les types</option>
+          <option value="TOTALE">Totale</option>
+          <option value="PARTIELLE">Partielle</option>
+        </select>
+        <select [(ngModel)]="selectedStatus" class="f-sel">
+          <option value="">Tous statuts</option>
+          <option value="SUCCESS">Succès</option>
+          <option value="FAILED">Échec</option>
+        </select>
+        <select [(ngModel)]="selectedSource" class="f-sel">
+          <option value="">Toutes sources</option>
+          <option value="MOBILE">Mobile</option>
+          <option value="WEB">Web</option>
+        </select>
+        <select [(ngModel)]="selectedUser" class="f-sel">
+          <option value="">Tous opérateurs</option>
+          <option *ngFor="let u of uniqueUsers" [value]="u">{{ u }}</option>
+        </select>
+        <label class="toggle-lbl">
+          <input type="checkbox" [(ngModel)]="todayOnly"> Aujourd'hui
+        </label>
+        <button class="btn-sm" (click)="clearFilters()">
+          <i class="pi pi-filter-slash"></i> Réinitialiser
+        </button>
+        <span class="res-count">{{ filteredLogs.length }} résultat(s)</span>
+      </div>
+
+      <!-- Table -->
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Date / Heure</th>
+              <th>Opérateur</th>
+              <th>Lot</th>
+              <th>Article</th>
+              <th>Magasin</th>
+              <th class="tc">Type</th>
+              <th class="tr">Avant</th>
+              <th class="tr">Sortie</th>
+              <th class="tr">Après</th>
+              <th class="tc">Source</th>
+              <th class="tc">Statut</th>
+              <th class="tc">Détail</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of filteredLogs; trackBy: trackByLog"
+                class="tbl-row"
+                [class.row-fail]="l.status === 'FAILED'"
+                [class.row-vide]="l.stockVide && l.status === 'SUCCESS'">
+              <td>
+                <div class="dt-block">
+                  <span class="dt-d">{{ l.createdAt?.slice(0,10) }}</span>
+                  <span class="dt-t">{{ l.createdAt?.slice(11,19) }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="user-row">
+                  <div class="av-sm">{{ l.userName?.charAt(0)?.toUpperCase()||'U' }}</div>
+                  <span>{{ l.userName }}</span>
+                </div>
+              </td>
+              <td><code class="lot-tag">{{ l.lotCode }}</code></td>
+              <td>
+                <span class="item-txt item-link"
+                      (click)="selectedArticle = l.itemCode"
+                      [class.item-active]="selectedArticle === l.itemCode"
+                      title="Filtrer par {{ l.itemCode }}">
+                  {{ l.itemCode }}
+                </span>
+              </td>
+              <td><span class="wh-pill">{{ l.warehouse }}</span></td>
+              <td class="tc">
+                <span class="type-pill"
+                  [class.t-total]="l.operationType==='TOTALE'"
+                  [class.t-part]="l.operationType==='PARTIELLE'">
+                  {{ l.operationType === 'TOTALE' ? '● Total' : '◐ Partiel' }}
+                </span>
+              </td>
+              <td class="tr mono">{{ l.qtyBefore | number }}</td>
+              <td class="tr mono qty-out">−{{ l.qtyRequested | number }}</td>
+              <td class="tr mono" [class.qty-zero]="l.qtyAfter === 0">
+                {{ l.qtyAfter | number }}
+              </td>
+              <td class="tc">
+                <span class="src-pill" [class.src-mob]="l.source==='MOBILE'">
+                  <i [class]="l.source==='MOBILE' ? 'pi pi-mobile' : 'pi pi-desktop'"></i>
+                  {{ l.source }}
+                </span>
+              </td>
+              <td class="tc">
+                <span class="status-dot"
+                  [class.dot-ok]="l.status==='SUCCESS'"
+                  [class.dot-ko]="l.status==='FAILED'"
+                  [title]="l.status==='FAILED' ? (l.errorMessage||'Erreur') : 'Succès'">
+                </span>
+              </td>
+              <td class="tc">
+                <button class="btn-detail" (click)="openDetail(l)" title="Voir détail">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredLogs.length === 0">
+              <td colspan="12" class="empty-st">
+                <i class="pi pi-inbox" style="font-size:2rem; display:block; margin-bottom:.5rem"></i>
+                <span>Aucune opération enregistrée</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </ng-container>
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       VUE ARCHIVES
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeView === 'archives'">
+
+    <!-- Feedback trigger -->
+    <div *ngIf="triggerMessage"
+         class="trigger-feedback"
+         [class.feedback-ok]="triggerSuccess"
+         [class.feedback-err]="!triggerSuccess">
+      <i [class]="triggerSuccess ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+      {{ triggerMessage }}
     </div>
 
-    <!-- ══ TABLE ═════════════════════════════════════════════════════════ -->
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Date / Heure</th>
-            <th>Opérateur</th>
-            <th>Lot</th>
-            <th>Article</th>
-            <th>Magasin</th>
-            <th class="tc">Type</th>
-            <th class="tr">Avant</th>
-            <th class="tr">Sortie</th>
-            <th class="tr">Après</th>
-            <th class="tc">Source</th>
-            <th class="tc">Statut</th>
-            <th class="tc">Détail</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let l of filteredLogs; trackBy: trackByLog"
-              class="tbl-row"
-              [class.row-fail]="l.status === 'FAILED'"
-              [class.row-vide]="l.stockVide && l.status === 'SUCCESS'">
-
-            <td>
-              <div class="dt-block">
-                <span class="dt-d">{{ l.createdAt?.slice(0,10) }}</span>
-                <span class="dt-t">{{ l.createdAt?.slice(11,19) }}</span>
-              </div>
-            </td>
-            <td>
-              <div class="user-row">
-                <div class="av-sm">{{ l.userName?.charAt(0)?.toUpperCase()||'U' }}</div>
-                <span>{{ l.userName }}</span>
-              </div>
-            </td>
-            <td><code class="lot-tag">{{ l.lotCode }}</code></td>
-            <td>
-              <!-- ✅ Article cliquable — filtre direct au clic -->
-              <span class="item-txt item-link"
-                    (click)="selectedArticle = l.itemCode"
-                    [class.item-active]="selectedArticle === l.itemCode"
-                    title="Filtrer par {{ l.itemCode }}">
-                {{ l.itemCode }}
-              </span>
-            </td>
-            <td><span class="wh-pill">{{ l.warehouse }}</span></td>
-            <td class="tc">
-              <span class="type-pill"
-                [class.t-total]="l.operationType==='TOTALE'"
-                [class.t-part]="l.operationType==='PARTIELLE'">
-                {{ l.operationType === 'TOTALE' ? '● Total' : '◐ Partiel' }}
-              </span>
-            </td>
-            <td class="tr mono">{{ l.qtyBefore | number }}</td>
-            <td class="tr mono qty-out">−{{ l.qtyRequested | number }}</td>
-            <td class="tr mono" [class.qty-zero]="l.qtyAfter === 0">
-              {{ l.qtyAfter | number }}
-            </td>
-            <td class="tc">
-              <span class="src-pill" [class.src-mob]="l.source==='MOBILE'">
-                <i [class]="l.source==='MOBILE'?'bi bi-phone':'bi bi-display'"></i>
-                {{ l.source }}
-              </span>
-            </td>
-            <td class="tc">
-              <span class="status-dot"
-                [class.dot-ok]="l.status==='SUCCESS'"
-                [class.dot-ko]="l.status==='FAILED'"
-                [title]="l.status==='FAILED'?(l.errorMessage||'Erreur'):'Succès'">
-              </span>
-            </td>
-            <td class="tc">
-              <button class="btn-detail" (click)="openDetail(l)">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
-            </td>
-          </tr>
-
-          <tr *ngIf="filteredLogs.length === 0">
-            <td colspan="12" class="empty-st">
-              <i class="bi bi-inbox"></i>
-              <span>Aucune opération enregistrée</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Info rétention -->
+    <div class="info-banner">
+      <i class="pi pi-info-circle"></i>
+      <span>
+        Les sorties de production de plus de <strong>2 semaines</strong>
+        sont archivées automatiquement chaque nuit (02h00).
+        Les CSV sont conservés <strong>1 mois</strong> puis supprimés du serveur.
+      </span>
     </div>
+
+    <!-- Skeleton archives -->
+    <ng-container *ngIf="archivesLoading">
+      <div class="kpi-grid">
+        <div class="kpi-skel" *ngFor="let i of [1,2,3]"></div>
+      </div>
+      <div class="tbl-skel"></div>
+    </ng-container>
+
+    <ng-container *ngIf="!archivesLoading">
+
+      <!-- KPI archives -->
+      <div class="kpi-grid">
+        <div class="kpi blue">
+          <i class="pi pi-file kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ totalArchiveFiles }}</span>
+            <span class="kpi-lbl">Fichiers CSV</span>
+            <span class="kpi-sub">sur le serveur</span>
+          </div>
+        </div>
+        <div class="kpi teal">
+          <i class="pi pi-list kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ totalArchiveLines | number }}</span>
+            <span class="kpi-lbl">Enregistrements</span>
+            <span class="kpi-sub">sorties archivées</span>
+          </div>
+        </div>
+        <div class="kpi orange">
+          <i class="pi pi-database kpi-icon"></i>
+          <div class="kpi-body">
+            <span class="kpi-val">{{ totalArchiveSize }}</span>
+            <span class="kpi-lbl">Espace total</span>
+            <span class="kpi-sub">données archivées</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table archives -->
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th class="tc">#</th>
+              <th>Fichier</th>
+              <th class="tc">Date d'archivage</th>
+              <th class="tc">Enregistrements</th>
+              <th class="tr">Taille</th>
+              <th class="tc">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of archives; let i = index; trackBy: trackByFile"
+                class="tbl-row">
+              <td class="tc row-num">{{ i + 1 }}</td>
+              <td>
+                <div class="file-row">
+                  <i class="pi pi-file-edit file-icon"></i>
+                  <code class="file-name">{{ f.fileName }}</code>
+                </div>
+              </td>
+              <td class="tc">
+                <div class="dt-block">
+                  <span class="dt-d">{{ fileNameToDate(f.fileName).date }}</span>
+                  <span class="dt-t">{{ fileNameToDate(f.fileName).time }}</span>
+                </div>
+              </td>
+              <td class="tc">
+                <span class="lines-badge">{{ f.lineCount }} ligne(s)</span>
+              </td>
+              <td class="tr mono">{{ formatSize(f.sizeBytes) }}</td>
+              <td class="tc">
+                <button class="btn-download"
+                        (click)="download(f)"
+                        [disabled]="downloading === f.fileName"
+                        title="Télécharger {{ f.fileName }}">
+                  <i [class]="downloading === f.fileName ? 'pi pi-spin pi-spinner' : 'pi pi-download'"></i>
+                  {{ downloading === f.fileName ? '' : 'Télécharger' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="archives.length === 0">
+              <td colspan="6" class="empty-st">
+                <i class="pi pi-folder-open" style="font-size:2rem; display:block; margin-bottom:.5rem"></i>
+                <span>Aucun fichier d'archive disponible</span>
+                <small>Utilisez "Déclencher archivage" pour générer le premier CSV</small>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </ng-container>
   </ng-container>
 
   <!-- ══ PANEL DÉTAIL ═════════════════════════════════════════════════════ -->
@@ -245,7 +396,7 @@
       <div class="detail-hd">
         <h3>Détail opération #{{ selectedLog.id }}</h3>
         <button class="btn-close" (click)="closeDetail()">
-          <i class="bi bi-x-lg"></i>
+          <i class="pi pi-times"></i>
         </button>
       </div>
       <div class="detail-body">
@@ -254,7 +405,8 @@
         <div class="det-row"><span>Magasin</span><span>{{ selectedLog.warehouse }}</span></div>
         <div class="det-row"><span>Emplacement</span><span>{{ selectedLog.location }}</span></div>
         <div class="det-row"><span>Type</span>
-          <span class="type-pill" [class.t-total]="selectedLog.operationType==='TOTALE'"
+          <span class="type-pill"
+                [class.t-total]="selectedLog.operationType==='TOTALE'"
                 [class.t-part]="selectedLog.operationType==='PARTIELLE'">
             {{ selectedLog.operationType }}
           </span>

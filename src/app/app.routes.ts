@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth-guard';
-import { lockGuard } from './guards/lock-guard';
+import { authGuard }                   from './guards/auth-guard';
+import { lockGuard }                   from './guards/lock-guard';
 import { TransferManagementComponent } from './components/transfer/transfer';
-import { StockConsultationComponent } from './components/stock-consultation/stock-consultation';
-import { StockDashboardComponent } from './components/stock-dashboard/stock-dashboard';
-import { ProductionLogResolver } from './resolvers/production-log.resolver';
-export const routes: Routes = [
+import { StockConsultationComponent }  from './components/stock-consultation/stock-consultation';
+import { StockDashboardComponent }     from './components/stock-dashboard/stock-dashboard';
+import { ProductionLogResolver }       from './resolvers/production-log.resolver';
+import { ProductionArchiveResolver }   from './resolvers/ProductionArchiveResolver';
 
+export const routes: Routes = [
 
   {
     path: '',
@@ -30,6 +31,11 @@ export const routes: Routes = [
   {
     path: 'access-denied',
     loadComponent: () => import('./components/access-denied/access-denied').then(m => m.AccessDeniedComponent)
+  },
+
+  {
+    path: 'not-found',
+    loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)
   },
 
   {
@@ -63,8 +69,12 @@ export const routes: Routes = [
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/audit/audit-list/audit-list').then(m => m.AuditListComponent)
       },
-     { path: 'transfers',         component: TransferManagementComponent, canActivate: [authGuard, lockGuard],
-         data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE_MAGASIN', 'ROLE_MAGASINIER', 'ROLE_CONSULTATION'] } },
+      {
+        path: 'transfers',
+        component: TransferManagementComponent,
+        canActivate: [authGuard, lockGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_RESPONSABLE_MAGASIN', 'ROLE_MAGASINIER', 'ROLE_CONSULTATION'] }
+      },
       {
         path: 'card-management',
         canActivate: [authGuard, lockGuard],
@@ -75,6 +85,7 @@ export const routes: Routes = [
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/inventory/inventory').then(m => m.InventoryComponent)
       },
+
       // ── Stock ERP — AVANT le wildcard ** ──────────────────────────
       {
         path: 'stock',
@@ -85,23 +96,31 @@ export const routes: Routes = [
           { path: 'consultation', component: StockConsultationComponent, title: 'Consultation Stock' },
         ]
       },
+
+      // ── Production — résolution des logs ET archives avant montage ──
       {
-  path: 'production-log',
-  canActivate: [authGuard, lockGuard],   // ✅ comme les autres routes
-  resolve: { logs: ProductionLogResolver }, // ✅ données prêtes avant le montage
-  loadComponent: () => import('./components/production-log/production-log')
-    .then(m => m.ProductionLogComponent)
-},
+        path: 'production-log',
+        canActivate: [authGuard, lockGuard],
+        resolve: {
+          logs:     ProductionLogResolver,
+          archives: ProductionArchiveResolver
+        },
+        loadComponent: () => import('./components/production-log/production-log')
+          .then(m => m.ProductionLogComponent)
+      },
+
+      // Rétrocompatibilité
+      { path: 'production-archive', redirectTo: 'production-log', pathMatch: 'full' },
+
       {
         path: 'reception',
         loadComponent: () => import('./components/reception/reception').then(m => m.ReceptionComponent)
       },
       {
-        path:'etiquette',
-        loadComponent:()=>import('./components/etiquette/etiquette').then(m=>m.EtiquetteComponent)
-
-        },
-        {
+        path: 'etiquette',
+        loadComponent: () => import('./components/etiquette/etiquette').then(m => m.EtiquetteComponent)
+      },
+      {
         path: 'anomaly-dashboard',
         canActivate: [authGuard, lockGuard],
         loadComponent: () =>
@@ -109,22 +128,16 @@ export const routes: Routes = [
             .then(m => m.AnomalyDashboardComponent),
         title: 'Détection Anomalies ML',
         data: { roles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
-      }, 
+      },
 
+      // Wildcard enfants — TOUJOURS EN DERNIER
       {
         path: '**',
         loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)
       },
-
-
     ]
   },
 
-
-  {
-    path: 'not-found',
-    loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)
-  },
-
+  // Wildcard racine — TOUJOURS EN DERNIER
   { path: '**', redirectTo: 'not-found' }
 ];

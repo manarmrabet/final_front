@@ -1,877 +1,757 @@
-$primary:    #2563EB;
-$teal:       #0D9488;
-$purple:     #7C3AED;
-$success:    #059669;
-$danger:     #DC2626;
-$body-bg:    #F1F5F9;
-$card-bg:    #FFFFFF;
-$border:     #E2E8F0;
-$text-main:  #0F172A;
-$text-muted: #64748B;
-$radius:     14px;
-$shadow:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-$shadow-md:  0 4px 16px rgba(0,0,0,.08);
-$trans:      all 0.2s ease-in-out;
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap');
 
-:host { display: block; background: $body-bg; min-height: 100vh; }
+// ── Variables — cohérentes avec le reste de l'app ──────────────────────────
+$blue:    #1a3a8a;  $blue-l: #eff6ff;  $blue-2: #2563eb;
+$teal:    #0f766e;  $teal-l: #ccfbf1;
+$purple:  #7c3aed;  $purple-l: #f5f3ff;
+$green:   #059669;  $green-l: #ecfdf5;
+$red:     #dc2626;  $red-l:   #fef2f2;
+$orange:  #d97706;  $orange-l: #fffbeb;
+$border:  #e2e8f0;  $text: #0f172a;  $muted: #64748b;  $bg: #f8fafc;
 
-.page-content {
-  background: $body-bg;
+:host { display: block; font-family: 'Sora', sans-serif; background: $bg; min-height: 100vh; }
+
+// ── Wrapper ────────────────────────────────────────────────────────────────
+.sc-wrap {
+  padding: 28px 32px;
   min-height: 100vh;
-  padding-bottom: 3rem;
+  background: $bg;
 }
 
-// ── Titre ──────────────────────────────────────────────────────────────────
-h4 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -.5px;
-  color: $text-main;
-}
+// ══════════════════════════════════════════════════════════════════════════
+//  HEADER
+// ══════════════════════════════════════════════════════════════════════════
+.sc-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  flex-wrap:       wrap;
+  gap:             12px;
+  margin-bottom:   28px;
 
-.page-subtitle {
-  font-size: .875rem;
-  color: $text-muted;
-}
+  &__left {
+    display:     flex;
+    align-items: center;
+    gap:         14px;
+  }
 
-// ── Bouton Dashboard ───────────────────────────────────────────────────────
-.btn-dashboard {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: $card-bg;
-  color: $primary;
-  border: 1.5px solid $border;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: .85rem;
-  padding: 8px 16px;
-  text-decoration: none;
-  transition: $trans;
+  &__icon {
+    width:           52px;
+    height:          52px;
+    background:      $blue;
+    border-radius:   14px;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    color:           #fff;
+    font-size:       22px;
+    box-shadow:      0 4px 12px rgba(26,58,138,.25);
+    flex-shrink:     0;
 
-  i { font-size: .95rem; line-height: 1; }
-
-  &:hover {
-    background: #EFF6FF;
-    border-color: $primary;
-    color: $primary;
-    box-shadow: 0 2px 8px rgba($primary,.15);
+    i { font-size: 1.3rem; }
   }
 }
 
-// ── Carte recherche ────────────────────────────────────────────────────────
-.search-card {
-  background: $card-bg;
-  border-radius: $radius;
-  border: 1px solid $border;
-  box-shadow: $shadow;
-  padding: 1.75rem;
+.sc-title    { font-size: 21px; font-weight: 700; color: $text; margin: 0 0 2px; }
+.sc-subtitle { font-size: 12px; color: $muted; margin: 0; }
+
+.sc-btn-dashboard {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             7px;
+  background:      #fff;
+  color:           $blue-2;
+  border:          1.5px solid $border;
+  border-radius:   10px;
+  font-weight:     600;
+  font-size:       13px;
+  font-family:     inherit;
+  padding:         9px 18px;
+  text-decoration: none;
+  transition:      all .2s;
+
+  i { font-size: 14px; }
+
+  &:hover {
+    background:    $blue-l;
+    border-color:  $blue-2;
+    box-shadow:    0 2px 8px rgba($blue-2,.15);
+  }
 }
 
-// Toggle Article / Lot
-.mode-toggle {
-  display: inline-flex;
-  background: #F1F5F9;
+// ══════════════════════════════════════════════════════════════════════════
+//  CARTE RECHERCHE
+// ══════════════════════════════════════════════════════════════════════════
+.sc-search-card {
+  background:    #fff;
+  border:        1.5px solid $border;
+  border-radius: 16px;
+  padding:       24px;
+  margin-bottom: 24px;
+  box-shadow:    0 1px 4px rgba(0,0,0,.04);
+}
+
+// Toggle mode
+.sc-mode-toggle {
+  display:       inline-flex;
+  background:    #f1f5f9;
   border-radius: 12px;
-  padding: 5px;
-  gap: 3px;
+  padding:       4px;
+  gap:           3px;
+  margin-bottom: 20px;
+  border:        1.5px solid $border;
+}
 
-  .btn {
-    border: none !important;
-    border-radius: 9px !important;
-    padding: 8px 22px !important;
-    font-size: .9rem !important;
-    font-weight: 700 !important;
-    transition: $trans;
-    line-height: 1.4;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+.sc-mode-btn {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           6px;
+  padding:       8px 20px;
+  border-radius: 9px;
+  border:        none;
+  background:    transparent;
+  color:         $muted;
+  font-size:     13px;
+  font-weight:   600;
+  font-family:   inherit;
+  cursor:        pointer;
+  transition:    all .2s;
 
-    i { font-size: .95rem; line-height: 1; }
+  i { font-size: 13px; }
 
-    &.btn-primary {
-      background: $primary !important;
-      color: #fff !important;
-      box-shadow: 0 2px 10px rgba($primary,.3) !important;
-    }
+  &:hover:not(.sc-mode-btn--active) { background: #e2e8f0; color: $text; }
 
-    &.btn-outline-secondary {
-      background: transparent !important;
-      color: $text-muted !important;
-      &:hover { background: #E2E8F0 !important; color: $text-main !important; }
-    }
+  &--active {
+    background:  $blue;
+    color:       #fff;
+    box-shadow:  0 2px 10px rgba($blue,.3);
   }
 }
 
 // Barre de recherche
-.search-bar {
-  display: flex;
+.sc-search-row {
+  display:     flex;
+  gap:         12px;
   align-items: center;
-  background: #F8FAFC;
-  border: 2px solid $border;
+  flex-wrap:   wrap;
+}
+
+.sc-search-bar {
+  flex:          1;
+  min-width:     260px;
+  display:       flex;
+  align-items:   center;
+  background:    $bg;
+  border:        2px solid $border;
   border-radius: 12px;
-  padding: 6px 6px 6px 16px;
-  gap: 8px;
-  transition: border-color .2s;
+  padding:       6px 6px 6px 16px;
+  gap:           8px;
+  transition:    border-color .2s, box-shadow .2s;
 
   &:focus-within {
-    border-color: $primary;
-    background: $card-bg;
-    box-shadow: 0 0 0 4px rgba($primary,.08);
+    border-color: $blue-2;
+    background:   #fff;
+    box-shadow:   0 0 0 4px rgba($blue-2,.08);
   }
 
-  .search-icon {
-    color: #94A3B8;
-    font-size: 1.2rem;
+  &__icon {
+    color:      #94a3b8;
+    font-size:  1.1rem;
     flex-shrink: 0;
-    line-height: 1;
   }
 
-  .search-input {
-    flex: 1;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    font-size: 1rem;
+  &__input {
+    flex:       1;
+    border:     none;
+    background: transparent;
+    font-size:  14px;
     font-weight: 500;
-    color: $text-main;
-    padding: 6px 0;
+    font-family: inherit;
+    color:      $text;
+    padding:    6px 0;
 
-    &::placeholder { color: #94A3B8; font-weight: 400; }
-    &:focus { outline: none; }
+    &::placeholder { color: #94a3b8; font-weight: 400; }
+    &:focus         { outline: none; }
+    &:disabled      { opacity: .6; }
   }
 
-  .btn-search {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: $primary;
-    color: #fff;
-    border: none;
+  &__btn {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           6px;
+    background:    $blue;
+    color:         #fff;
+    border:        none;
     border-radius: 9px;
-    padding: 10px 24px;
-    font-size: .92rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: $trans;
-    flex-shrink: 0;
-    white-space: nowrap;
+    padding:       9px 22px;
+    font-size:     13px;
+    font-weight:   700;
+    font-family:   inherit;
+    cursor:        pointer;
+    transition:    all .2s;
+    flex-shrink:   0;
+    white-space:   nowrap;
 
-    i { font-size: .95rem; line-height: 1; }
+    i { font-size: 13px; }
 
     &:hover:not(:disabled) {
-      background: #1D4ED8;
-      box-shadow: 0 4px 12px rgba($primary,.3);
+      background:  darken($blue, 8%);
+      box-shadow:  0 4px 12px rgba($blue,.3);
     }
     &:disabled { opacity: .6; cursor: not-allowed; }
   }
 }
 
-.btn-reset {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: transparent;
-  color: $text-muted;
-  border: 1.5px solid $border;
+.sc-btn-reset {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           6px;
+  background:    #fff;
+  color:         $muted;
+  border:        1.5px solid $border;
   border-radius: 10px;
-  font-size: .875rem;
-  font-weight: 600;
-  padding: 9px 20px;
-  cursor: pointer;
-  transition: $trans;
-  width: 100%;
-  white-space: nowrap;
+  font-size:     13px;
+  font-weight:   600;
+  font-family:   inherit;
+  padding:       9px 18px;
+  cursor:        pointer;
+  white-space:   nowrap;
+  transition:    all .2s;
 
-  i { font-size: .9rem; line-height: 1; }
+  i { font-size: 13px; }
 
-  &:hover {
-    background: #F1F5F9;
-    border-color: #94A3B8;
-    color: $text-main;
-  }
+  &:hover { background: #f1f5f9; border-color: #94a3b8; color: $text; }
 }
 
-// ── Cards résultat ─────────────────────────────────────────────────────────
-.result-card {
-  background: $card-bg;
-  border-radius: $radius;
-  border: 1px solid $border;
-  box-shadow: $shadow;
-  overflow: hidden;
-  position: relative;
+// ══════════════════════════════════════════════════════════════════════════
+//  ALERTES & LOADER
+// ══════════════════════════════════════════════════════════════════════════
+.sc-alert-error {
+  display:       flex;
+  align-items:   center;
+  gap:           8px;
+  background:    $red-l;
+  color:         $red;
+  border:        1.5px solid rgba($red,.2);
+  border-radius: 12px;
+  padding:       12px 18px;
+  font-size:     13px;
+  font-weight:   500;
+  margin-bottom: 20px;
 
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
+  i { font-size: 1rem; }
+}
+
+.sc-loader {
+  text-align: center;
+  padding:    4rem 1rem;
+
+  &__spinner i {
+    font-size: 2.5rem;
+    color:     $blue-2;
+  }
+
+  p { font-size: 13px; color: $muted; margin: 12px 0 0; font-weight: 500; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  CARDS RÉSULTAT (Article / Lot)
+// ══════════════════════════════════════════════════════════════════════════
+.sc-result-card {
+  background:    #fff;
+  border:        1.5px solid $border;
+  border-radius: 16px;
+  overflow:      hidden;
+  margin-bottom: 20px;
+  box-shadow:    0 1px 6px rgba(0,0,0,.04);
+  position:      relative;
+
+  &__accent {
     height: 4px;
+    width:  100%;
   }
 
-  &.accent-teal::before   { background: linear-gradient(90deg, $teal, #14B8A6); }
-  &.accent-purple::before { background: linear-gradient(90deg, $purple, #A855F7); }
+  &--teal   .sc-result-card__accent { background: linear-gradient(90deg, $teal, #14b8a6); }
+  &--purple .sc-result-card__accent { background: linear-gradient(90deg, $purple, #a855f7); }
 
-  .result-card__body {
-    padding: 1.5rem;
-    padding-top: 1.75rem;
+  &__body {
+    padding: 24px;
+
+    &--split {
+      display:         flex;
+      align-items:     center;
+      justify-content: space-between;
+      flex-wrap:       wrap;
+      gap:             16px;
+    }
+  }
+
+  &__main {
+    display:     flex;
+    align-items: flex-start;
+    gap:         16px;
+    flex-wrap:   wrap;
   }
 }
 
-.result-icon {
-  width: 52px; height: 52px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
+.sc-result-icon {
+  width:           52px;
+  height:          52px;
+  border-radius:   14px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-shrink:     0;
 
-  i { font-size: 1.5rem; line-height: 1; }
+  i { font-size: 1.4rem; }
 
-  &.icon-teal   { background: #F0FDFA; color: $teal;   }
-  &.icon-purple { background: #F5F3FF; color: $purple; }
+  &--teal   { background: #f0fdfa; color: $teal; }
+  &--purple { background: $purple-l; color: $purple; }
 }
 
-.article-title {
-  font-size: 1.15rem;
+.sc-result-info { flex: 1; }
+.sc-result-title {
+  font-size:   1.1rem;
   font-weight: 800;
-  color: $text-main;
-  margin: 0 0 6px;
+  color:       $text;
+  margin:      0 0 8px;
   line-height: 1.3;
 }
 
-.info-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
+// Pills
+.sc-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.sc-pill {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           4px;
+  padding:       4px 12px;
   border-radius: 20px;
-  font-size: .82rem;
-  font-weight: 600;
+  font-size:     12px;
+  font-weight:   600;
 
-  i { font-size: .8rem; line-height: 1; }
+  i { font-size: 11px; }
 
-  &.pill-blue   { background: #EFF6FF; color: $primary; }
-  &.pill-gray   { background: #F1F5F9; color: $text-muted; }
-  &.pill-teal   { background: #F0FDFA; color: $teal; }
+  &--blue { background: $blue-l; color: $blue-2; }
+  &--gray { background: #f1f5f9; color: $muted; }
 }
 
-.kpi-row {
-  display: flex;
-  gap: 1.5rem;
-  padding-top: 1rem;
-  margin-top: 1rem;
-  border-top: 1px solid #F1F5F9;
-  flex-wrap: wrap;
+// KPIs
+.sc-kpi-row {
+  display:     flex;
+  gap:         0;
+  padding-top: 16px;
+  margin-top:  16px;
+  border-top:  1px solid #f1f5f9;
+  flex-wrap:   wrap;
 }
 
-.kpi-block {
-  display: flex;
+.sc-kpi {
+  display:        flex;
   flex-direction: column;
-  gap: 2px;
+  gap:            2px;
+  padding:        0 24px 0 0;
 
-  .kpi-lbl {
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    font-weight: 700;
-    color: #94A3B8;
+  &__lbl {
+    font-size:       10px;
+    text-transform:  uppercase;
+    letter-spacing:  .06em;
+    font-weight:     700;
+    color:           #94a3b8;
+    margin:          0;
   }
-
-  .kpi-val {
-    font-size: 1.6rem;
-    font-weight: 800;
-    line-height: 1;
+  &__val {
+    font-size:    1.6rem;
+    font-weight:  800;
+    line-height:  1;
     letter-spacing: -.5px;
 
-    &.val-teal   { color: $teal;   }
-    &.val-blue   { color: $primary; }
-    &.val-dark   { color: $text-main; }
+    &--teal  { color: $teal; }
+    &--blue  { color: $blue-2; }
+    &--dark  { color: $text; font-size: 1.1rem; }
   }
+  &__unit { font-size: 11px; color: #94a3b8; font-weight: 500; margin: 0; }
 
-  .kpi-unit {
-    font-size: .75rem;
-    color: #94A3B8;
-    font-weight: 500;
+  &__sep {
+    width:      1px;
+    background: $border;
+    margin:     0 24px 0 0;
+    align-self: stretch;
   }
 }
 
-// ── Filtres ────────────────────────────────────────────────────────────────
-.filter-bar {
-  display: flex;
+// Lot header
+.sc-lot-number { font-size: 1.1rem; font-weight: 800; color: $purple; }
+.sc-lot-assoc  { font-size: 12px; color: $muted; margin: 4px 0 0; }
+.sc-lot-total-block { text-align: right; }
+.sc-lot-total  { font-size: 1.8rem; font-weight: 800; color: $text; line-height: 1; }
+
+// ══════════════════════════════════════════════════════════════════════════
+//  FILTRES
+// ══════════════════════════════════════════════════════════════════════════
+.sc-filter-bar {
+  display:         flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: .75rem;
+  align-items:     center;
+  flex-wrap:       wrap;
+  gap:             10px;
+  margin-bottom:   16px;
 }
 
-.filter-group {
-  display: inline-flex;
-  background: $card-bg;
-  border: 1.5px solid $border;
+.sc-filter-group {
+  display:       inline-flex;
+  background:    #fff;
+  border:        1.5px solid $border;
   border-radius: 10px;
-  padding: 4px;
-  gap: 3px;
-
-  .filter-btn {
-    border: none;
-    border-radius: 7px;
-    font-size: .82rem;
-    font-weight: 600;
-    padding: 6px 16px;
-    cursor: pointer;
-    transition: $trans;
-    background: transparent;
-    color: $text-muted;
-
-    &:hover { background: #F1F5F9; color: $text-main; }
-    &.active-all     { background: $text-main; color: #fff; }
-    &.active-avail   { background: $success;   color: #fff; }
-    &.active-blocked { background: $danger;    color: #fff; }
-  }
+  padding:       4px;
+  gap:           3px;
 }
 
-.filter-select {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.sc-filter-btn {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           5px;
+  border:        none;
+  border-radius: 7px;
+  font-size:     12px;
+  font-weight:   600;
+  font-family:   inherit;
+  padding:       7px 14px;
+  cursor:        pointer;
+  transition:    all .2s;
+  background:    transparent;
+  color:         $muted;
 
-  i { color: $text-muted; font-size: .95rem; }
+  i { font-size: 12px; }
+
+  &:hover { background: #f1f5f9; color: $text; }
+
+  &--all     { background: $text;   color: #fff; }
+  &--avail   { background: $green;  color: #fff; }
+  &--blocked { background: $red;    color: #fff; }
+}
+
+.sc-filter-select {
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+
+  i { color: $muted; font-size: 13px; }
 
   select {
-    border: 1.5px solid $border;
+    border:        1.5px solid $border;
     border-radius: 8px;
-    font-size: .85rem;
-    font-weight: 500;
-    color: $text-main;
-    background: $card-bg;
-    padding: 7px 28px 7px 10px;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2364748B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
+    font-size:     13px;
+    font-weight:   500;
+    font-family:   inherit;
+    color:         $text;
+    background:    #fff;
+    padding:       8px 28px 8px 10px;
+    appearance:    none;
+    cursor:        pointer;
 
-    &:focus {
-      outline: none;
-      border-color: $primary;
-      box-shadow: 0 0 0 3px rgba($primary,.1);
-    }
+    &:focus { outline: none; border-color: $blue-2; box-shadow: 0 0 0 3px rgba($blue-2,.1); }
   }
 }
 
-// ── Table ──────────────────────────────────────────────────────────────────
-.data-card {
-  background: $card-bg;
-  border-radius: $radius;
-  border: 1px solid $border;
-  box-shadow: $shadow;
-  overflow: hidden;
+// ══════════════════════════════════════════════════════════════════════════
+//  TABLE (commune à toutes les vues)
+// ══════════════════════════════════════════════════════════════════════════
+.sc-table-card {
+  background:    #fff;
+  border:        1.5px solid $border;
+  border-radius: 16px;
+  overflow:      hidden;
+  box-shadow:    0 1px 6px rgba(0,0,0,.04);
+  margin-bottom: 20px;
+
+  &--flush { border-radius: 0 0 16px 16px; border-top: none; }
 }
 
-.table {
-  margin: 0;
-  font-size: .875rem;
+.sc-table {
+  width:           100%;
+  border-collapse: collapse;
 
   thead th {
-    background: #F8FAFC;
-    border-bottom: 1px solid $border;
-    color: $text-muted;
-    font-size: .72rem;
+    padding:        12px 16px;
+    background:     $bg;
+    border-bottom:  2px solid $border;
+    font-size:      10px;
+    font-weight:    700;
     text-transform: uppercase;
-    letter-spacing: .07em;
-    font-weight: 700;
-    padding: 12px 18px;
-    white-space: nowrap;
+    letter-spacing: .06em;
+    color:          $muted;
+    white-space:    nowrap;
+
+    i { font-size: 11px; margin-right: 4px; vertical-align: middle; }
+
+    &.tc { text-align: center; }
+    &.tr { text-align: right;  }
   }
 
   tbody td {
-    padding: 14px 18px;
+    padding:       12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size:     13px;
+    color:         $text;
     vertical-align: middle;
-    border-bottom: 1px solid #F1F5F9;
-    font-size: .875rem;
-    color: $text-main;
   }
 
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: #F8FAFC; }
-  tbody tr { cursor: default; }
-}
-
-// ── Badges statut ──────────────────────────────────────────────────────────
-.badge-modern {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 7px;
-  font-size: .78rem;
-  font-weight: 700;
-  white-space: nowrap;
-
-  &::before {
-    content: "";
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-  }
-}
-
-.status-available { background: #ECFDF5; color: #065F46; }
-.status-blocked   { background: #FEF2F2; color: #991B1B; }
-.status-warning   { background: #FFFBEB; color: #92400E; }
-
-.badge {
-  font-size: .78rem !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important;
-  padding: 4px 9px !important;
-}
-
-// ── Lot header ─────────────────────────────────────────────────────────────
-.lot-number {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: $purple;
-}
-
-.lot-total {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: $text-main;
-  line-height: 1;
-}
-
-// ── État vide ──────────────────────────────────────────────────────────────
-.empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  color: $text-muted;
-
-  .empty-icon {
-    font-size: 3.5rem;
-    opacity: .2;
-    display: block;
-    margin-bottom: .75rem;
-    line-height: 1;
+  &__row {
+    transition: background .12s;
+    &:hover td    { background: #f0f7ff; }
+    &:last-child td { border-bottom: none; }
   }
 
-  p {
-    font-size: .95rem;
-    margin: 0;
-    color: $text-muted;
-  }
-}
+  .tc { text-align: center; }
+  .tr { text-align: right;  }
 
-// ── Alertes & Loader ───────────────────────────────────────────────────────
-.alert-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #FEF2F2;
-  color: #991B1B;
-  border-radius: $radius;
-  padding: .875rem 1.25rem;
-  font-size: .875rem;
-  font-weight: 500;
-  margin-bottom: 1.25rem;
-
-  i { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
-}
-
-.loader-center {
-  text-align: center;
-  padding: 4rem 1rem;
-
-  .spinner-grow { width: 2.25rem; height: 2.25rem; }
-
-  p {
-    margin: .875rem 0 0;
-    font-size: .875rem;
-    color: $text-muted;
-    font-weight: 500;
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// INVENTAIRE GLOBAL — redesign complet, couvre toute la page
-// ══════════════════════════════════════════════════════════════════════════
-
-.global-inventory-card {
-  // Couvre toute la largeur disponible (annule le padding du container)
-  margin-left:  -12px;
-  margin-right: -12px;
-
-  background: $card-bg;
-  border-radius: 0;
-  border: none;
-  border-top: 1px solid $border;
-  box-shadow: none;
-  position: relative;
-  min-height: calc(100vh - 320px);  // occupe le reste de la page
-
-  // Barre accent top bleue pleine largeur
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, $primary 0%, #60A5FA 50%, $teal 100%);
-  }
-
-  // Table pleine largeur, sans border-radius
-  .table-responsive {
-    border-radius: 0;
-  }
-}
-
-// Header de la card inventaire — pleine largeur, plus imposant
-.gi-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 1.5rem 2rem 1.25rem;
-  padding-top: 1.75rem;
-  border-bottom: 1px solid $border;
-  background: linear-gradient(135deg, #FAFBFF 0%, #F8FAFC 100%);
-
-  &__left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-}
-
-.gi-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-  color: $primary;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba($primary, .15);
-  flex-shrink: 0;
-
-  i { font-size: 1.4rem; line-height: 1; }
-}
-
-.gi-title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: $text-main;
-  margin: 0 0 3px;
-  letter-spacing: -.3px;
-}
-
-.gi-subtitle {
-  font-size: .78rem;
-  color: $text-muted;
-  margin: 0;
-}
-
-.gi-total-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: linear-gradient(135deg, $primary, #1D4ED8);
-  color: #fff;
-  border-radius: 10px;
-  padding: 8px 18px;
-  font-size: .85rem;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba($primary, .25);
-  letter-spacing: -.2px;
-
-  i { font-size: .9rem; line-height: 1; opacity: .85; }
-}
-
-// Table de l'inventaire global — lignes plus aérées
-.global-inventory-card .table {
-
-  thead th {
-    background: #F1F5F9;
-    padding: 13px 24px;
-    font-size: .7rem;
-    letter-spacing: .08em;
-    color: #94A3B8;
-    border-bottom: 2px solid $border;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-
-    &:first-child { padding-left: 2rem; }
-    &:last-child  { padding-right: 2rem; }
-  }
-
-  tbody td {
-    padding: 15px 24px;
-    border-bottom: 1px solid #F8FAFC;
-
-    &:first-child { padding-left: 2rem; }
-    &:last-child  { padding-right: 2rem; }
-  }
-
-  tbody tr {
-    transition: background .15s;
-
-    &:hover td {
-      background: #F0F7FF;
-    }
-
-    // Ligne alternée légèrement teintée
-    &:nth-child(even) td {
-      background: #FAFBFC;
-    }
-    &:nth-child(even):hover td {
-      background: #F0F7FF;
-    }
-  }
+  &--global thead th { background: #f1f5f9; font-size: 10px; padding: 13px 20px; }
+  &--global tbody td { padding: 14px 20px; }
 }
 
 // Cellules spécifiques
-.gi-item-code {
-  font-size: .875rem;
-  font-weight: 700;
-  color: $primary;
-  letter-spacing: -.2px;
-  line-height: 1.3;
-}
+.sc-cell-wh  { display: flex; flex-direction: column; gap: 2px; }
+.sc-wh-code  { font-weight: 700; color: $text; font-size: 13px; }
+.sc-wh-loc   { font-size: 11px; color: $muted; font-family: 'IBM Plex Mono', monospace; }
 
-.gi-item-desc {
-  font-size: .75rem;
-  color: $text-muted;
-  margin-top: 3px;
-  max-width: 240px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gi-lot-badge {
-  display: inline-flex;
-  align-items: center;
-  background: #F8FAFC;
-  border: 1px solid $border;
+.sc-lot-badge {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           5px;
+  background:    $blue-l;
+  color:         $blue;
+  border:        1px solid rgba($blue-2,.2);
   border-radius: 6px;
-  padding: 3px 10px;
-  font-size: .78rem;
-  font-weight: 600;
-  color: $text-main;
-  font-family: 'Courier New', monospace;
-  transition: $trans;
+  padding:       3px 10px;
+  font-size:     12px;
+  font-weight:   600;
+  font-family:   'IBM Plex Mono', monospace;
 
-  i { opacity: .45; margin-right: 4px; }
+  i { font-size: 11px; opacity: .6; }
+}
 
-  &:hover {
-    background: #EFF6FF;
-    border-color: rgba($primary, .3);
-    color: $primary;
+.sc-qty-block  { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.sc-qty-avail  { font-weight: 700; color: $green; font-size: 13px; em { font-style: normal; font-weight: 400; color: $muted; font-size: 11px; margin-left: 4px; } }
+.sc-qty-blocked { font-size: 11px; color: $red; }
+.sc-qty-main   { font-weight: 700; color: $green; font-size: 13px; }
+.sc-qty-unit   { font-size: 11px; color: $muted; font-weight: 500; margin-left: 3px; }
+
+.sc-date-cell  { font-size: 12px; color: $muted; font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
+.sc-empty-dash { color: #cbd5e1; }
+
+.sc-item-code  { font-weight: 700; color: $blue-2; font-size: 13px; letter-spacing: -.2px; }
+.sc-item-desc  { font-size: 12px; color: $muted; margin-top: 2px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-item-cat   { font-size: 11px; color: #94a3b8; }
+.sc-loc-block  { display: flex; align-items: center; gap: 5px; }
+.sc-loc-sep    { color: #cbd5e1; }
+
+// Statuts
+.sc-status-badge {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           5px;
+  padding:       5px 11px;
+  border-radius: 7px;
+  font-size:     11px;
+  font-weight:   700;
+  white-space:   nowrap;
+
+  &::before {
+    content:      "";
+    width:        6px; height: 6px;
+    border-radius: 50%;
+    background:   currentColor;
+    flex-shrink:  0;
+  }
+}
+.status-available { background: $green-l;  color: #065f46; }
+.status-blocked   { background: $red-l;    color: #991b1b; }
+.status-warning   { background: $orange-l; color: #92400e; }
+
+// État vide
+.sc-empty {
+  text-align:  center;
+  padding:     56px !important;
+  color:       $muted;
+
+  i    { font-size: 2.5rem; display: block; margin-bottom: 10px; opacity: .3; }
+  span { font-size: 14px; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  INVENTAIRE GLOBAL
+// ══════════════════════════════════════════════════════════════════════════
+.sc-global {
+  background:    #fff;
+  border:        1.5px solid $border;
+  border-radius: 16px;
+  overflow:      hidden;
+  box-shadow:    0 1px 6px rgba(0,0,0,.04);
+  position:      relative;
+
+  // Barre accent top
+  &::before {
+    content:    "";
+    position:   absolute;
+    top: 0; left: 0; right: 0;
+    height:     3px;
+    background: linear-gradient(90deg, $blue-2 0%, #60a5fa 50%, $teal 100%);
+  }
+
+  &__header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    flex-wrap:       wrap;
+    gap:             12px;
+    padding:         20px 24px 18px;
+    padding-top:     24px;
+    border-bottom:   1.5px solid $border;
+    background:      linear-gradient(135deg, #fafbff, $bg);
+
+    &-left {
+      display:     flex;
+      align-items: center;
+      gap:         14px;
+    }
+  }
+
+  &__icon {
+    width:           46px; height: 46px;
+    border-radius:   12px;
+    background:      linear-gradient(135deg, $blue-l, #dbeafe);
+    color:           $blue-2;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    box-shadow:      0 2px 8px rgba($blue-2,.15);
+
+    i { font-size: 1.3rem; }
+  }
+
+  &__title { font-size: 15px; font-weight: 800; color: $text; margin: 0 0 2px; }
+  &__sub   { font-size: 12px; color: $muted; margin: 0; }
+
+  &__badge {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           7px;
+    background:    linear-gradient(135deg, $blue, #1d4ed8);
+    color:         #fff;
+    border-radius: 10px;
+    padding:       8px 18px;
+    font-size:     13px;
+    font-weight:   700;
+    white-space:   nowrap;
+    box-shadow:    0 4px 12px rgba($blue,.25);
+
+    i { font-size: 13px; opacity: .85; }
   }
 }
 
-.gi-lot-empty {
-  color: #CBD5E1;
-  font-weight: 400;
-  font-size: .9rem;
-}
-
-.gi-location {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .85rem;
-}
-
-.gi-warehouse {
-  font-weight: 700;
-  color: $text-main;
-  background: #F1F5F9;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: .8rem;
-}
-
-.gi-loc-sep {
-  color: #CBD5E1;
-}
-
-.gi-loc {
-  color: $text-muted;
-  font-size: .82rem;
-}
-
-.gi-qty {
-  font-size: .95rem;
-  font-weight: 800;
-  color: $success;
-  letter-spacing: -.3px;
-}
-
-.gi-unit {
-  font-size: .72rem;
-  color: $text-muted;
-  font-weight: 500;
-  margin-left: 3px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-
-.gi-date {
-  font-size: .8rem;
-  color: $text-muted;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-// ── Pagination — pleine largeur, collée au bas ─────────────────────────────
-.gi-pagination {
-  display: flex;
-  align-items: center;
+// ══════════════════════════════════════════════════════════════════════════
+//  PAGINATION
+// ══════════════════════════════════════════════════════════════════════════
+.sc-pagination {
+  display:         flex;
+  align-items:     center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 2rem;
-  border-top: 1px solid $border;
-  background: #F8FAFC;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  box-shadow: 0 -1px 0 $border, 0 -4px 12px rgba(0,0,0,.04);
-}
+  flex-wrap:       wrap;
+  gap:             10px;
+  padding:         14px 24px;
+  border-top:      1.5px solid $border;
+  background:      $bg;
 
-.gi-page-info {
-  font-size: .82rem;
-  color: $text-muted;
-  font-weight: 500;
+  &__info {
+    font-size: 12px;
+    color:     $muted;
+    font-weight: 500;
 
-  strong {
-    color: $text-main;
-    font-weight: 700;
+    strong { color: $text; font-weight: 700; }
+  }
+
+  &__controls {
+    display:     flex;
+    align-items: center;
+    gap:         5px;
   }
 }
 
-.gi-page-btns {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.gi-page-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: $card-bg;
-  border: 1.5px solid $border;
+.sc-page-btn {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           5px;
+  background:    #fff;
+  border:        1.5px solid $border;
   border-radius: 9px;
-  color: $text-main;
-  font-size: .82rem;
-  font-weight: 600;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: $trans;
+  color:         $text;
+  font-size:     12px;
+  font-weight:   600;
+  font-family:   inherit;
+  padding:       7px 14px;
+  cursor:        pointer;
+  transition:    all .2s;
 
-  i { font-size: 1rem; line-height: 1; }
+  i { font-size: 13px; }
 
   &:hover:not(:disabled) {
-    background: #EFF6FF;
-    border-color: $primary;
-    color: $primary;
-    box-shadow: 0 2px 8px rgba($primary, .12);
+    background:   $blue-l;
+    border-color: $blue-2;
+    color:        $blue-2;
   }
-
-  &:disabled {
-    opacity: .35;
-    cursor: not-allowed;
-  }
+  &:disabled { opacity: .35; cursor: not-allowed; }
 }
 
-.gi-page-numbers {
-  display: flex;
+.sc-page-nums {
+  display:     flex;
   align-items: center;
-  gap: 3px;
+  gap:         3px;
 }
 
-.gi-page-num {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  border: 1.5px solid $border;
-  background: $card-bg;
-  color: $text-main;
-  font-size: .82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: $trans;
-  display: flex;
-  align-items: center;
+.sc-page-num {
+  width:           34px; height: 34px;
+  border-radius:   8px;
+  border:          1.5px solid $border;
+  background:      #fff;
+  color:           $text;
+  font-size:       12px;
+  font-weight:     600;
+  font-family:     inherit;
+  cursor:          pointer;
+  transition:      all .2s;
+  display:         flex;
+  align-items:     center;
   justify-content: center;
 
-  &:hover:not(.active) {
-    background: #F1F5F9;
-    border-color: #94A3B8;
-  }
+  &:hover:not(.sc-page-num--active) { background: #f1f5f9; border-color: #94a3b8; }
 
-  &.active {
-    background: $primary;
-    border-color: $primary;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba($primary, .35);
-    transform: scale(1.05);
+  &--active {
+    background:   $blue;
+    border-color: $blue;
+    color:        #fff;
+    box-shadow:   0 2px 10px rgba($blue,.35);
+    transform:    scale(1.05);
   }
 }
 
-.gi-page-dots {
-  color: #CBD5E1;
-  font-size: .85rem;
-  padding: 0 4px;
-  line-height: 36px;
+.sc-page-dots {
+  color:       #cbd5e1;
+  font-size:   13px;
+  padding:     0 4px;
+  line-height: 34px;
   user-select: none;
 }
 
 // ── Responsive ─────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
-  .global-inventory-card {
-    margin-left:  -12px;
-    margin-right: -12px;
-  }
-
-  .gi-header { padding: 1.25rem 1rem; }
-  .gi-pagination { padding: 12px 1rem; }
-
-  .global-inventory-card .table {
-    thead th { padding: 10px 12px; &:first-child { padding-left: 1rem; } &:last-child { padding-right: 1rem; } }
-    tbody td { padding: 12px; &:first-child { padding-left: 1rem; } &:last-child { padding-right: 1rem; } }
-  }
-
-  .gi-total-badge { font-size: .78rem; padding: 7px 14px; }
-  .gi-page-numbers { display: none; }
-}
-
-// ── Fix : table pleine largeur ─────────────────────────────────────────────
-.global-inventory-card {
-  margin-left: 0;
-  margin-right: 0;
-  width: 100%;
-
-  .table-responsive {
-    width: 100%;
-  }
-
-  .table {
-    width: 100% !important;
-    table-layout: fixed;
-
-    thead th, tbody td {
-      &:nth-child(1) { width: 30%; }  // Article
-      &:nth-child(2) { width: 12%; }  // Lot
-      &:nth-child(3) { width: 25%; }  // Emplacement
-      &:nth-child(4) { width: 15%; }  // Stock
-      &:nth-child(5) { width: 18%; }  // Date
-    }
-  }
+  .sc-wrap       { padding: 14px; }
+  .sc-kpi-row    { flex-direction: column; gap: 12px; }
+  .sc-kpi__sep   { display: none; }
+  .sc-page-nums  { display: none; }
+  .sc-global__header { padding: 16px; }
+  .sc-filter-bar { flex-direction: column; align-items: flex-start; }
+  .sc-search-row { flex-direction: column; }
+  .sc-search-bar { min-width: 0; width: 100%; }
+  .sc-btn-reset  { width: 100%; justify-content: center; }
+  .sc-table-card { overflow-x: auto; }
 }
