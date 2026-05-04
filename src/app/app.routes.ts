@@ -75,12 +75,6 @@ export const routes: Routes = [
         canActivate: [authGuard, lockGuard],
         loadComponent: () => import('./components/inventory/inventory').then(m => m.InventoryComponent)
       },
-      {
-  path: 'transfers/archives',
-  loadComponent: () =>
-    import('./components/transfer-archives/transfer-archives')
-      .then(m => m.TransferArchivesComponent)
-},
       // ── Stock ERP — AVANT le wildcard ** ──────────────────────────
       {
         path: 'stock',
@@ -107,6 +101,15 @@ export const routes: Routes = [
         loadComponent:()=>import('./components/etiquette/etiquette').then(m=>m.EtiquetteComponent)
 
         },
+        {
+        path: 'anomaly-dashboard',
+        canActivate: [authGuard, lockGuard],
+        loadComponent: () =>
+          import('./features/anomaly-dashboard/anomaly-dashboard.component')
+            .then(m => m.AnomalyDashboardComponent),
+        title: 'Détection Anomalies ML',
+        data: { roles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
+      }, 
 
       {
         path: '**',
@@ -117,15 +120,7 @@ export const routes: Routes = [
     ]
   },
 
-{
-        path: 'anomaly-dashboard',
-        canActivate: [authGuard, lockGuard],
-        loadComponent: () =>
-          import('./features/anomaly-dashboard/anomaly-dashboard.component')
-            .then(m => m.AnomalyDashboardComponent),
-        title: 'Détection Anomalies ML',
-        data: { roles: ['ROLE_ADMIN', 'ROLE_MANAGER'] }
-      },
+
   {
     path: 'not-found',
     loadComponent: () => import('./components/not-found/not-found').then(m => m.NotFoundComponent)
