@@ -76,3 +76,29 @@ export interface ArchiveFile {
   archiveDate: string | null;   // ISO string depuis le backend
   recordCount: number;
 }
+
+
+
+// Ajouter dans audit-log.ts
+
+export interface ArchiveFilter {
+  username?: string;
+  action?: string;
+  eventType?: string;
+  severity?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface ArchiveLogEntry {
+  id: number;
+  createdAt: string;
+  username: string;
+  action: string;
+  eventType: string;
+  severity: string;
+  endpoint: string;
+  statusCode: number;
+  oldValue?: string;
+  newValue?: string;
+}

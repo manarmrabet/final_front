@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuditFilter, AuditLog, ArchiveFile } from '../../models/audit-log';
+import { AuditFilter, AuditLog, ArchiveFile, ArchiveLogEntry, ArchiveFilter } from '../../models/audit-log';
 import { PageResponse, ApiResponse } from '../../models/shared';
 import { environment } from '../../../environments/environment';
 
@@ -59,4 +59,27 @@ getArchives(): Observable<ApiResponse<ArchiveFile[]>> {
       responseType: 'blob'
     });
   }
+
+
+// Ajouter dans AuditService
+
+searchArchives(
+  filename: string | null,
+  filter: ArchiveFilter
+): Observable<ApiResponse<ArchiveLogEntry[]>> {
+  let params = new HttpParams();
+
+  if (filter.username)  params = params.set('username',  filter.username);
+  if (filter.action)    params = params.set('action',    filter.action);
+  if (filter.eventType) params = params.set('eventType', filter.eventType);
+  if (filter.severity)  params = params.set('severity',  filter.severity);
+  if (filter.from)      params = params.set('from', filter.from.length === 16 ? filter.from + ':00' : filter.from);
+  if (filter.to)        params = params.set('to',   filter.to.length   === 16 ? filter.to   + ':00' : filter.to);
+
+  const url = filename
+    ? `${this.API}/archives/${filename}/search`
+    : `${this.API}/archives/search`;
+
+  return this.http.get<ApiResponse<ArchiveLogEntry[]>>(url, { params });
+}
 }

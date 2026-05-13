@@ -5,7 +5,6 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <div class="header-left">
         <div class="header-icon">
-          <!-- ✅ SVG inline — remplace <lucide-icon name="Book"> -->
           <svg style="width:22px; height:22px; color:#3b82f6;"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -167,113 +166,289 @@
 
     @if (viewMode() === 'archive') {
       <div class="p-6">
+
+        <!-- Bandeau info -->
         <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
           <div class="flex">
-            <div class="flex-shrink-0">
-              <!-- ✅ SVG inline — remplace <lucide-icon name="Info"> -->
-              <svg style="width:20px; height:20px; flex-shrink:0;"
-                   viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-blue-700">
-                Les journaux d'audit de plus de 2 semaines sont automatiquement extraits
-                de la base de données et stockés dans ces fichiers sécurisés.
-              </p>
-            </div>
+            <svg style="width:20px;height:20px;flex-shrink:0;"
+                 viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p class="ml-3 text-sm text-blue-700">
+              Les journaux d'audit de plus de 2 semaines sont automatiquement archivés.
+              Sélectionnez un fichier ou laissez vide pour chercher dans toutes les archives.
+            </p>
           </div>
         </div>
 
-        <div class="table-responsive">
-          <table class="velzon-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Fichier</th>
-                <th>Date d'archivage</th>
-                <th>Enregistrements</th>
-                <th>Taille</th>
-                <th class="text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (loading()) {
+        <!-- ═══ BARRE DE FILTRES ARCHIVE ═══ -->
+        <div class="filters-bar mb-6">
+
+          <div class="filter-group">
+            <label>Fichier ciblé</label>
+            <select [ngModel]="selectedArchive()" (ngModelChange)="selectedArchive.set($event)">
+              <option [value]="null">Toutes les archives</option>
+              @for (file of archives(); track file.filename) {
+                <option [value]="file.filename">{{ file.filename }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Utilisateur</label>
+            <input type="text" [(ngModel)]="archiveFilters.username"
+                   placeholder="ex: admin" />
+          </div>
+
+          <div class="filter-group">
+            <label>Action</label>
+            <input type="text" [(ngModel)]="archiveFilters.action"
+                   placeholder="ex: UPDATE_USER" />
+          </div>
+
+          <div class="filter-group">
+            <label>Type d'événement</label>
+            <select [(ngModel)]="archiveFilters.eventType">
+              <option value="">Tous</option>
+              @for (e of eventTypes; track e) {
+                <option [value]="e">{{ e }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Sévérité</label>
+            <select [(ngModel)]="archiveFilters.severity">
+              <option value="">Toutes</option>
+              @for (s of severities; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Du</label>
+            <input type="datetime-local" [(ngModel)]="archiveFilters.from" />
+          </div>
+
+          <div class="filter-group">
+            <label>Au</label>
+            <input type="datetime-local" [(ngModel)]="archiveFilters.to" />
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn-search" (click)="searchInArchives()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              Rechercher
+            </button>
+            <button class="btn-reset" (click)="resetArchiveFilters()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+              </svg>
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ VUE LISTE DES FICHIERS ═══ -->
+        @if (archiveViewMode() === 'list') {
+          <div class="table-responsive">
+            <table class="velzon-table">
+              <thead>
                 <tr>
-                  <td colspan="6" class="empty-row">
-                    <div class="loading-dots"><span></span><span></span><span></span></div>
-                  </td>
+                  <th>#</th>
+                  <th>Fichier</th>
+                  <th>Date d'archivage</th>
+                  <th>Enregistrements</th>
+                  <th>Taille</th>
+                  <th class="text-right">Actions</th>
                 </tr>
-              } @else if (archives().length === 0) {
-                <tr><td colspan="6" class="empty-row">Aucune archive disponible.</td></tr>
-              } @else {
-                @for (file of archives(); track file.filename; let i = $index) {
+              </thead>
+              <tbody>
+                @if (loading()) {
                   <tr>
-                    <td><span class="cell-num">{{ i + 1 }}</span></td>
-
-                    <td>
-                      <div style="display:flex; align-items:center; gap:8px;">
-                        <!-- ✅ SVG inline — remplace <lucide-icon name="FileSpreadsheet"> -->
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                             stroke="#16a34a" stroke-width="2" style="flex-shrink:0;">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                          <line x1="8" y1="13" x2="16" y2="13"/>
-                          <line x1="8" y1="17" x2="16" y2="17"/>
-                          <line x1="10" y1="9" x2="8" y2="9"/>
-                        </svg>
-                        <span style="font-family:monospace; font-size:0.78rem;">{{ file.filename }}</span>
-                      </div>
-                    </td>
-
-                    <td>
-                      @if (file.archiveDate) {
-                        <div style="display:flex; flex-direction:column;">
-                          <span style="font-weight:500; color:#1f2937;">
-                            {{ file.archiveDate | date:'dd/MM/yyyy' }}
-                          </span>
-                          <span style="font-size:0.75rem; color:#9ca3af;">
-                            {{ file.archiveDate | date:'HH:mm:ss' }}
-                          </span>
-                        </div>
-                      } @else {
-                        <span class="cell-muted">—</span>
-                      }
-                    </td>
-
-                    <td>
-                      <span class="event-badge event-export">
-                        {{ file.recordCount }} ligne(s)
-                      </span>
-                    </td>
-
-                    <td class="cell-muted" style="font-size:0.83rem;">
-                      {{ formatSize(file.sizeBytes) }}
-                    </td>
-
-                    <td style="text-align:right;">
-                      <button
-                        class="btn-search"
-                        style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; float:right;"
-                        (click)="downloadArchive(file.filename)">
-                        <!-- ✅ SVG inline — remplace <lucide-icon name="Download"> -->
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="7 10 12 15 17 10"/>
-                          <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Télécharger
-                      </button>
+                    <td colspan="6" class="empty-row">
+                      <div class="loading-dots"><span></span><span></span><span></span></div>
                     </td>
                   </tr>
+                } @else if (archives().length === 0) {
+                  <tr><td colspan="6" class="empty-row">Aucune archive disponible.</td></tr>
+                } @else {
+                  @for (file of archives(); track file.filename; let i = $index) {
+                    <tr [class.ring-2]="selectedArchive() === file.filename"
+                        [class.ring-blue-400]="selectedArchive() === file.filename"
+                        style="cursor:pointer;"
+                        (click)="selectArchive(file.filename)">
+
+                      <td><span class="cell-num">{{ i + 1 }}</span></td>
+
+                      <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                               stroke="#16a34a" stroke-width="2" style="flex-shrink:0;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="8" y1="13" x2="16" y2="13"/>
+                            <line x1="8" y1="17" x2="16" y2="17"/>
+                          </svg>
+                          <span style="font-family:monospace;font-size:0.78rem;">
+                            {{ file.filename }}
+                          </span>
+                          @if (selectedArchive() === file.filename) {
+                            <span class="event-badge event-export" style="font-size:0.7rem;">
+                              ✓ sélectionné
+                            </span>
+                          }
+                        </div>
+                      </td>
+
+                      <td>
+                        @if (file.archiveDate) {
+                          <div style="display:flex;flex-direction:column;">
+                            <span style="font-weight:500;color:#1f2937;">
+                              {{ file.archiveDate | date:'dd/MM/yyyy' }}
+                            </span>
+                            <span style="font-size:0.75rem;color:#9ca3af;">
+                              {{ file.archiveDate | date:'HH:mm:ss' }}
+                            </span>
+                          </div>
+                        } @else {
+                          <span class="cell-muted">—</span>
+                        }
+                      </td>
+
+                      <td>
+                        <span class="event-badge event-export">
+                          {{ file.recordCount }} ligne(s)
+                        </span>
+                      </td>
+
+                      <td class="cell-muted" style="font-size:0.83rem;">
+                        {{ formatSize(file.sizeBytes) }}
+                      </td>
+
+                      <td style="text-align:right;" (click)="$event.stopPropagation()">
+                        <button class="btn-search"
+                                style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;"
+                                (click)="downloadArchive(file.filename)">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                               stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          Télécharger
+                        </button>
+                      </td>
+                    </tr>
+                  }
                 }
-              }
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- ═══ VUE RÉSULTATS DE RECHERCHE ═══ -->
+        @if (archiveViewMode() === 'search') {
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-weight:600;color:#1f2937;">
+                  {{ archiveLogs().length }} résultat(s) trouvé(s)
+                </span>
+                @if (selectedArchive()) {
+                  <span class="event-badge event-export">
+                    dans {{ selectedArchive() }}
+                  </span>
+                } @else {
+                  <span class="event-badge event-import">toutes les archives</span>
+                }
+              </div>
+              <button class="btn-reset" (click)="resetArchiveFilters()">
+                ← Retour à la liste
+              </button>
+            </div>
+
+            @if (archiveLoading()) {
+              <div class="loading-state">
+                <div class="loading-dots"><span></span><span></span><span></span></div>
+                <p>Recherche en cours...</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="velzon-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Date</th>
+                      <th>Événement</th>
+                      <th>Sévérité</th>
+                      <th>Utilisateur</th>
+                      <th>Action</th>
+                      <th>Endpoint</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (archiveLogs().length === 0) {
+                      <tr>
+                        <td colspan="8" class="empty-row">
+                          Aucun résultat pour ces critères.
+                        </td>
+                      </tr>
+                    } @else {
+                      @for (entry of archiveLogs(); track entry.id; let i = $index) {
+                        <tr [class]="'row-sev-' + entry.severity.toLowerCase()">
+                          <td><span class="cell-num">{{ i + 1 }}</span></td>
+                          <td class="td-date">
+                            {{ entry.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                          </td>
+                          <td>
+                            <!-- ✅ CORRIGÉ : getArchiveEventClass() au lieu de getEventClass(entry.eventType as any) -->
+                            <span class="event-badge" [ngClass]="getArchiveEventClass(entry.eventType)">
+                              {{ entry.eventType }}
+                            </span>
+                          </td>
+                          <td>
+                            <!-- ✅ CORRIGÉ : getArchiveSeverityClass() au lieu de getSeverityClass(entry.severity as any) -->
+                            <span class="severity-badge" [ngClass]="getArchiveSeverityClass(entry.severity)">
+                              {{ entry.severity }}
+                            </span>
+                          </td>
+                          <td>{{ entry.username || '—' }}</td>
+                          <td>
+                            @if (entry.action) {
+                              <span class="action-tag">{{ entry.action }}</span>
+                            } @else {
+                              <span class="cell-muted">—</span>
+                            }
+                          </td>
+                          <td class="cell-muted" style="font-size:0.8rem;">
+                            {{ entry.endpoint || '—' }}
+                          </td>
+                          <td>
+                            <span [style.color]="entry.statusCode >= 400 ? '#ef4444' : '#16a34a'"
+                                  style="font-weight:600;font-size:0.85rem;">
+                              {{ entry.statusCode || '—' }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
       </div>
     }
 
